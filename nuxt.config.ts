@@ -20,6 +20,7 @@ export default defineNuxtConfig({
   ],
 
   auth: {
+    globalAppMiddleware: true,
     isEnabled: true,
     originEnvKey: "NUXT_BASE_URL",
     provider: {
@@ -30,6 +31,9 @@ export default defineNuxtConfig({
         signOut: { path: "/api/auth/logout", method: "post" },
         getSession: { path: "/api/auth/session", method: "get" },
       },
+      pages: {
+        login: '/auth/login',
+      }
     },
     sessionRefresh: {
       enablePeriodically: true,

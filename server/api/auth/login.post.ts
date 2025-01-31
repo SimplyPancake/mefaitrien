@@ -1,12 +1,10 @@
-import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-
-const prisma = new PrismaClient();
+import { generateToken, verifyPassword } from "../../utils/auth";
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig(event);
   const { username, password } = await readBody(event);
+
+  const prisma = event.context.auth.prisma;
 
   const user = await prisma.user.findUnique({
     where: { username },
@@ -17,17 +15,20 @@ export default defineEventHandler(async (event) => {
   }
 
   // Check if the password is correct
-  const validPassword = await bcrypt.compare(password, user.passwordHash);
+  const validPassword = await verifyPassword(password, user.passwordHash);
 
   if (!validPassword) {
     return new Response("Invalid password", { status: 400 });
   }
 
   // Create a JWT token
-  const token = jwt.sign({ id: user.id }, config.jwtSecret);
+  const token = generateToken(user.id, config.jwtSecret);
 
   // set the token to the db for the sessionId (refresh token)
-  await user.refreshToken.
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { refreshToken: token },
+  });
 
   return new Response(token, {
     status: 200,
