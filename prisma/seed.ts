@@ -1,24 +1,35 @@
 import { PrismaClient } from "@prisma/client";
 
-
-
-
-
 const prisma = new PrismaClient();
 
 async function main() {
-  const admin = await prisma.user.upsert({
+  await prisma.user.upsert({
     where: { email: "admin@mfr.com" },
     update: {},
     create: {
       email: "admin@mfr.com",
-      name: "Asdmin",
+      name: "Admin",
       role: "ADMIN",
       passwordHash: "$2a$15$Cakv7l/AAIknVl7knoUarOSJMzKPe2s86zRG6q96iR27GTXXXDHsS", // password is "47"
-	  username: "admin"
+      username: "admin",
     },
   });
-  console.log(admin);
+
+  await prisma.cookingGroup.upsert({
+    where: { name: "K1" },
+    update: {},
+    create: {
+      name: "K1",
+    },
+  });
+
+  await prisma.cookingGroup.upsert({
+    where: { name: "K2" },
+    update: {},
+    create: {
+      name: "K2",
+    },
+  });
 }
 
 main()

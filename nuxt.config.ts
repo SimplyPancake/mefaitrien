@@ -27,13 +27,13 @@ export default defineNuxtConfig({
       type: "local",
       endpoints: {
         signUp: false,
-        signIn: { path: "/api/auth/login", method: "post" },
-        signOut: { path: "/api/auth/logout", method: "post" },
-        getSession: { path: "/api/auth/session", method: "get" },
+        signIn: { path: "/login", method: "post" },
+        signOut: { path: "/logout", method: "post" },
+        getSession: { path: "/session", method: "get" },
       },
       pages: {
-        login: '/auth/login',
-      }
+        login: "/auth/login",
+      },
     },
     sessionRefresh: {
       enablePeriodically: true,

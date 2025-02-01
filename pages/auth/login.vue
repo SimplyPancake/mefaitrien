@@ -3,15 +3,15 @@
 		<div class="w-full md:w-1/2">
 			<div class="mx-auto w-full max-w-[330px] px-5">
 				<h1 class="text-2xl font-bold tracking-tight lg:text-3xl">Log in</h1>
-				<p class="mt-1 text-muted-foreground">Zet je email en wachtwoord hiero!</p>
+				<p class="mt-1 text-muted-foreground">Zet je gebruikersnaam en wachtwoord hiero!</p>
 
 				<form class="mt-10" @submit="submit">
 					<fieldset :disabled="isSubmitting" class="grid gap-5">
 						<div>
-							<UiVeeInput label="Email" type="email" name="email" placeholder="tinus@cocaine.com" />
+							<UiVeeInput label="Username" type="text" name="username" placeholder="hans kazan" />
 						</div>
 						<div>
-							<UiVeeInput label="Password" type="password" name="wachtwoord" />
+							<UiVeeInput label="Password" type="current-password" name="password" />
 						</div>
 						<div>
 							<UiButton class="w-full" type="submit" text="Log in" />
@@ -19,7 +19,8 @@
 					</fieldset>
 				</form>
 				<p class="mt-8 text-sm">
-					<a class="font-semibold text-primary underline-offset-2 hover:underline cursor-pointer" @click="triggerConfetti()">Wachtwoord vergeten?</a>
+					<a class="font-semibold text-primary underline-offset-2 hover:underline cursor-pointer"
+						@click="triggerConfetti()">Wachtwoord vergeten?</a>
 				</p>
 			</div>
 		</div>
@@ -33,8 +34,9 @@
 <script lang="ts" setup>
 import { object, string } from "yup";
 import type { InferType } from "yup";
-
 definePageMeta({ auth: false })
+
+const { signIn } = useAuth();
 
 useSeoMeta({
 	title: "Log in",
@@ -42,20 +44,20 @@ useSeoMeta({
 });
 
 const LoginSchema = object({
-	email: string().email().required().label("Email"),
-	password: string().required().label("Password").min(8),
+	username: string().required().label("Gebruikersnaam"),
+	password: string().required().label("Password"),
 });
 
 const { handleSubmit, isSubmitting } = useForm<InferType<typeof LoginSchema>>({
 	validationSchema: LoginSchema,
 });
 
-const submit = handleSubmit((values) => {
-	console.log(values);
+const submit = handleSubmit(async (values) => {
+	signIn(values, { callbackUrl: '/' })
 });
 
 const triggerConfetti = () => {
-    useConfetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+	useConfetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
 };
 
 </script>
