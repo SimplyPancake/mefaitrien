@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Role } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -9,8 +9,8 @@ async function main() {
     create: {
       email: "admin@mfr.com",
       name: "Admin",
-      role: "ADMIN",
-      passwordHash: "$2a$15$Cakv7l/AAIknVl7knoUarOSJMzKPe2s86zRG6q96iR27GTXXXDHsS", // password is "47"
+      role: Role.ADMIN,
+      passwordHash: "$2a$15$Cakv7l/AAIknVl7knoUarOSJMzKPe2s86zRG6q96iR27GTXXXDHsS",
       username: "admin",
     },
   });

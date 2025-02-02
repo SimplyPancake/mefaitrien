@@ -20,6 +20,11 @@ export default defineNuxtConfig({
     "@sidebase/nuxt-auth",
   ],
 
+  colorMode: {
+    preference: 'light',
+    classSuffix: ''
+  },
+
   auth: {
     globalAppMiddleware: true,
     isEnabled: true,
@@ -44,7 +49,7 @@ export default defineNuxtConfig({
       },
       session: {
         dataType: {
-          id: 'number',
+          id: 'string | number',
           name: 'string',
           username: 'string',
           role: 'string'
@@ -60,10 +65,6 @@ export default defineNuxtConfig({
   tailwindcss: {
     exposeConfig: true,
     editorSupport: true,
-  },
-
-  colorMode: {
-    classSuffix: "",
   },
 
   imports: {
