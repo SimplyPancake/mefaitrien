@@ -4,35 +4,60 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 20 14.3% 4.1%;
-    --card: 0 0% 100%;
-    --card-foreground: 20 14.3% 4.1%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 20 14.3% 4.1%;
-    --primary: 24.6 95% 53.1%;
-    --primary-foreground: 60 9.1% 97.8%;
-    --secondary: 60 4.8% 95.9%;
-    --secondary-foreground: 24 9.8% 10%;
-    --muted: 60 4.8% 95.9%;
-    --muted-foreground: 25 5.3% 44.7%;
-    --accent: 60 4.8% 95.9%;
-    --accent-foreground: 24 9.8% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 60 9.1% 97.8%;
-    --border: 20 5.9% 90%;
-    --input: 20 5.9% 90%;
-    --ring: 24.6 95% 53.1%;
+    /* Custom Color Scheme */
+    --primary-orange: #f25922;
+    --primary-light-orange: #f2845c;
+    --secondary-dark-blue: #222050;
+    --secondary-light-blue: #5a5c8c;
+    --darker-blue-text: #18173d; /* New darker blue for text */
+    --white: #f2f2f2;
+
+    /* General Colors */
+    --background: var(--white);
+    --foreground: var(--darker-blue-text);
+    --card: var(--white);
+    --card-foreground: var(--darker-blue-text);
+    --popover: var(--white);
+    --popover-foreground: var(--darker-blue-text);
+
+    /* Primary Colors */
+    --primary: var(--primary-orange);
+    --primary-foreground: var(--white);
+
+    /* Secondary Colors */
+    --secondary: var(--secondary-light-blue);
+    --secondary-foreground: var(--darker-blue-text);
+
+    /* Muted Colors */
+    --muted: #f5f5f4;
+    --muted-foreground: #78716c;
+
+    /* Accent Colors */
+    --accent: var(--white);
+    --accent-foreground: var(--darker-blue-text);
+
+    /* Destructive Colors */
+    --destructive: #f23022;
+    --destructive-foreground: var(--white);
+
+    /* Borders, Inputs, and Rings */
+    --border: var(--secondary-light-blue);
+    --input: var(--secondary-light-blue);
+    --ring: var(--primary-orange);
     --radius: 0.5rem;
-    --sidebar-background: 60 9.1% 97.8%;
-    --sidebar-foreground: 20 14.3% 4.1%;
-    --sidebar-primary: 24.6 95% 53.1%;
-    --sidebar-primary-foreground: 60 9.1% 97.8%;
-    --sidebar-accent: 60 4.8% 95.9%;
-    --sidebar-accent-foreground: 20 14.3% 4.1%;
-    --sidebar-border: 20 5.9% 90%;
-    --sidebar-ring: 24.6 95% 53.1%;
-    --sidebar-input: 20 5.9% 90%;
+
+    /* Sidebar */
+    --sidebar-background: var(--white);
+    --sidebar-foreground: var(--darker-blue-text);
+    --sidebar-primary: var(--primary-orange);
+    --sidebar-primary-foreground: var(--white);
+    /* --sidebar-accent: var(--secondary-light-blue);
+    --sidebar-accent-foreground: var(--white); */
+    --sidebar-accent: var(--white);
+    --sidebar-accent-foreground: var(--secondary-light-blue);
+    --sidebar-border: var(--secondary-light-blue);
+    --sidebar-ring: var(--primary-orange);
+    --sidebar-input: var(--secondary-light-blue);
   }
 
   /* .dark {
@@ -75,7 +100,7 @@
     @apply antialiased;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-transparent text-foreground;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 }

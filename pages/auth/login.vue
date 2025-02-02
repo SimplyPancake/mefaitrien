@@ -11,7 +11,7 @@
 							<UiVeeInput label="Gebruikersnaam" type="text" name="username" placeholder="hans kazan" />
 						</div>
 						<div>
-							<UiVeeInput label="Wachtwoord" type="current-password" name="password" />
+							<UiVeeInput label="Wachtwoord" type="password" name="password" />
 						</div>
 						<div>
 							<UiButton class="w-full" type="submit" text="Log in" />
@@ -25,8 +25,7 @@
 			</div>
 		</div>
 		<div class="hidden h-screen md:block md:w-1/2 lg:w-1/2">
-			<img src="/img/henkie.png"
-				alt="Henkie houdt van een lekker borreltje" class="size-full object-cover" />
+			<img src="/img/henkie.png" alt="Henkie houdt van een lekker borreltje" class="size-full object-cover" />
 		</div>
 	</div>
 </template>
@@ -34,14 +33,17 @@
 <script lang="ts" setup>
 import { object, string } from "yup";
 import type { InferType } from "yup";
-import { useToast } from "~/composables/useToast";
-definePageMeta({ auth: false })
-
 const { signIn } = useAuth();
+
+definePageMeta({
+	auth: {
+		unauthenticatedOnly: true,
+		navigateAuthenticatedTo: '/'
+	}
+})
 
 useSeoMeta({
 	title: "Log in",
-	description: "Enter your username & password to log in.",
 });
 
 const LoginSchema = object({

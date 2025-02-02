@@ -18,6 +18,7 @@ export default defineNuxtConfig({
     "@morev/vue-transitions/nuxt",
     "@prisma/nuxt",
     "@sidebase/nuxt-auth",
+    "@samk-dev/nuxt-vcalendar"
   ],
 
   colorMode: {

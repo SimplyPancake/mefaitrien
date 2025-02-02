@@ -3,14 +3,24 @@
     <UiSidebar>
       <UiSidebarContent>
         <UiSidebarGroup>
-          <UiSidebarGroupLabel label="Me Fait Rien 47" />
+          <div class="flex flex-row items-center gap-4">
+            <UiAvatar src="/img/logo.png" class="size-16 rounded-none" />
+            <div class="text-lg font-bold">
+              Me Fait Rien
+            </div>
+          </div>
+        </UiSidebarGroup>
+        <UiSidebarGroup>
+          <UiDivider class="text-primary" />
+        </UiSidebarGroup>
+        <UiSidebarGroup>
           <UiSidebarGroupContent>
             <UiSidebarMenu>
               <UiSidebarMenuItem v-for="item in items" :key="item.title">
                 <UiSidebarMenuButton as-child>
                   <NuxtLink :to="item.url">
-                    <Icon :name="item.icon" />
-                    <span>{{ item.title }}</span>
+                    <Icon :name="item.icon" style="color: var(--primary)" class="size-4" />
+                    <span class="font-medium text-lg">{{ item.title }}</span>
                   </NuxtLink>
                 </UiSidebarMenuButton>
               </UiSidebarMenuItem>
@@ -36,10 +46,8 @@
                 <template v-for="(item, i) in settingsItems" :key="i">
                   <UiDropdownMenuLabel v-if="item.label" :label="item.label" />
                   <UiDropdownMenuSeparator v-else-if="item.divider" />
-                  <UiDropdownMenuItem v-else-if="item.title" 
-                  :title="item.title"
-                  :icon="item.icon"
-                  @click="item.click"/>
+                  <UiDropdownMenuItem v-else-if="item.title" :title="item.title" :icon="item.icon"
+                    @click="item.click" />
                 </template>
               </UiDropdownMenuContent>
             </UiDropdownMenu>
@@ -51,9 +59,11 @@
       <UiNavbar sticky>
         <UiContainer class="flex h-12 items-center">
           <UiSidebarTrigger />
-          <slot />
         </UiContainer>
       </UiNavbar>
+      <div class="p-5 bg-transparent">
+        <slot />
+      </div>
     </UiSidebarInset>
   </UiSidebarProvider>
 </template>
@@ -65,8 +75,8 @@ import { Role } from "@prisma/client"
 
 // Menu items.
 const items = [
-  { title: "Home", url: "#", icon: "lucide:home" },
-  { title: "Koken", url: "#", icon: "lucide:cooking-pot" },
+  { title: "Home", url: "/", icon: "lucide:home" },
+  { title: "Koken", url: "/cooking", icon: "lucide:cooking-pot" },
   { title: "Calendar", url: "#", icon: "lucide:calendar" },
   { title: "Search", url: "#", icon: "lucide:search" },
   { title: "Settings", url: "#", icon: "lucide:settings" },
@@ -78,7 +88,7 @@ const settingsItems = [
   { divider: true },
   { title: "Instellingen", icon: "lucide:settings", click: () => navigateTo('/settings') },
   { divider: true },
-  { title: "Uitloggen", icon: "lucide:log-out", click: () => signOut({callbackUrl: '/auth/login'}) },
+  { title: "Uitloggen", icon: "lucide:log-out", click: () => signOut({ callbackUrl: '/auth/login' }) },
 ]
 
 if (data.value.role == Role.ADMIN) {

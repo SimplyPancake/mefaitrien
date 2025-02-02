@@ -1,7 +1,7 @@
 export default {
   nuxtVersion: 3,
   theme: "orange",
-  tailwindCSSLocation: "assets/css/tailwind.css",
+  tailwindCSSLocation: "assets/css/mfr.css",
   tailwindConfigLocation: "tailwind.config.js",
   componentsLocation: "components/Ui",
   composablesLocation: "composables",

@@ -26,7 +26,8 @@
   const forwarded = useForwardProps(reactiveOmit(props, "class", "sticky"));
 
   const styles = tv({
-    base: "z-20 border-b bg-background/90 backdrop-blur",
+    // base: "z-20 border-b bg-background/90 backdrop-blur",
+    base: "z-20 border-b bg-background backdrop-blur",
     variants: {
       sticky: {
         true: "sticky top-0",
