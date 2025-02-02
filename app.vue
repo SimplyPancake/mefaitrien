@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import AuthenticatedBase from './components/base/authenticated/AuthenticatedBase.vue';
-import SideBar from './components/base/SideBar.vue';
-const { status } = useAuth()
+import { UiToastToaster, UiVueSonner } from '#components';
+const { status, data } = useAuth()
 </script>
 
 <template>
-	<div v-if="status == 'authenticated'">
-		<AuthenticatedBase></AuthenticatedBase>
-	</div>
-	<div v-else>
-		<NuxtPage></NuxtPage>
-	</div>
+	<AuthenticatedBase v-if="status == 'authenticated'"></AuthenticatedBase>
+	<NuxtPage></NuxtPage>
+	<NuxtLoadingIndicator />
+	<UiToastToaster></UiToastToaster>
+	<UiVueSonner />
 </template>

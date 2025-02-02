@@ -1,16 +1,9 @@
 import { generateToken, hashPassword } from "~/server/utils/auth";
-import * as bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-
-
-
-
+import prisma from '../../../lib/prisma';
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig(event);
-  const { username, password } = await readBody(event);
-
-  const prisma = event.context.auth.prisma;
+  const { username, email, password, name } = await readBody(event);
 
   // Check if the username already exists
   const existingUser = await prisma.user.findUnique({
@@ -29,6 +22,8 @@ export default defineEventHandler(async (event) => {
     data: {
       username,
       passwordHash: hashedPassword,
+      email,
+      name
     },
   });
 

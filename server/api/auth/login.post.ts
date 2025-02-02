@@ -1,10 +1,9 @@
-import { generateToken, verifyPassword } from "../../utils/auth";
+import prisma from "../../../lib/prisma";
+import { generateToken, getSessionData, verifyPassword } from "../../utils/auth";
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig(event);
   const { username, password } = await readBody(event);
-
-  const prisma = event.context.auth.prisma;
 
   const user = await prisma.user.findUnique({
     where: { username },
@@ -30,7 +29,19 @@ export default defineEventHandler(async (event) => {
     data: { refreshToken: token },
   });
 
-  return new Response(token, {
+  const responseBody = {
+    token: {
+      bearer: token,
+    },
+    timestamp: new Date().toISOString(),
+  };
+
+  let ret = new Response(JSON.stringify(responseBody), {
     status: 200,
+    headers: {
+      "Content-Type": "application/json",
+    },
   });
+
+  return ret;
 });

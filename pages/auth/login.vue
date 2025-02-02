@@ -8,10 +8,10 @@
 				<form class="mt-10" @submit="submit">
 					<fieldset :disabled="isSubmitting" class="grid gap-5">
 						<div>
-							<UiVeeInput label="Username" type="text" name="username" placeholder="hans kazan" />
+							<UiVeeInput label="Gebruikersnaam" type="text" name="username" placeholder="hans kazan" />
 						</div>
 						<div>
-							<UiVeeInput label="Password" type="current-password" name="password" />
+							<UiVeeInput label="Wachtwoord" type="current-password" name="password" />
 						</div>
 						<div>
 							<UiButton class="w-full" type="submit" text="Log in" />
@@ -25,8 +25,8 @@
 			</div>
 		</div>
 		<div class="hidden h-screen md:block md:w-1/2 lg:w-1/2">
-			<img src="https://images.unsplash.com/photo-1512551980832-13df02babc9e?q=60&w=2864&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-				alt="Login form image" class="size-full object-cover" />
+			<img src="/img/henkie.png"
+				alt="Henkie houdt van een lekker borreltje" class="size-full object-cover" />
 		</div>
 	</div>
 </template>
@@ -34,13 +34,14 @@
 <script lang="ts" setup>
 import { object, string } from "yup";
 import type { InferType } from "yup";
+import { useToast } from "~/composables/useToast";
 definePageMeta({ auth: false })
 
 const { signIn } = useAuth();
 
 useSeoMeta({
 	title: "Log in",
-	description: "Enter your email & password to log in.",
+	description: "Enter your username & password to log in.",
 });
 
 const LoginSchema = object({
@@ -52,8 +53,13 @@ const { handleSubmit, isSubmitting } = useForm<InferType<typeof LoginSchema>>({
 	validationSchema: LoginSchema,
 });
 
+// TODO: Sonner light mode
 const submit = handleSubmit(async (values) => {
-	signIn(values, { callbackUrl: '/' })
+	useSonner.promise(signIn(values, { callbackUrl: '/' }), {
+		loading: "Inloggen...",
+		success: "ingelogd!",
+		error: (d: Error) => d.message
+	})
 });
 
 const triggerConfetti = () => {

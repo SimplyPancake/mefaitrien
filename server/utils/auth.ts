@@ -1,6 +1,8 @@
 import * as bcrypt from "bcrypt";
 import { H3Event } from "h3";
 import jwt from "jsonwebtoken";
+import prisma from "~/lib/prisma";
+
 const BCRYPT_SALT_ROUNDS = 15;
 
 export const hashPassword = async (password: string): Promise<string> => {
@@ -38,3 +40,23 @@ export const verifyToken = (event: H3Event): { valid: boolean; id?: number } => 
     return { valid: false };
   }
 };
+
+// No seeming nice access to SessionData (https://auth.sidebase.io/guide/local/session-data)
+export const getSessionData = async (userId: number) => {
+  let user = await prisma.user.findFirst({
+    where: { id: userId },
+    include: { cookingGroup: true },
+  });
+
+  if (!user) {
+    throw new Error("No user found");
+  }
+
+  return {
+    id: user.id,
+    name: user.name,
+    username: user.username,
+    cookingGroup: user.cookingGroup?.name,
+    role: user.role,
+  };
+}

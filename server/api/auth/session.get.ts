@@ -1,13 +1,16 @@
-import { verifyToken } from "../../utils/auth";
+import prisma from "../../../lib/prisma";
+import { getSessionData, verifyToken } from "../../utils/auth";
 
 export default defineEventHandler(async (event) => {
   const { valid, id } = verifyToken(event);
 
-  if (!valid) {
+  if (!valid || !id) {
     return new Response("Unauthorized", { status: 401 });
   }
+  
+  let userData = await getSessionData(id);
 
-  return new Response(JSON.stringify({ userId: id, sessionActive: true }), {
+  return new Response(JSON.stringify(userData), {
     status: 200,
     headers: { "Content-Type": "application/json" },
   });

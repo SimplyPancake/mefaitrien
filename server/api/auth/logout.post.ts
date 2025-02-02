@@ -1,8 +1,5 @@
-import { PrismaClient } from "@prisma/client";
-
+import prisma from '../../../lib/prisma';
 import { verifyToken } from "../../utils/auth";
-
-const prisma = new PrismaClient();
 
 export default defineEventHandler(async (event) => {
   const { valid, id } = verifyToken(event);

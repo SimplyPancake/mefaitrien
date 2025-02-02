@@ -2,6 +2,7 @@
 export default defineNuxtConfig({
   compatibilityDate: "2024-11-01",
   devtools: { enabled: true },
+
   runtimeConfig: {
     baseUrl: process.env.BASE_URL,
     jwtSecret: process.env.JWT_SECRET,
@@ -34,6 +35,21 @@ export default defineNuxtConfig({
       pages: {
         login: "/auth/login",
       },
+      token: {
+        signInResponseTokenPointer: "/token/bearer",
+        type: "Bearer",
+        cookieName: "auth.token",
+        headerName: "Authorization",
+        maxAgeInSeconds: 86400,
+      },
+      session: {
+        dataType: {
+          id: 'number',
+          name: 'string',
+          username: 'string',
+          role: 'string'
+        }
+      }
     },
     sessionRefresh: {
       enablePeriodically: true,
@@ -61,6 +77,15 @@ export default defineNuxtConfig({
         name: "VariantProps",
         type: true,
       },
+      {
+        from: "vue-sonner",
+        name: "toast",
+        as: "useSonner",
+      },
     ],
+  },
+
+  build: {
+    transpile: ["vue-sonner"],
   },
 });
