@@ -1,7 +1,7 @@
+import prisma from "~/lib/prisma";
 import * as bcrypt from "bcrypt";
 import { H3Event } from "h3";
 import jwt from "jsonwebtoken";
-import prisma from "~/lib/prisma";
 
 const BCRYPT_SALT_ROUNDS = 15;
 
@@ -59,4 +59,25 @@ export const getSessionData = async (userId: number) => {
     cookingGroup: user.cookingGroup?.name,
     role: user.role,
   };
+};
+
+enum AllowType {
+  ANYONE,
+  AUTHENTICATED,
+  ROLE,
 }
+
+// If not in configuration, then nobody can access!
+//TODO: Move to nuxt config
+const configuration = [
+  { route: "/api/login", method: "post", allowType: AllowType.ANYONE },
+  { route: "/api/logout", method: "post", allowType: AllowType.ANYONE },
+  { route: "/api/session", method: "get", allowType: AllowType.ANYONE },
+  { route: "/api/admin", method: "get", allowType: AllowType.ROLE, role: "admin" },
+];
+
+export const checkAccess = (event: H3Event): boolean => {
+  let route = event.node.req.url; // /api/login?iweijofw=efwfw
+  let method = event.method;
+  return false;
+};
