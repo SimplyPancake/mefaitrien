@@ -13,6 +13,14 @@
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@fullcalendar/core": "^6.1.15",
+    "@fullcalendar/daygrid": "^6.1.15",
+    "@fullcalendar/interaction": "^6.1.15",
+    "@fullcalendar/list": "^6.1.15",
+    "@fullcalendar/multimonth": "^6.1.15",
+    "@fullcalendar/scrollgrid": "^6.1.15",
+    "@fullcalendar/timegrid": "^6.1.15",
+    "@fullcalendar/vue3": "^6.1.15",
     "@morev/vue-transitions": "^3.0.5",
     "@nuxt/fonts": "^0.10.3",
     "@nuxt/icon": "^1.10.3",
