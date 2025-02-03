@@ -7,10 +7,12 @@
     /* Custom Color Scheme */
     --primary-orange: #f25922;
     --primary-light-orange: #f2845c;
+    --even-lighter-orange: #f2dcd3;
     --secondary-dark-blue: #222050;
     --secondary-light-blue: #5a5c8c;
     --darker-blue-text: #14116f; /* New darker blue for text */
     --white: #f2f2f2;
+    --lesser-white: #dcdcdc;
 
     /* General Colors */
     --background: var(--white);
@@ -33,7 +35,7 @@
     --muted-foreground: #78716c;
 
     /* Accent Colors */
-    --accent: var(--white);
+    --accent: var(--lesser-white);
     --accent-foreground: var(--darker-blue-text);
 
     /* Destructive Colors */
@@ -53,8 +55,8 @@
     --sidebar-primary-foreground: var(--white);
     /* --sidebar-accent: var(--secondary-light-blue);
     --sidebar-accent-foreground: var(--white); */
-    --sidebar-accent: var(--white);
-    --sidebar-accent-foreground: var(--secondary-light-blue);
+    --sidebar-accent: var(--even-lighter-orange);
+    --sidebar-accent-foreground: var(--darker-blue-text);
     --sidebar-border: var(--secondary-light-blue);
     --sidebar-ring: var(--primary-orange);
     --sidebar-input: var(--secondary-light-blue);

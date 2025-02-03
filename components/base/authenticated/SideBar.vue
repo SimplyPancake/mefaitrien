@@ -23,6 +23,13 @@
                     <span class="font-medium text-lg">{{ item.title }}</span>
                   </NuxtLink>
                 </UiSidebarMenuButton>
+                <UiSidebarMenuSubItem v-for="(child, k) in item.items" :key="`child-${k}`">
+                  <UiSidebarMenuSubButton as-child>
+                    <NuxtLink :href="child.url">
+                      {{ child.title }}
+                    </NuxtLink>
+                  </UiSidebarMenuSubButton>
+                </UiSidebarMenuSubItem>
               </UiSidebarMenuItem>
             </UiSidebarMenu>
           </UiSidebarGroupContent>
@@ -69,14 +76,19 @@
 </template>
 
 <script lang="ts" setup>
-import { UiDropdownMenu, UiDropdownMenuContent, UiDropdownMenuItem, UiDropdownMenuLabel, UiDropdownMenuSeparator, UiDropdownMenuTrigger, UiSidebarGroupLabel } from '#components';
+import { UiDropdownMenu, UiDropdownMenuContent, UiDropdownMenuItem, UiDropdownMenuLabel, UiDropdownMenuSeparator, UiDropdownMenuTrigger, UiSidebarGroupLabel, UiSidebarMenuSubItem } from '#components';
 const { data, signOut } = useAuth();
 import { Role } from "@prisma/client"
 
 // Menu items.
 const items = [
   { title: "Home", url: "/", icon: "lucide:home" },
-  { title: "Koken", url: "/cooking", icon: "lucide:cooking-pot" },
+  {
+    title: "Koken", url: "/cooking", icon: "lucide:cooking-pot", items: [
+      { title: "Invullen", url: "#" },
+      { title: "Aanmaken", url: "/cooking/create" },
+    ]
+  },
   { title: "Calendar", url: "#", icon: "lucide:calendar" },
   { title: "Search", url: "#", icon: "lucide:search" },
   { title: "Settings", url: "#", icon: "lucide:settings" },
@@ -92,6 +104,8 @@ const settingsItems = [
 ]
 
 if (data.value.role == Role.ADMIN) {
+  // Kookrooster maken naar andere rol?
+
   settingsItems.push({ divider: true });
   settingsItems.push({ title: "Admin instellingen", icon: "lucide:shield-ellipsis", click: () => navigateTo('/admin') });
 }

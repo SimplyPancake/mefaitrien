@@ -6,6 +6,15 @@ export default defineNuxtConfig({
   runtimeConfig: {
     baseUrl: process.env.BASE_URL,
     jwtSecret: process.env.JWT_SECRET,
+    authMiddleware: {
+      routes: [
+        { route: "/api/auth/login", method: "post", allowType: "ANYONE" },
+        { route: "/api/auth/logout", method: "post", allowType: "ANYONE" },
+        { route: "/api/auth/session", method: "get", allowType: "ANYONE" },
+        { route: "/api/admin", method: "get", allowType: "ROLE", role: ["admin"] },
+      ],
+    },
+    public: {},
   },
 
   modules: [
@@ -18,12 +27,12 @@ export default defineNuxtConfig({
     "@morev/vue-transitions/nuxt",
     "@prisma/nuxt",
     "@sidebase/nuxt-auth",
-    "@samk-dev/nuxt-vcalendar"
+    "@samk-dev/nuxt-vcalendar",
   ],
 
   colorMode: {
-    preference: 'light',
-    classSuffix: ''
+    preference: "light",
+    classSuffix: "",
   },
 
   auth: {
@@ -50,12 +59,12 @@ export default defineNuxtConfig({
       },
       session: {
         dataType: {
-          id: 'string | number',
-          name: 'string',
-          username: 'string',
-          role: 'string'
-        }
-      }
+          id: "string | number",
+          name: "string",
+          username: "string",
+          role: "string",
+        },
+      },
     },
     sessionRefresh: {
       enablePeriodically: true,

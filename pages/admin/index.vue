@@ -8,6 +8,7 @@
 </template>
 
 <script lang="ts" setup>
+// useauth!
 import { BaseStatisticBar } from '#components';
 
 useSeoMeta({

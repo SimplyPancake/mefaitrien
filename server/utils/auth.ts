@@ -2,7 +2,9 @@ import prisma from "~/lib/prisma";
 import * as bcrypt from "bcrypt";
 import { H3Event } from "h3";
 import jwt from "jsonwebtoken";
+import type { ServerAuthConfig, SessionDataDto } from "@@/types.ts";
 
+const config = useRuntimeConfig();
 const BCRYPT_SALT_ROUNDS = 15;
 
 export const hashPassword = async (password: string): Promise<string> => {
@@ -42,7 +44,7 @@ export const verifyToken = (event: H3Event): { valid: boolean; id?: number } => 
 };
 
 // No seeming nice access to SessionData (https://auth.sidebase.io/guide/local/session-data)
-export const getSessionData = async (userId: number) => {
+export const getSessionData = async (userId: number): Promise<SessionDataDto> => {
   let user = await prisma.user.findFirst({
     where: { id: userId },
     include: { cookingGroup: true },
@@ -56,28 +58,58 @@ export const getSessionData = async (userId: number) => {
     id: user.id,
     name: user.name,
     username: user.username,
-    cookingGroup: user.cookingGroup?.name,
+    cookingGroup: user.cookingGroup?.name ?? "",
     role: user.role,
   };
 };
 
-enum AllowType {
-  ANYONE,
-  AUTHENTICATED,
-  ROLE,
-}
+export const getSessionDataEvent = async (event: H3Event) => {
+  const { valid, id } = verifyToken(event);
 
-// If not in configuration, then nobody can access!
-//TODO: Move to nuxt config
-const configuration = [
-  { route: "/api/login", method: "post", allowType: AllowType.ANYONE },
-  { route: "/api/logout", method: "post", allowType: AllowType.ANYONE },
-  { route: "/api/session", method: "get", allowType: AllowType.ANYONE },
-  { route: "/api/admin", method: "get", allowType: AllowType.ROLE, role: "admin" },
-];
+  if (!valid || !id) {
+    throw new Error("No valid session");
+  }
 
-export const checkAccess = (event: H3Event): boolean => {
+  return getSessionData(id);
+};
+
+export const checkAccess = async (event: H3Event): Promise<boolean> => {
   let route = event.node.req.url; // /api/login?iweijofw=efwfw
   let method = event.method;
+
+  let routeConfig = config.authMiddleware.routes as ServerAuthConfig[];
+
+  let settings = routeConfig.find(
+    (x) => route!.startsWith(x.route) && x.method.toLowerCase() == method.toLowerCase()
+  );
+
+  if (!settings) {
+    // Route not defined; so disallow all!
+    console.log(`Route ${route} - ${method} not found in configuration`);
+    return false;
+  }
+
+  // Route found!
+  if (settings.allowType == "ANYONE") {
+    return true;
+  }
+
+  if (settings.allowType == "AUTHENTICATED" || settings.allowType == "ROLE") {
+    const { valid, id } = verifyToken(event);
+
+    if (!valid || !id) {
+      return false;
+    }
+
+    if (settings.allowType == "ROLE") {
+      let userData = await getSessionDataEvent(event);
+
+      // Check if role is in array
+      return settings.role!.some((x) => x.toLowerCase() == userData.role.toLowerCase());
+    }
+
+    return true;
+  }
+
   return false;
 };

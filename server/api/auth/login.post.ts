@@ -1,7 +1,10 @@
-import prisma from "../../../lib/prisma";
-import { generateToken, getSessionData, verifyPassword } from "../../utils/auth";
+import { BaseEventHandler } from "~/server/utils/handlers/baseEventHandler";
+import { H3Event } from "h3";
 
-export default defineEventHandler(async (event) => {
+import prisma from "../../../lib/prisma";
+import { generateToken, verifyPassword } from "../../utils/auth";
+
+let handlerFunc = async (event: H3Event) => {
   const config = useRuntimeConfig(event);
   const { username, password } = await readBody(event);
 
@@ -44,4 +47,8 @@ export default defineEventHandler(async (event) => {
   });
 
   return ret;
+};
+
+export default defineEventHandler(async (event) => {
+  return new BaseEventHandler(event, handlerFunc).handle();
 });

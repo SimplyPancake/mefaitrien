@@ -1,21 +1,23 @@
 import { H3Event } from "h3";
 
+import { checkAccess } from "../../utils/auth";
+
 export class BaseEventHandler {
   protected event: H3Event;
-  protected handlerFunc: (event: H3Event) => Promise<any>;
+  protected handlerFunc: (event: H3Event) => Promise<Response>;
 
   public constructor(event: H3Event, handlerFunc: (event: H3Event) => Promise<any>) {
     this.event = event;
     this.handlerFunc = handlerFunc;
   }
 
-  public async handle(): Promise<any> {
-    await this.checkAuthentication();
-    return await this.handlerFunc(this.event);
-  }
+  public async handle(): Promise<Response> {
+    const isAuthenticated = await checkAccess(this.event);
 
-  protected async checkAuthentication(): Promise<void> {
-    // Authentication checking logic to be implemented
-    throw new Error("Method 'checkAuthentication' must be implemented.");
+    if (!isAuthenticated) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+
+    return await this.handlerFunc(this.event);
   }
 }
