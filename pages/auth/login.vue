@@ -55,7 +55,6 @@ const { handleSubmit, isSubmitting } = useForm<InferType<typeof LoginSchema>>({
 	validationSchema: LoginSchema,
 });
 
-// TODO: Sonner light mode
 const submit = handleSubmit(async (values) => {
 	useSonner.promise(signIn(values, { callbackUrl: '/' }), {
 		loading: "Inloggen...",

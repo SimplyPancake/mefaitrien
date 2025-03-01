@@ -10,7 +10,7 @@ NOTE: for old browsers, will need to restart watcher after changing a variable
 
 :root {
   --fc-small-font-size: theme(fontSize.sm);
-  --fc-page-bg-color: theme(colors.background);
+  --fc-page-bg-color: theme(colors.card.DEFAULT);
   --fc-neutral-bg-color: theme(colors.muted.DEFAULT);
   --fc-neutral-text-color: theme(colors.foreground);
   --fc-border-color: theme(colors.border);

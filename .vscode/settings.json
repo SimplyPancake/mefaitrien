@@ -1,3 +1,4 @@
 {
   "vetur.format.enable": false
+  "vue.server.hybridMode": "typeScriptPluginOnly"
 }

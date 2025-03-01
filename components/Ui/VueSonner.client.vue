@@ -5,9 +5,8 @@
     rich-colors
     :duration="7000"
     close-button
-    theme="light"
+	:theme="$colorMode.value == 'dark' ? 'dark' : 'light'"
   />
-      <!-- :theme="$colorMode.value == 'dark' ? 'dark' : 'light'" -->
 </template>
 
 <script lang="ts" setup>

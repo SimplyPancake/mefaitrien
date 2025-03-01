@@ -10,17 +10,17 @@
     --even-lighter-orange: #f2dcd3;
     --secondary-dark-blue: #222050;
     --secondary-light-blue: #5a5c8c;
-    --darker-blue-text: #14116f; /* New darker blue for text */
+    --darker-blue: #14116f;
     --white: #f2f2f2;
     --lesser-white: #dcdcdc;
 
     /* General Colors */
     --background: var(--white);
-    --foreground: var(--darker-blue-text);
+    --foreground: var(--darker-blue);
     --card: var(--white);
-    --card-foreground: var(--darker-blue-text);
+    --card-foreground: var(--darker-blue);
     --popover: var(--white);
-    --popover-foreground: var(--darker-blue-text);
+    --popover-foreground: var(--darker-blue);
 
     /* Primary Colors */
     --primary: var(--primary-orange);
@@ -28,7 +28,7 @@
 
     /* Secondary Colors */
     --secondary: var(--secondary-light-blue);
-    --secondary-foreground: var(--darker-blue-text);
+    --secondary-foreground: var(--darker-blue);
 
     /* Muted Colors */
     --muted: #f5f5f4;
@@ -36,7 +36,7 @@
 
     /* Accent Colors */
     --accent: var(--lesser-white);
-    --accent-foreground: var(--darker-blue-text);
+    --accent-foreground: var(--darker-blue);
 
     /* Destructive Colors */
     --destructive: #f23022;
@@ -49,49 +49,79 @@
     --radius: 0.5rem;
 
     /* Sidebar */
-    --sidebar-background: var(--white);
-    --sidebar-foreground: var(--darker-blue-text);
+    --sidebar-background: var(--secondary-dark-blue);
+    --sidebar-foreground: var(--white);
     --sidebar-primary: var(--primary-orange);
     --sidebar-primary-foreground: var(--white);
     /* --sidebar-accent: var(--secondary-light-blue);
     --sidebar-accent-foreground: var(--white); */
-    --sidebar-accent: var(--even-lighter-orange);
-    --sidebar-accent-foreground: var(--darker-blue-text);
-    --sidebar-border: var(--secondary-light-blue);
+    /* TODO: Sidebar light mode no outside accent/ring */
+    --sidebar-accent: var(--secondary-light-blue);
+    --sidebar-accent-foreground: var(--white);
+    --sidebar-border: var(--secondary-dark-blue);
     --sidebar-ring: var(--primary-orange);
     --sidebar-input: var(--secondary-light-blue);
   }
 
-  /* .dark {
-    --background: 20 14.3% 4.1%;
-    --foreground: 60 9.1% 97.8%;
-    --card: 20 14.3% 4.1%;
-    --card-foreground: 60 9.1% 97.8%;
-    --popover: 20 14.3% 4.1%;
-    --popover-foreground: 60 9.1% 97.8%;
-    --primary: 20.5 90.2% 48.2%;
-    --primary-foreground: 60 9.1% 97.8%;
-    --secondary: 12 6.5% 15.1%;
-    --secondary-foreground: 60 9.1% 97.8%;
-    --muted: 12 6.5% 15.1%;
-    --muted-foreground: 24 5.4% 63.9%;
-    --accent: 12 6.5% 15.1%;
-    --accent-foreground: 60 9.1% 97.8%;
-    --destructive: 0 72.2% 50.6%;
-    --destructive-foreground: 60 9.1% 97.8%;
-    --border: 12 6.5% 15.1%;
-    --input: 12 6.5% 15.1%;
-    --ring: 20.5 90.2% 48.2%;
-    --sidebar-background: 24 9.8% 8%;
-    --sidebar-foreground: 60 9.1% 97.8%;
-    --sidebar-primary: 20.5 90.2% 48.2%;
-    --sidebar-primary-foreground: 60 9.1% 97.8%;
-    --sidebar-accent: 24 9.8% 12%;
-    --sidebar-accent-foreground: 60 9.1% 97.8%;
-    --sidebar-border: 12 6.5% 15.1%;
-    --sidebar-ring: 20.5 90.2% 48.2%;
-    --sidebar-input: 12 6.5% 15.1%;
-  } */
+  .dark {
+    /* Custom Color Scheme */
+    --primary-orange: #d9481e; /* Dark variant of #f25922 */
+    --primary-light-orange: #d96c43; /* Dark variant of #f2845c */
+    --even-lighter-orange: #bfa59d; /* Dark variant of #f2dcd3 */
+    --secondary-dark-blue: #1e1a3c; /* Dark variant of #222050 */
+    --secondary-light-blue: #4a4a7a; /* Dark variant of #5a5c8c */
+    --darker-blue: #a3a3ff; /* Lighter text for contrast */
+
+    /* Darkblue color variants */
+    --blue-background: #11102b;
+    --blue-background-highlight: #1d1c4d;
+    --background-lighter: hsl(242, 46%, 15%);
+
+    /* General Colors */
+    --background: var(--blue-background);
+    --foreground: #e0e0e0;
+    --card: var(--background-lighter);
+    --card-foreground: var(--foreground);
+    --popover: var(--background-lighter);
+    --popover-foreground: var(--foreground);
+
+    /* Primary Colors */
+    --primary: var(--primary-orange);
+    --primary-foreground: #ffffff;
+
+    /* Secondary Colors */
+    --secondary: var(--secondary-light-blue);
+    --secondary-foreground: var(--foreground);
+
+    /* Muted Colors */
+    --muted: #2a2a2a;
+    --muted-foreground: #aaaaaa;
+
+    /* Accent Colors */
+    --accent: var(--blue-background-highlight);
+    --accent-foreground: var(--foreground);
+
+    /* Destructive Colors */
+    --destructive: #b12b28; /* A darker red than #f23022 */
+    --destructive-foreground: var(--foreground);
+
+    /* Borders, Inputs, and Rings */
+    --border: #d8e2dc;
+    --input: var(--secondary-light-blue);
+    --ring: var(--primary-orange);
+    --radius: 0.5rem;
+
+    /* Sidebar */
+    --sidebar-background: var(--background);
+    --sidebar-foreground: var(--foreground);
+    --sidebar-primary: var(--primary-orange);
+    --sidebar-primary-foreground: var(--primary-foreground);
+    --sidebar-accent: var(--blue-background-highlight);
+    --sidebar-accent-foreground: var(--foreground);
+    --sidebar-border: var(--secondary-light-blue);
+    --sidebar-ring: var(--primary-orange);
+    --sidebar-input: var(--secondary-light-blue);
+  }
 }
 
 @layer base {
