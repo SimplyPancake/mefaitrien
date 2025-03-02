@@ -4,6 +4,9 @@
 </template>
 
 <script setup lang="ts">
+useSeoMeta({
+	title: "47 Dashboard"
+})
 </script>
 
 <style scoped></style>

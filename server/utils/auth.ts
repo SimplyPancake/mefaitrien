@@ -98,8 +98,6 @@ export const checkAccess = async (event: H3Event): Promise<boolean> => {
 
   if (settings.allowType == "AUTHENTICATED" || settings.allowType == "ROLE") {
     const { valid, id } = verifyToken(event);
-    // const data = useAuth();
-    const session = getServerSession(event);
 
     if (!valid || !id) {
       return false;

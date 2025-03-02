@@ -1,4 +1,9 @@
+html,
+body {
+  background-color: var(--background);
+}
+
 body * {
   @apply transition-colors duration-200;
-  color: var(--foreground);
+  /* color: var(--foreground); */
 }
