@@ -1,8 +1,8 @@
 <template>
 	<p class="text-2xl text-foreground font-bold">Koken overzicht</p>
 
-	<div class="flex flex-row">
-		<div class="basis-1/2 gap-4">
+	<div class="flex flex-row gap-4">
+		<div class="basis-1/2">
 			<UiCard class="w-100" title="Je beschikbaarheid voor deze maand">
 				<template #content>
 					<UiCardContent>
@@ -12,8 +12,16 @@
 				</template>
 			</UiCard>
 		</div>
-		<div class="basis-1/2">Twee verticale overzichten, volgende maand & nog wat. We gebruiken verder FullCalendar
-			voor het invullen</div>
+		<div class="basis-1/4">
+			<UiCard class="w-100" title="Je kunt het kookrooster voor maart invullen!">
+				<template #content>
+					<UiCardContent>
+						<UiButton variant="expandIcon" icon-placement="right" icon="lucide:hand-platter">Invullen
+						</UiButton>
+					</UiCardContent>
+				</template>
+			</UiCard>
+		</div>
 	</div>
 	<!-- Ingevulde beschikbaarheid van deze maand en volgende maand -->
 	<!-- Beschikbaarheid invullen -->

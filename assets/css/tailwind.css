@@ -12,10 +12,10 @@
     --secondary-light-blue: #5a5c8c;
     --darker-blue: #14116f;
     --white: #f2f2f2;
-    --lesser-white: #dcdcdc;
+    --lesser-white: #ededed;
 
     /* General Colors */
-    --background: var(--white);
+    --background: var(--lesser-white);
     --foreground: var(--darker-blue);
     --card: var(--white);
     --card-foreground: var(--darker-blue);

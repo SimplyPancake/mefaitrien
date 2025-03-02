@@ -1,3 +1,4 @@
+import { getServerSession } from "#auth";
 import prisma from "~/lib/prisma";
 import * as bcrypt from "bcrypt";
 import { H3Event } from "h3";
@@ -19,6 +20,7 @@ export const generateToken = (userId: number, secret: string): string => {
   return jwt.sign({ id: userId }, secret, { expiresIn: "12h" });
 };
 
+// verifyToken used with an event that has an auth header.
 export const verifyToken = (event: H3Event): { valid: boolean; id?: number } => {
   const config = useRuntimeConfig(event);
   const authHeader = getHeader(event, "Authorization");
@@ -96,6 +98,8 @@ export const checkAccess = async (event: H3Event): Promise<boolean> => {
 
   if (settings.allowType == "AUTHENTICATED" || settings.allowType == "ROLE") {
     const { valid, id } = verifyToken(event);
+    // const data = useAuth();
+    const session = getServerSession(event);
 
     if (!valid || !id) {
       return false;

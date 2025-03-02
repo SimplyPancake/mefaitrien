@@ -69,7 +69,7 @@
 					<UiSidebarTrigger />
 				</UiContainer>
 			</UiNavbar> -->
-			<div class="p-5 bg-transparent">
+			<div class="p-5 bg-transparent text-foreground">
 				<slot />
 			</div>
 		</UiSidebarInset>

@@ -39,7 +39,8 @@ definePageMeta({
 	auth: {
 		unauthenticatedOnly: true,
 		navigateAuthenticatedTo: '/'
-	}
+	},
+	colorMode: "light"
 })
 
 useSeoMeta({
