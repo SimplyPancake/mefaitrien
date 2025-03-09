@@ -31,10 +31,14 @@
 
 <script setup lang="ts">
 import { UiCalendar } from '#components';
+import type { MonthRoster, Availability } from "@prisma/client"
 
 useSeoMeta({
 	title: "Koken Dashboard"
 })
+
+const { data, status } = await useAPI<MonthRoster>("/api/cooking")
+console.log(data);
 
 const attributes = ref([{}])
 </script>

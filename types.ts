@@ -1,4 +1,4 @@
-import type { HTTPMethod } from "h3";
+import type { H3Event, HTTPMethod } from "h3";
 
 export enum AllowType {
   ANYONE,
@@ -20,3 +20,7 @@ export type SessionDataDto = {
   cookingGroup: string;
   role: string;
 };
+
+export interface SessionEvent extends H3Event {
+  session: SessionDataDto;
+}

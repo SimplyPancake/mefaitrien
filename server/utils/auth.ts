@@ -75,7 +75,9 @@ export const getSessionDataEvent = async (event: H3Event) => {
   return getSessionData(id);
 };
 
-export const checkAccess = async (event: H3Event): Promise<boolean> => {
+export const checkAccess = async (
+  event: H3Event
+): Promise<{ granted: boolean; sessionData?: SessionDataDto }> => {
   let route = event.node.req.url; // /api/login?iweijofw=efwfw
   let method = event.method;
 
@@ -88,7 +90,7 @@ export const checkAccess = async (event: H3Event): Promise<boolean> => {
   if (!settings) {
     // Route not defined; so disallow all!
     console.log(`Route ${route} - ${method} not found in configuration`);
-    return false;
+    return { granted: false };
   }
 
   return checkAccessConfig(event, settings);
@@ -97,28 +99,29 @@ export const checkAccess = async (event: H3Event): Promise<boolean> => {
 export const checkAccessConfig = async (
   event: H3Event,
   settings: ServerAuthConfig
-): Promise<boolean> => {
+): Promise<{ granted: boolean; sessionData?: SessionDataDto }> => {
   // Route found!
   if (settings.allowType == "ANYONE") {
-    return true;
+    return { granted: true };
   }
 
   if (settings.allowType == "AUTHENTICATED" || settings.allowType == "ROLE") {
     const { valid, id } = verifyToken(event);
 
     if (!valid || !id) {
-      return false;
+      return { granted: false };
     }
 
     if (settings.allowType == "ROLE") {
       let userData = await getSessionDataEvent(event);
 
       // Check if role is in array
-      return settings.role!.some((x) => x.toLowerCase() == userData.role.toLowerCase());
+      let roleExists = settings.role!.some((x) => x.toLowerCase() == userData.role.toLowerCase());
+      return { granted: roleExists, sessionData: userData };
     }
 
-    return true;
+    return { granted: true, sessionData: await getSessionData(id) };
   }
 
-  return false;
+  return { granted: false };
 };

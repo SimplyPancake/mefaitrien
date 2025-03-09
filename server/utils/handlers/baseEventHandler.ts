@@ -1,34 +1,44 @@
-import { ServerAuthConfig } from "~/types";
+import { ServerAuthConfig, SessionEvent } from "~/types";
 import { H3Event } from "h3";
 
 import { checkAccess, checkAccessConfig } from "../../utils/auth";
 
 export class BaseEventHandler {
   protected event: H3Event;
-  protected handlerFunc: (event: H3Event) => Promise<Response>;
+  protected handlerFunc: (event: SessionEvent) => Promise<Response>;
 
-  public constructor(event: H3Event, handlerFunc: (event: H3Event) => Promise<any>) {
+  public constructor(event: H3Event, handlerFunc: (event: SessionEvent) => Promise<any>) {
     this.event = event;
     this.handlerFunc = handlerFunc;
   }
 
   public async handle(): Promise<Response> {
-    const isAuthenticated = await checkAccess(this.event);
+    let authenticated = await checkAccess(this.event);
 
-    if (!isAuthenticated) {
+    if (!authenticated.granted) {
       return new Response("Unauthorized", { status: 401 });
     }
 
-    return await this.handlerFunc(this.event);
+    if (!authenticated.sessionData) {
+      authenticated.sessionData = await getSessionDataEvent(this.event);
+    }
+
+    let event = this.event as SessionEvent;
+    event.session = authenticated.sessionData!;
+
+    return await this.handlerFunc(event);
   }
 
   public async handleConfig(config: ServerAuthConfig): Promise<Response> {
-    const isAuthenticated = await checkAccessConfig(this.event, config);
+    const authenticated = await checkAccessConfig(this.event, config);
 
-    if (!isAuthenticated) {
-      return new Response("Unauthorized", { status: 401 });
+    if (!authenticated.sessionData) {
+      authenticated.sessionData = await getSessionDataEvent(this.event);
     }
 
-    return await this.handlerFunc(this.event);
+    let event = this.event as SessionEvent;
+    event.session = authenticated.sessionData!;
+
+    return await this.handlerFunc(event);
   }
 }
