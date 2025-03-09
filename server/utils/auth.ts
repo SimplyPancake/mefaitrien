@@ -91,6 +91,13 @@ export const checkAccess = async (event: H3Event): Promise<boolean> => {
     return false;
   }
 
+  return checkAccessConfig(event, settings);
+};
+
+export const checkAccessConfig = async (
+  event: H3Event,
+  settings: ServerAuthConfig
+): Promise<boolean> => {
   // Route found!
   if (settings.allowType == "ANYONE") {
     return true;
@@ -98,8 +105,6 @@ export const checkAccess = async (event: H3Event): Promise<boolean> => {
 
   if (settings.allowType == "AUTHENTICATED" || settings.allowType == "ROLE") {
     const { valid, id } = verifyToken(event);
-    // const data = useAuth();
-    const session = getServerSession(event);
 
     if (!valid || !id) {
       return false;

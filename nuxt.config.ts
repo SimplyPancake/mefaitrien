@@ -13,6 +13,7 @@ export default defineNuxtConfig({
         { route: "/api/auth/session", method: "get", allowType: "ANYONE" },
         { route: "/api/admin", method: "get", allowType: "ROLE", role: ["admin"] },
         { route: "/api/admin/users", method: "get", allowType: "ROLE", role: ["admin"] },
+        { route: "/api/cooking/", method: "get", allowType: "AUTHENTICATED" },
       ],
     },
     public: {},
