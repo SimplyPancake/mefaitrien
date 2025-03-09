@@ -35,6 +35,7 @@
     "@vueuse/nuxt": "^12.5.0",
     "bcrypt": "^5.1.1",
     "canvas-confetti": "^1.9.3",
+    "datatables.net": "^2.2.2",
     "datatables.net-buttons-dt": "^3.2.2",
     "datatables.net-colreorder-dt": "^2.0.4",
     "datatables.net-fixedcolumns-dt": "^5.0.4",
