@@ -13,14 +13,35 @@
 			</UiCard>
 		</div>
 		<div class="basis-1/4">
-			<UiCard class="w-100" title="Je kunt het kookrooster voor maart invullen!">
-				<template #content>
-					<UiCardContent>
-						<UiButton variant="expandIcon" icon-placement="right" icon="lucide:hand-platter">Invullen
-						</UiButton>
-					</UiCardContent>
-				</template>
-			</UiCard>
+			<template v-if="nextMonthRoster != null">
+				<UiCard class="w-100" :title="`Je kunt het kookrooster voor ${nextMonthName} invullen!`">
+					<template #content>
+						<UiCardContent>
+							<UiButton variant="expandIcon" icon-placement="right" icon="lucide:hand-platter">Invullen
+							</UiButton>
+						</UiCardContent>
+					</template>
+				</UiCard>
+			</template>
+			<template v-else-if="currentMonthRoster">
+				<UiCard class="w-100" title="Je kunt het kookrooster voor deze maand invullen!">
+					<template #content>
+						<UiCardContent>
+							<UiButton variant="expandIcon" icon-placement="right" icon="lucide:hand-platter">Invullen
+							</UiButton>
+						</UiCardContent>
+					</template>
+				</UiCard>
+			</template>
+			<template v-else>
+				<UiCard class="w-100" title="Er is nog geen kookrooster voor deze maand!">
+					<template #content>
+						<UiCardContent>
+							Hier is een plaatje van onze kookheld
+						</UiCardContent>
+					</template>
+				</UiCard>
+			</template>
 		</div>
 	</div>
 	<!-- Ingevulde beschikbaarheid van deze maand en volgende maand -->
@@ -37,8 +58,16 @@ useSeoMeta({
 	title: "Koken Dashboard"
 })
 
-const { data, status } = await useAPI<MonthRoster>("/api/cooking")
-console.log(data);
+let currentYear = new Date().getFullYear()
+let currentMonth = new Date().getMonth() + 1
+
+const { data: currentMonthRoster } = await useAPI<MonthRoster>("/api/cooking")
+const { data: nextMonthRoster } = await useAPI<MonthRoster>(`/api/cooking/roster/${currentYear}/${currentMonth}`)
+
+let dateFormatter = new Intl.DateTimeFormat('nl', { month: 'long' })
+let nextMonthDate = new Date()
+nextMonthDate.setMonth(nextMonthDate.getMonth() + 1)
+let nextMonthName = dateFormatter.format(nextMonthDate)
 
 const attributes = ref([{}])
 </script>
