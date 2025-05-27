@@ -2,7 +2,7 @@
 	<p class="text-2xl text-foreground font-bold">Koken overzicht</p>
 
 	<div class="flex flex-row gap-4">
-		<div class="basis-1/2">
+		<div class="basis-3/4">
 			<UiCard class="w-100" title="Je beschikbaarheid voor deze maand">
 				<template #content>
 					<UiCardContent>
