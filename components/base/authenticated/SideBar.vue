@@ -1,74 +1,91 @@
 <template>
 	<UiSidebarProvider>
 		<UiSidebar>
-			<UiSidebarContent>
-				<UiSidebarGroup>
-					<div class="flex flex-row items-center gap-4">
-						<UiAvatar src="/img/logo.png" class="size-16 rounded-none" />
-						<div class="text-lg font-bold">
+			<UiSidebarContent class="flex flex-col h-full">
+				<!-- Header section -->
+				<UiSidebarGroup class="pb-2">
+					<div class="flex items-center gap-3 px-4">
+						<UiAvatar src="/img/logo.png" class="size-12 rounded-none" />
+						<div class="text-xl font-bold text-sidebar-foreground">
 							Me Fait Rien
 						</div>
 					</div>
 				</UiSidebarGroup>
+
 				<UiSidebarGroup>
 					<UiDivider class="text-primary" />
 				</UiSidebarGroup>
 
 				<!-- Sidebar sections -->
-				<UiSidebarGroup v-for="(section, sIdx) in visibleSidebarSections" :key="sIdx">
-					<UiSidebarGroupLabel v-if="section.label" :class="section.labelClass">{{ section.label }}
-					</UiSidebarGroupLabel>
+				<UiSidebarGroup>
 					<UiSidebarGroupContent>
 						<UiSidebarMenu>
-							<UiSidebarMenuItem v-for="item in section.items" :key="item.title">
-								<UiSidebarMenuButton as-child v-if="item.url">
-									<NuxtLink :to="item.url">
-										<Icon :name="item.icon" style="color: var(--primary)" class="size-6 mr-2" />
-										<span class="font-semibold text-xl">{{ item.title }}</span>
+							<UiSidebarMenuItem v-for="(section, sIdx) in visibleSidebarSections" :key="sIdx"
+								class="pb-4">
+								<!-- <UiSidebarMenuItem v-for="item in section.items" :key="item.title"> -->
+								<UiSidebarMenuButton as-child>
+									<NuxtLink class="text-xl font-semibold">
+										{{ section.label }}
 									</NuxtLink>
 								</UiSidebarMenuButton>
-								<UiSidebarMenuButton v-else @click="item.action && handleSidebarAction(item.action)">
-									<Icon :name="item.icon" style="color: var(--primary)" class="size-6 mr-2" />
-									<span class="font-semibold text-xl">{{ item.title }}</span>
-								</UiSidebarMenuButton>
-								<UiSidebarMenuSubItem v-for="(child, k) in item.items" :key="`child-${k}`">
-									<UiSidebarMenuSubButton as-child>
-										<NuxtLink :href="child.url">
-											{{ child.title }}
-										</NuxtLink>
-									</UiSidebarMenuSubButton>
-								</UiSidebarMenuSubItem>
+								<UiSidebarMenuSub>
+									<template v-for="(child, k) in section.items" :key="`child-${k}`">
+										<UiSidebarMenuSubItem>
+											<UiSidebarMenuSubButton as-child class="text-lg">
+												<NuxtLink v-if="child.url" :href="child.url" class="text-base">
+													<Icon :name="child.icon"
+														class="size-6 mr-3 text-primary shrink-0" />
+													{{ child.title }}
+												</NuxtLink>
+												<NuxtLink v-if="child.action" class="cursor-pointer text-base">
+													<Icon :name="child.icon"
+														@click="child.action && handleSidebarAction(child.action)"
+														class="size-6 mr-3 text-primary shrink-0" />
+													{{ child.title }}
+												</NuxtLink>
+											</UiSidebarMenuSubButton>
+										</UiSidebarMenuSubItem>
+									</template>
+								</UiSidebarMenuSub>
 							</UiSidebarMenuItem>
 						</UiSidebarMenu>
 					</UiSidebarGroupContent>
 				</UiSidebarGroup>
 
 				<!-- Sidebar footer -->
-				<UiSidebarFooter class="mt-auto mb-5">
-					<div class="flex items-center flex-row gap-4">
-						<UiAvatar src="/img/dannyprofielfoto.png" class="size-16" />
-						<div class="font-semibold text-lg basis-1/2">
-							<div>{{ sessionStore!.sessionData!.name || '' }}</div>
-							<div class="text-base text-gray-500">{{ sessionStore!.sessionData!.cookingGroup ||
-								'Geenkookgroep' }}</div>
+				<UiSidebarFooter class="mt-auto px-4 py-4 border-t border-sidebar-border">
+					<div class="flex items-center gap-3">
+						<UiAvatar src="/img/dannyprofielfoto.png" class="size-10" />
+						<div class="flex-1 min-w-0">
+							<div class="text-lg font-medium truncate">{{ sessionStore!.sessionData!.name || '' }}
+							</div>
+							<div class="text-muted-foreground truncate">{{
+								sessionStore!.sessionData!.cookingGroup || 'koogroep feut' }}</div>
 						</div>
-						<UiButton size="icon" variant="default"
-							class="basis-1/6 bg-sidebar-accent text-sidebar-foreground hover:bg-sidebar-accent/80 border-none"
+						<UiButton size="icon" variant="ghost"
+							class="ml-auto hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground"
 							@click="changeColors">
-							<Icon class="size-7" name="lucide:paintbrush" />
+							<Icon class="size-6" name="lucide:paintbrush" />
 						</UiButton>
 					</div>
 				</UiSidebarFooter>
 			</UiSidebarContent>
 		</UiSidebar>
 		<UiSidebarInset>
-			<!-- TODO: Navbar online on mobile -->
-			<!-- <UiNavbar sticky>
-				<UiContainer class="flex h-12 items-center">
-					<UiSidebarTrigger />
-				</UiContainer>
-			</UiNavbar> -->
-			<div class="p- text-foreground p-4">
+			<UiNavbar sticky class="h-20 px-6 bg-card text-sidebar-primary shadow-md">
+				<div class="flex items-center gap-4 h-full">
+					<UiSidebarTrigger class="text-primary p-2 shrink-0 w-10 h-10" />
+					<div class="flex flex-col">
+						<p class="text-xl text-foreground font-bold">
+							{{ pageInfoStore.title }}
+						</p>
+						<!-- <span class="text-muted-foreground">
+							{{ pageInfoStore.subtitle }}
+						</span> -->
+					</div>
+				</div>
+			</UiNavbar>
+			<div class="p-4 text-foreground max-w-full overflow-x-hidden">
 				<slot />
 			</div>
 		</UiSidebarInset>
@@ -81,6 +98,7 @@ import { UiDropdownMenu, UiDropdownMenuContent, UiDropdownMenuItem, UiDropdownMe
 import { Role } from "@prisma/client";
 const sessionStore = useSessionStore()
 const colorMode = useColorMode()
+const pageInfoStore = usePageInfoStore();
 
 const changeColors = () => {
 	colorMode.preference = colorMode.preference == "light" ? "dark" : "light"
@@ -91,46 +109,37 @@ interface SidebarItem {
 	title: string;
 	url?: string;
 	icon: string;
-	items?: SidebarItem[];
 	action?: string;
 }
 interface SidebarSection {
 	label: string | null;
-	labelClass?: string;
 	adminOnly?: boolean;
 	items: SidebarItem[];
 }
 
 const sidebarSections: SidebarSection[] = [
 	{
-		label: null, // Main navigation
+		label: 'Algemeen', // Main navigation
 		items: [
-			{ title: "Home", url: "/", icon: "lucide:home" },
-			{
-				title: "Koken", url: "/cooking", icon: "lucide:cooking-pot", items: [
-					{ title: "Invullen", url: "#", icon: "lucide:dot" },
-					{ title: "Aanmaken", url: "/cooking/create", icon: "lucide:dot" },
-				]
-			},
-			{ title: "Calendar", url: "#", icon: "lucide:calendar" },
-			{ title: "Search", url: "#", icon: "lucide:search" },
-			{ title: "Settings", url: "#", icon: "lucide:settings" },
+			{ title: "Dashboard", url: "/", icon: "lucide:home" },
+			{ title: "Koken", url: "/cooking", icon: "lucide:cooking-pot" },
+			{ title: "Invullen", url: "#", icon: "lucide:dot" },
+			{ title: "Aanmaken", url: "/cooking/create", icon: "lucide:dot" },
+			{ title: "Rooster", url: "#", icon: "lucide:calendar" },
 		]
 	},
 	{
 		label: "Gebruiker",
-		labelClass: "text-base font-semibold px-6 pt-4 pb-2", // smaller and less bold
 		items: [
 			{ title: "Instellingen", url: "/settings", icon: "lucide:user-cog" },
 			{ title: "Uitloggen", icon: "lucide:log-out", action: "logout" },
 		]
 	},
 	{
-		label: "Site settings",
-		labelClass: "text-base font-semibold px-6 pt-4 pb-2",
+		label: "Admin tools",
 		adminOnly: true,
 		items: [
-			{ title: "Site settings", url: "/admin", icon: "lucide:shield-ellipsis" },
+			{ title: "Configuratie", url: "/admin", icon: "lucide:shield-ellipsis" },
 		]
 	}
 ];

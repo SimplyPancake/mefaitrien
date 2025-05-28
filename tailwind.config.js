@@ -133,6 +133,7 @@ module.exports = {
           accent: "var(--sidebar-accent)",
           "accent-foreground": "var(--sidebar-accent-foreground)",
           border: "var(--sidebar-border)",
+          "menusub-border": "var(--border)",
           ring: "var(--sidebar-ring)",
           input: "var(--sidebar-input)",
         },

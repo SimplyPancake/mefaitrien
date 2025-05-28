@@ -1,8 +1,5 @@
 <template>
-	<p class="text-2xl text-foreground font-bold">Dashboard</p>
-	<h1>Ziek dashboard hier</h1>
-
-	<div class="flex flex-row gap-4 mt-8">
+	<div class="flex flex-row gap-4">
 		<div class="basis-1/2">
 			<UiCard class="w-100" title="Vandaag">
 				<template #content>
@@ -94,6 +91,10 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+
+usePageInfoStore().setPageInfo({
+	title: 'Dashboard',
+});
 
 const weekRange = computed(() => {
 	const today = new Date();

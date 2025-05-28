@@ -1,9 +1,7 @@
 <template>
-	<p class="text-2xl text-foreground font-bold">Koken overzicht</p>
-
 	<div class="grid grid-cols-4 gap-4">
 		<div class="col-span-1 row-span-2">
-			<UiCard class="w-100" title="Je beschikbaarheid voor deze maand">
+			<UiCard class="w-100" title="Je beschikbaarheid">
 				<template #content>
 					<UiCardContent>
 						<UiCalendar :attributes="attributes" borderless expanded :first-day-of-week="2" locale="nl"
@@ -58,6 +56,10 @@ import { UiCalendar } from '#components';
 import type { MonthRoster } from "@prisma/client"
 import { ref, computed } from 'vue';
 import { addDays, endOfMonth, startOfMonth, startOfToday } from "date-fns";
+import { usePageInfoStore } from '~/composables/usePageInfoStore';
+usePageInfoStore().setPageInfo({
+	title: 'Koken',
+});
 
 useSeoMeta({
 	title: "Koken Dashboard"
