@@ -13,15 +13,23 @@
 				<UiSidebarGroup>
 					<UiDivider class="text-primary" />
 				</UiSidebarGroup>
-				<UiSidebarGroup>
+
+				<!-- Sidebar sections -->
+				<UiSidebarGroup v-for="(section, sIdx) in visibleSidebarSections" :key="sIdx">
+					<UiSidebarGroupLabel v-if="section.label" :class="section.labelClass">{{ section.label }}
+					</UiSidebarGroupLabel>
 					<UiSidebarGroupContent>
 						<UiSidebarMenu>
-							<UiSidebarMenuItem v-for="item in items" :key="item.title">
-								<UiSidebarMenuButton as-child>
+							<UiSidebarMenuItem v-for="item in section.items" :key="item.title">
+								<UiSidebarMenuButton as-child v-if="item.url">
 									<NuxtLink :to="item.url">
-										<Icon :name="item.icon" style="color: var(--primary)" class="size-4" />
-										<span class="font-medium text-lg">{{ item.title }}</span>
+										<Icon :name="item.icon" style="color: var(--primary)" class="size-6 mr-2" />
+										<span class="font-semibold text-xl">{{ item.title }}</span>
 									</NuxtLink>
+								</UiSidebarMenuButton>
+								<UiSidebarMenuButton v-else @click="item.action && handleSidebarAction(item.action)">
+									<Icon :name="item.icon" style="color: var(--primary)" class="size-6 mr-2" />
+									<span class="font-semibold text-xl">{{ item.title }}</span>
 								</UiSidebarMenuButton>
 								<UiSidebarMenuSubItem v-for="(child, k) in item.items" :key="`child-${k}`">
 									<UiSidebarMenuSubButton as-child>
@@ -39,25 +47,16 @@
 				<UiSidebarFooter class="mt-auto mb-5">
 					<div class="flex items-center flex-row gap-4">
 						<UiAvatar src="/img/dannyprofielfoto.png" class="size-16" />
-						<div class="font-medium basis-1/2">
-							<div>{{ data?.name! }}</div>
-							<div class="text-sm text-gray-500">{{ data.cookingGroup ?? "Geen kookgroep" }}</div>
+						<div class="font-semibold text-lg basis-1/2">
+							<div>{{ sessionStore!.sessionData!.name || '' }}</div>
+							<div class="text-base text-gray-500">{{ sessionStore!.sessionData!.cookingGroup ||
+								'Geenkookgroep' }}</div>
 						</div>
-						<UiDropdownMenu class="basis-1/6">
-							<UiDropdownMenuTrigger as-child>
-								<UiButton size="icon" variant="outline">
-									<Icon class="size-4" name="lucide:user" />
-								</UiButton>
-							</UiDropdownMenuTrigger>
-							<UiDropdownMenuContent class="w-56">
-								<template v-for="(item, i) in settingsItems" :key="i">
-									<UiDropdownMenuLabel v-if="item.label" :label="item.label" />
-									<UiDropdownMenuSeparator v-else-if="item.divider" />
-									<UiDropdownMenuItem v-else-if="item.title" :title="item.title" :icon="item.icon"
-										@click="item.click" />
-								</template>
-							</UiDropdownMenuContent>
-						</UiDropdownMenu>
+						<UiButton size="icon" variant="default"
+							class="basis-1/6 bg-sidebar-accent text-sidebar-foreground hover:bg-sidebar-accent/80 border-none"
+							@click="changeColors">
+							<Icon class="size-7" name="lucide:paintbrush" />
+						</UiButton>
 					</div>
 				</UiSidebarFooter>
 			</UiSidebarContent>
@@ -78,44 +77,72 @@
 
 <script lang="ts" setup>
 import { UiDropdownMenu, UiDropdownMenuContent, UiDropdownMenuItem, UiDropdownMenuLabel, UiDropdownMenuSeparator, UiDropdownMenuTrigger, UiSidebarGroupLabel, UiSidebarMenuSubItem } from '#components';
-const { data, signOut } = useAuth();
-import { Role } from "@prisma/client"
+// import { useSessionStore } from '~/composables/useSessionStore'
+import { Role } from "@prisma/client";
+const sessionStore = useSessionStore()
 const colorMode = useColorMode()
 
 const changeColors = () => {
 	colorMode.preference = colorMode.preference == "light" ? "dark" : "light"
 }
 
-
-// Menu items.
-const items = [
-	{ title: "Home", url: "/", icon: "lucide:home" },
-	{
-		title: "Koken", url: "/cooking", icon: "lucide:cooking-pot", items: [
-			{ title: "Invullen", url: "#" },
-			{ title: "Aanmaken", url: "/cooking/create" },
-		]
-	},
-	{ title: "Calendar", url: "#", icon: "lucide:calendar" },
-	{ title: "Search", url: "#", icon: "lucide:search" },
-	{ title: "Settings", url: "#", icon: "lucide:settings" },
-];
-
-// Settings items
-const settingsItems = [
-	{ label: "Mijn account" },
-	{ divider: true },
-	{ title: "Instellingen", icon: "lucide:settings", click: () => navigateTo('/settings') },
-	{ title: "Verander kleurmodus", icon: "lucide:paintbrush", click: () => changeColors() },
-	{ divider: true },
-	{ title: "Uitloggen", icon: "lucide:log-out", click: () => signOut({ callbackUrl: '/auth/login' }) },
-];
-
-if (data && data.value!.role! == Role.ADMIN) {
-	// Kookrooster maken naar andere rol?
-
-	settingsItems.push({ divider: true });
-	settingsItems.push({ title: "Admin instellingen", icon: "lucide:shield-ellipsis", click: () => navigateTo('/admin') });
+// Sidebar structure for clarity and maintainability
+interface SidebarItem {
+	title: string;
+	url?: string;
+	icon: string;
+	items?: SidebarItem[];
+	action?: string;
+}
+interface SidebarSection {
+	label: string | null;
+	labelClass?: string;
+	adminOnly?: boolean;
+	items: SidebarItem[];
 }
 
+const sidebarSections: SidebarSection[] = [
+	{
+		label: null, // Main navigation
+		items: [
+			{ title: "Home", url: "/", icon: "lucide:home" },
+			{
+				title: "Koken", url: "/cooking", icon: "lucide:cooking-pot", items: [
+					{ title: "Invullen", url: "#", icon: "lucide:dot" },
+					{ title: "Aanmaken", url: "/cooking/create", icon: "lucide:dot" },
+				]
+			},
+			{ title: "Calendar", url: "#", icon: "lucide:calendar" },
+			{ title: "Search", url: "#", icon: "lucide:search" },
+			{ title: "Settings", url: "#", icon: "lucide:settings" },
+		]
+	},
+	{
+		label: "Gebruiker",
+		labelClass: "text-base font-semibold px-6 pt-4 pb-2", // smaller and less bold
+		items: [
+			{ title: "Instellingen", url: "/settings", icon: "lucide:user-cog" },
+			{ title: "Uitloggen", icon: "lucide:log-out", action: "logout" },
+		]
+	},
+	{
+		label: "Site settings",
+		labelClass: "text-base font-semibold px-6 pt-4 pb-2",
+		adminOnly: true,
+		items: [
+			{ title: "Site settings", url: "/admin", icon: "lucide:shield-ellipsis" },
+		]
+	}
+];
+
+const visibleSidebarSections = computed(() => {
+	const isAdmin = sessionStore!.sessionData!.role == Role.ADMIN;
+	return sidebarSections.filter(section => !section.adminOnly || isAdmin)
+})
+
+function handleSidebarAction(action: string) {
+	if (action === 'logout') {
+		sessionStore.signOut({ callbackUrl: '/auth/login' })
+	}
+}
 </script>

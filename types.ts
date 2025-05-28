@@ -13,14 +13,14 @@ export type ServerAuthConfig = {
   role?: string[];
 };
 
-export type SessionDataDto = {
+export interface SessionData {
   id: number;
   name: string;
   username: string;
   cookingGroup: string;
   role: string;
-};
-
-export interface SessionEvent extends H3Event {
-  session: SessionDataDto;
+  // Add any future properties here
+  // [key: string]: any;
 }
+
+export type SessionDataDto = SessionData;

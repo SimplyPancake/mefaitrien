@@ -7,7 +7,7 @@
 			<UiCard class="w-100" title="Vandaag">
 				<template #content>
 					<UiList class="max-w-m">
-						<UiListItem>
+						<UiListItem class="px-6">
 							<Icon name="lucide:chef-hat" class="size-10 text-primary" />
 							<UiListContent>
 								<UiListTitle title="Froukje kookt voor K1" />
@@ -15,7 +15,7 @@
 									subtitle="Froukje zorgt voor een maaltijd met vleesch" />
 							</UiListContent>
 						</UiListItem>
-						<UiListItem>
+						<UiListItem class="px-6">
 							<Icon name="lucide:chef-hat" class="size-10 text-primary" />
 							<UiListContent>
 								<UiListTitle title="Sjoerd kookt voor K2" />
@@ -23,7 +23,7 @@
 							</UiListContent>
 						</UiListItem>
 						<!-- Schoonmaak -->
-						<UiListItem>
+						<UiListItem class="px-6">
 							<Icon name="lucide:toilet" class="size-10 text-primary" />
 							<UiListContent>
 								<UiListTitle title="De WC's worden schoongemaakt" />
@@ -38,7 +38,7 @@
 			<UiCard class="w-100" title="Statistieken">
 				<template #content>
 					<UiList class="max-w-m">
-						<UiListItem>
+						<UiListItem class="px-6">
 							<Icon name="lucide:trending-up" class="size-10 text-primary" />
 							<UiListContent>
 								<UiListTitle title="Je hebt 10 kookpunten" />
@@ -48,22 +48,22 @@
 									 van de wc (trending-down)-->
 							</UiListContent>
 						</UiListItem>
-						<UiListItem>
-							<Icon name="lucide:brush-cleaning" class="size-10 text-primary" />
-							<UiListContent>
-								<UiListTitle title="Volgende keer dat je schoon moet maken" />
-								<UiListSubtitle class="line-clamp-2"
-									subtitle="Jij moet als volgende de woonkamer schoonmaken met als extra taak de kastjes" />
-							</UiListContent>
-						</UiListItem>
 						<!-- Schoonmaak -->
-						<UiListItem>
+						<UiListItem class="px-6">
 							<Icon name="lucide:cooking-pot" class="size-10 text-primary" />
 							<UiListContent>
 								<UiListTitle title="Jouw kookdagen deze week" />
 								<UiListSubtitle class="line-clamp-2"
 									subtitle="Jij moet koken op maandag en donderdag" />
 								<!-- Je hoeft niet te koken deze week -->
+							</UiListContent>
+						</UiListItem>
+						<UiListItem class="px-6">
+							<Icon name="lucide:brush-cleaning" class="size-10 text-primary" />
+							<UiListContent>
+								<UiListTitle title="Volgende keer dat je schoon moet maken" />
+								<UiListSubtitle class="line-clamp-2"
+									subtitle="Jij moet als volgende de woonkamer schoonmaken met als extra taak de kastjes" />
 							</UiListContent>
 						</UiListItem>
 					</UiList>

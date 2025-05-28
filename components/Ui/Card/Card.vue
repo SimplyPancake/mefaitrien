@@ -2,17 +2,19 @@
 	<Primitive :as="as" :as-child="asChild" :class="styles({ class: props.class })">
 		<slot>
 			<slot name="header">
-				<UiCardHeader>
+				<UiCardHeader class="px-6 pt-6 pb-2">
 					<slot name="title">
-						<UiCardTitle v-if="title || $slots.title" :title="title" />
+						<UiCardTitle v-if="title || $slots.title" :title="title"
+							class="text-xl font-bold text-primary" />
 					</slot>
 					<slot name="description">
-						<UiCardDescription v-if="description || $slots.description" :description="description" />
+						<UiCardDescription v-if="description || $slots.description" :description="description"
+							class="text-muted-foreground text-base font-normal mt-1" />
 					</slot>
 				</UiCardHeader>
 			</slot>
 			<slot v-if="content || $slots.content" name="content">
-				<UiCardContent>
+				<UiCardContent class="px-6 pb-6">
 					<div v-html="content" />
 				</UiCardContent>
 			</slot>
@@ -48,7 +50,6 @@ const props = withDefaults(
 );
 
 const styles = tv({
-	base: "rounded-lg border bg-card text-card-foreground shadow-sm",
-	// base: "rounded-lg bg-card text-card-foreground shadow-sm",
+	base: "rounded-2xl border border-card bg-card text-card-foreground shadow-lg p-0",
 });
 </script>

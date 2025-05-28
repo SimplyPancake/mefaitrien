@@ -43,7 +43,7 @@
     --destructive-foreground: var(--white);
 
     /* Borders, Inputs, and Rings */
-    --border: var(--secondary-light-blue);
+    --border: #e5e7eb; /* grey-200 */
     --input: var(--secondary-light-blue);
     --ring: var(--primary-orange);
     --radius: 0.5rem;

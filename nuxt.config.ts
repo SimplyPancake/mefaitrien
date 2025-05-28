@@ -29,6 +29,7 @@ export default defineNuxtConfig({
     "@prisma/nuxt",
     "@sidebase/nuxt-auth",
     "@samk-dev/nuxt-vcalendar",
+    "@pinia/nuxt",
   ],
 
   colorMode: {

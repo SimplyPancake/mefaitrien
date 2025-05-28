@@ -1,18 +1,17 @@
 <script setup lang="ts">
 import AuthenticatedBase from './components/base/authenticated/AuthenticatedBase.vue';
 import { UiToastToaster, UiVueSonner } from '#components';
-const { status } = useAuth()
-
-// Global css mfr.css
+import { useSessionStore } from '~/composables/useSessionStore';
+const sessionStore = useSessionStore();
 </script>
 
 <template>
 	<NuxtLoadingIndicator />
 	<UiToastToaster></UiToastToaster>
 	<UiVueSonner />
-	<NuxtPage v-if="status != 'authenticated'"></NuxtPage>
+	<NuxtPage v-if="sessionStore.status !== 'authenticated'"></NuxtPage>
 
-	<AuthenticatedBase v-if="status == 'authenticated'">
+	<AuthenticatedBase v-if="sessionStore.status === 'authenticated'">
 		<NuxtPage />
 	</AuthenticatedBase>
 </template>
