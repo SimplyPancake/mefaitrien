@@ -1,7 +1,7 @@
 import type { CookingGroup } from "@prisma/client";
 
 export interface AdminUserDTO {
-  id: string;
+  id: number;
   name: string;
   username: string;
   email: string;

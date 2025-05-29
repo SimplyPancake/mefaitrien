@@ -15,7 +15,7 @@ let handlerFunc = async (event: H3Event) => {
   const cookingGroups = await prisma.cookingGroup.findMany();
 
   const userDTOs: AdminUserDTO[] = users.map((user) => ({
-    id: user.id.toString(),
+    id: user.id,
     name: user.name,
     username: user.username,
     email: user.email,

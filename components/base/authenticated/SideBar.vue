@@ -37,9 +37,9 @@
 														class="size-6 mr-3 text-primary shrink-0" />
 													{{ child.title }}
 												</NuxtLink>
-												<NuxtLink v-if="child.action" class="cursor-pointer text-base">
+												<NuxtLink v-if="child.action" class="cursor-pointer text-base"
+													@click="child.action && handleSidebarAction(child.action)">
 													<Icon :name="child.icon"
-														@click="child.action && handleSidebarAction(child.action)"
 														class="size-6 mr-3 text-primary shrink-0" />
 													{{ child.title }}
 												</NuxtLink>

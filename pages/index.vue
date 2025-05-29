@@ -1,92 +1,93 @@
 <template>
-	<div class="flex flex-row gap-4">
-		<div class="basis-1/2">
-			<UiCard class="w-100" title="Vandaag">
-				<template #content>
-					<UiList class="max-w-m">
-						<UiListItem class="px-6">
-							<Icon name="lucide:chef-hat" class="size-10 text-primary" />
-							<UiListContent>
-								<UiListTitle title="Froukje kookt voor K1" />
-								<UiListSubtitle class="line-clamp-2"
-									subtitle="Froukje zorgt voor een maaltijd met vleesch" />
-							</UiListContent>
-						</UiListItem>
-						<UiListItem class="px-6">
-							<Icon name="lucide:chef-hat" class="size-10 text-primary" />
-							<UiListContent>
-								<UiListTitle title="Sjoerd kookt voor K2" />
-								<UiListSubtitle class="line-clamp-2" subtitle="Sjoerd zorgt voor vuige vega stuckjes" />
-							</UiListContent>
-						</UiListItem>
-						<!-- Schoonmaak -->
-						<UiListItem class="px-6">
-							<Icon name="lucide:toilet" class="size-10 text-primary" />
-							<UiListContent>
-								<UiListTitle title="De WC's worden schoongemaakt" />
-								<UiListSubtitle class="line-clamp-2" subtitle="Vandaag maken Berg en Justin schoon" />
-							</UiListContent>
-						</UiListItem>
-					</UiList>
-				</template>
-			</UiCard>
-		</div>
-		<div class="basis-1/2">
-			<UiCard class="w-100" title="Statistieken">
-				<template #content>
-					<UiList class="max-w-m">
-						<UiListItem class="px-6">
-							<Icon name="lucide:trending-up" class="size-10 text-primary" />
-							<UiListContent>
-								<UiListTitle title="Je hebt 10 kookpunten" />
-								<UiListSubtitle class="line-clamp-2"
-									subtitle="De punten zijn met 4 omhooggegaan na de laatste keer dat je hebt afgewassen" />
-								<!-- Of, ze zijn gedaald omdat Justin je sancties heeft gegeven voor het niet schoonmaken
+	<div class="grid grid-cols-3 grid-rows-3 gap-4">
+		<UiCard class="w-100" title="Vandaag">
+			<template #content>
+				<UiList class="max-w-m">
+					<UiListItem class="px-6">
+						<Icon name="lucide:chef-hat" class="size-10 text-primary" />
+						<UiListContent>
+							<UiListTitle title="Froukje kookt voor K1" />
+							<UiListSubtitle class="line-clamp-2"
+								subtitle="Froukje zorgt voor een maaltijd met vleesch" />
+						</UiListContent>
+					</UiListItem>
+					<UiListItem class="px-6">
+						<Icon name="lucide:chef-hat" class="size-10 text-primary" />
+						<UiListContent>
+							<UiListTitle title="Sjoerd kookt voor K2" />
+							<UiListSubtitle class="line-clamp-2" subtitle="Sjoerd zorgt voor vuige vega stuckjes" />
+						</UiListContent>
+					</UiListItem>
+					<!-- Schoonmaak -->
+					<UiListItem class="px-6">
+						<Icon name="lucide:toilet" class="size-10 text-primary" />
+						<UiListContent>
+							<UiListTitle title="De WC's worden schoongemaakt" />
+							<UiListSubtitle class="line-clamp-2" subtitle="Vandaag maken Berg en Justin schoon" />
+						</UiListContent>
+					</UiListItem>
+				</UiList>
+			</template>
+		</UiCard>
+		<UiCard class="w-100" title="Statistieken">
+			<template #content>
+				<UiList class="max-w-m">
+					<UiListItem class="px-6">
+						<Icon name="lucide:trending-up" class="size-10 text-primary" />
+						<UiListContent>
+							<UiListTitle title="Je hebt 10 kookpunten" />
+							<UiListSubtitle class="line-clamp-2"
+								subtitle="De punten zijn met 4 omhooggegaan na de laatste keer dat je hebt afgewassen" />
+							<!-- Of, ze zijn gedaald omdat Justin je sancties heeft gegeven voor het niet schoonmaken
 									 van de wc (trending-down)-->
-							</UiListContent>
-						</UiListItem>
-						<!-- Schoonmaak -->
-						<UiListItem class="px-6">
-							<Icon name="lucide:cooking-pot" class="size-10 text-primary" />
-							<UiListContent>
-								<UiListTitle title="Jouw kookdagen deze week" />
-								<UiListSubtitle class="line-clamp-2"
-									subtitle="Jij moet koken op maandag en donderdag" />
-								<!-- Je hoeft niet te koken deze week -->
-							</UiListContent>
-						</UiListItem>
-						<UiListItem class="px-6">
-							<Icon name="lucide:brush-cleaning" class="size-10 text-primary" />
-							<UiListContent>
-								<UiListTitle title="Volgende keer dat je schoon moet maken" />
-								<UiListSubtitle class="line-clamp-2"
-									subtitle="Jij moet als volgende de woonkamer schoonmaken met als extra taak de kastjes" />
-							</UiListContent>
-						</UiListItem>
-					</UiList>
+						</UiListContent>
+					</UiListItem>
+					<!-- Schoonmaak -->
+					<UiListItem class="px-6">
+						<Icon name="lucide:cooking-pot" class="size-10 text-primary" />
+						<UiListContent>
+							<UiListTitle title="Jouw kookdagen deze week" />
+							<UiListSubtitle class="line-clamp-2" subtitle="Jij moet koken op maandag en donderdag" />
+							<!-- Je hoeft niet te koken deze week -->
+						</UiListContent>
+					</UiListItem>
+					<UiListItem class="px-6">
+						<Icon name="lucide:brush-cleaning" class="size-10 text-primary" />
+						<UiListContent>
+							<UiListTitle title="Volgende keer dat je schoon moet maken" />
+							<UiListSubtitle class="line-clamp-2"
+								subtitle="Jij moet als volgende de woonkamer schoonmaken met als extra taak de kastjes" />
+						</UiListContent>
+					</UiListItem>
+				</UiList>
+			</template>
+		</UiCard>
+		<BaseAuthenticatedHomeUserOverview class="row-span-3" />
+		<div class="col-span-2">
+			<UiCard class="mt-8" title="Schema van deze week" :description="weekRange">
+				<template #content>
+					<div class="p-4">
+						<UiTimeline :model-value="3" orientation="horizontal">
+							<UiTimelineItem v-for="item in timelineItems" :key="item.id" :step="item.id">
+								<UiTimelineHeader>
+									<UiTimelineSeparator />
+									<UiTimelineDate>{{ item.date }}</UiTimelineDate>
+									<UiTimelineTitle>{{ item.title }}</UiTimelineTitle>
+									<UiTimelineIndicator />
+								</UiTimelineHeader>
+								<UiTimelineContent>{{ item.description }}</UiTimelineContent>
+							</UiTimelineItem>
+						</UiTimeline>
+					</div>
 				</template>
 			</UiCard>
 		</div>
 	</div>
 
 	<!-- Weekly Schedule Timeline Overview -->
-	<UiCard class="w-100 mt-8" title="Schema van deze week" :description="weekRange">
-		<template #content>
-			<div class="p-4">
-				<UiTimeline :model-value="3" orientation="horizontal">
-					<UiTimelineItem v-for="item in timelineItems" :key="item.id" :step="item.id">
-						<UiTimelineHeader>
-							<UiTimelineSeparator />
-							<UiTimelineDate>{{ item.date }}</UiTimelineDate>
-							<UiTimelineTitle>{{ item.title }}</UiTimelineTitle>
-							<UiTimelineIndicator />
-						</UiTimelineHeader>
-						<UiTimelineContent>{{ item.description }}</UiTimelineContent>
-					</UiTimelineItem>
-				</UiTimeline>
-			</div>
-		</template>
-	</UiCard>
+
+
+
 </template>
 
 <script setup lang="ts">

@@ -1,8 +1,8 @@
 import prisma from "@@/lib/prisma";
 import { BaseEventHandler } from "~/server/utils/handlers/baseEventHandler";
-import { SessionEvent } from "~/types";
+import { H3Event } from "h3";
 
-let handlerFunc = async (event: SessionEvent) => {
+let handlerFunc = async (event: H3Event) => {
   // Get month roster of this month by all users
   const roster = await prisma.monthRoster.findFirst({
     where: {

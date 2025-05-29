@@ -24,3 +24,7 @@ export interface SessionData {
 }
 
 export type SessionDataDto = SessionData;
+
+export interface SessionEvent extends H3Event {
+  session: SessionDataDto;
+}

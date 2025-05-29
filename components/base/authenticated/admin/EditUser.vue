@@ -16,6 +16,8 @@
 								<form class="space-y-4">
 									<UiVeeInput v-model="userref.name" label="Naam" type="text" name="name"
 										placeholder="Voer naam in" />
+									<UiVeeInput v-model="userref.username" label="Gebruikersnaam" type="text"
+										name="name" placeholder="Voer gebruikersnaam in" />
 									<UiVeeInput v-model="userref.email" label="Email" type="email" name="email"
 										placeholder="Voer email in" />
 									<div>
@@ -67,7 +69,7 @@
 import type { AdminUserDTO } from '~/types/dto';
 import type { CookingGroup } from '@prisma/client';
 import { cloneDeep } from 'lodash';
-import { useAPI } from '@/composables/useAPI';
+import { useAPI } from '~/composables/useAPI';
 
 const props = defineProps<{
 	user: AdminUserDTO;
@@ -84,33 +86,25 @@ const saveChanges = async () => {
 		userref.value.cookingGroup = { id: selectedCookingGroup.id, name: selectedCookingGroup.name };
 	}
 
-	try {
-		const { data, error } = await useAPI('/api/admin/editUser', {
-			method: 'POST',
-			body: {
-				id: userref.value.id,
-				name: userref.value.name,
-				email: userref.value.email,
-				role: userref.value.role,
-				cookingGroupId: selectedCookingGroup?.id,
-			},
-		});
+	const { data, error } = await useAPI('/api/admin/user', {
+		method: 'POST',
+		body: {
+			id: userref.value.id,
+			name: userref.value.name,
+			username: userref.value.username,
+			email: userref.value.email,
+			role: userref.value.role,
+			cookingGroupId: selectedCookingGroup?.id,
+		},
+	});
 
-		if (data) {
-			Object.assign(props.user, cloneDeep(userref.value));
-			useSonner.promise(Promise.resolve(), {
-				success: 'Gebruiker succesvol bijgewerkt!',
-			});
-		} else if (error) {
-			useSonner.promise(Promise.reject(), {
-				error: error.value || 'Er is een fout opgetreden bij het opslaan.',
-			});
-		}
-	} catch (error) {
-		useSonner.promise(Promise.reject(), {
-			error: 'Er is een onverwachte fout opgetreden.',
-		});
-		console.error('Error while saving changes:', error);
+	if (data.value) {
+		console.log(data)
+		Object.assign(props.user, cloneDeep(userref.value));
+		useSonner.success('Gebruiker succesvol bijgewerkt!');
+	} else if (error) {
+		console.log(error.value)
+		useSonner.error(error.value?.statusMessage ?? "Er is iets fout gegaan")
 	}
 };
 
