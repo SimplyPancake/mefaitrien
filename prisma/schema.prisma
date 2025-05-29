@@ -31,7 +31,7 @@ model CookingGroup {
   id   Int    @id @default(autoincrement())
   name String @unique
   User User[]
-
+  color String @default("aaaaaa")
   createdAt  DateTime @default(now())
   modifiedAt DateTime @updatedAt
 }
@@ -49,10 +49,13 @@ model Availability {
   monthRosterId Int
 }
 
+// TODO: Create model for assigned spots
+
 model MonthRoster {
   id    Int @id @default(autoincrement())
   year  Int
   month Int // Maand (1-12)
+  status MonthStatus @default(CANFILLIN)
 
   availabilities Availability[]
 
@@ -68,4 +71,10 @@ enum Role {
 enum AvailabilityType {
   AVAILABLE
   UNAVAILABLE
+}
+
+enum MonthStatus {
+  CANFILLIN
+  NOFILLIN
+  ASSIGNED
 }

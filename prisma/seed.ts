@@ -20,6 +20,7 @@ async function main() {
     update: {},
     create: {
       name: "K1",
+      color: "#5fba3c",
     },
   });
 
@@ -28,6 +29,7 @@ async function main() {
     update: {},
     create: {
       name: "K2",
+      color: "#ba3c62",
     },
   });
 }

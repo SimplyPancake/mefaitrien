@@ -103,4 +103,6 @@ export default defineNuxtConfig({
   build: {
     transpile: ["vue-sonner"],
   },
+
+  css: ["@/assets/css/full-calendar.css"],
 });
