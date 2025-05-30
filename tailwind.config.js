@@ -97,6 +97,7 @@ module.exports = {
         primary: {
           DEFAULT: "var(--primary)",
           foreground: "var(--primary-foreground)",
+          overlay: "var(--orange-accent-on-bg)",
         },
         secondary: {
           DEFAULT: "var(--secondary)",

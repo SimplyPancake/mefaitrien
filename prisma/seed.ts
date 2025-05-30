@@ -3,7 +3,7 @@ import { PrismaClient, Role } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
-  await prisma.user.upsert({
+  let adminuser = await prisma.user.upsert({
     where: { email: "admin@mfr.com" },
     update: {},
     create: {
@@ -24,12 +24,21 @@ async function main() {
     },
   });
 
-  await prisma.cookingGroup.upsert({
+  let k2 = await prisma.cookingGroup.upsert({
     where: { name: "K2" },
     update: {},
     create: {
       name: "K2",
       color: "#ba3c62",
+    },
+  });
+
+  await prisma.user.update({
+    where: {
+      id: adminuser.id,
+    },
+    data: {
+      cookingGroupId: k2.id,
     },
   });
 }

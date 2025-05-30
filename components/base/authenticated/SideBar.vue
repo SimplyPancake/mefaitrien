@@ -60,7 +60,7 @@
 							<div class="text-lg font-medium truncate">{{ sessionStore!.sessionData!.name || '' }}
 							</div>
 							<div class="text-muted-foreground truncate">{{
-								sessionStore!.sessionData!.cookingGroup || 'koogroep feut' }}</div>
+								sessionStore!.sessionData!.cookingGroup || 'Geen kookgroep' }}</div>
 						</div>
 						<UiButton size="icon" variant="ghost"
 							class="ml-auto hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground"
@@ -109,11 +109,11 @@ interface SidebarItem {
 	title: string;
 	url?: string;
 	icon: string;
+	role?: string;
 	action?: string;
 }
 interface SidebarSection {
 	label: string | null;
-	adminOnly?: boolean;
 	items: SidebarItem[];
 }
 
@@ -123,9 +123,8 @@ const sidebarSections: SidebarSection[] = [
 		items: [
 			{ title: "Dashboard", url: "/", icon: "lucide:home" },
 			{ title: "Koken", url: "/cooking", icon: "lucide:cooking-pot" },
-			{ title: "Invullen", url: "#", icon: "lucide:dot" },
-			{ title: "Aanmaken", url: "/cooking/create", icon: "lucide:dot" },
-			{ title: "Rooster", url: "#", icon: "lucide:calendar" },
+			{ title: "Invullen", url: "/cooking/fill", icon: "lucide:calendar-search" },
+			{ title: "Punten", url: "#", icon: "lucide:chart-no-axes-combined" },
 		]
 	},
 	{
@@ -136,18 +135,38 @@ const sidebarSections: SidebarSection[] = [
 		]
 	},
 	{
-		label: "Admin tools",
-		adminOnly: true,
+		label: "Tools",
 		items: [
-			{ title: "Configuratie", url: "/admin", icon: "lucide:shield-ellipsis" },
+			{ title: "Admin", url: "/admin", icon: "lucide:shield-ellipsis", role: "ADMIN" },
+			{ title: "Aanmaken", url: "/cooking/create", icon: "lucide:calendar-cog", role: "ADMIN" },
 		]
 	}
 ];
 
 const visibleSidebarSections = computed(() => {
-	const isAdmin = sessionStore!.sessionData!.role == Role.ADMIN;
-	return sidebarSections.filter(section => !section.adminOnly || isAdmin)
-})
+	return sidebarSections
+		.map(section => {
+			const filteredItems = section.items.filter(item => {
+				// Admins can see everything
+				if (sessionStore!.sessionData!.role === "ADMIN") {
+					return true;
+				}
+				// If the item has no role or matches the user's role, include it
+				return !item.role || item.role === sessionStore!.sessionData!.role;
+			});
+
+			// Only return sections that have visible items
+			if (filteredItems.length > 0) {
+				return {
+					...section,
+					items: filteredItems,
+				};
+			}
+
+			return null;
+		})
+		.filter(Boolean); // Remove null sections
+});
 
 function handleSidebarAction(action: string) {
 	if (action === 'logout') {

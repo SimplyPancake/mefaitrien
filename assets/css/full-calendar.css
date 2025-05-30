@@ -38,11 +38,11 @@ NOTE: for old browsers, will need to restart watcher after changing a variable
   --fc-non-business-color: rgba(215, 215, 215, 0.3);
   --fc-bg-event-color: rgb(143, 223, 130);
   --fc-bg-event-opacity: 0.3;
-  --fc-highlight-color: theme(colors.primary.DEFAULT / 10%);
-  --fc-today-bg-color: theme(colors.primary.DEFAULT / 10%);
+  --fc-highlight-color: theme(colors.primary.overlay);
+  --fc-today-bg-color: theme(colors.primary.overlay);
   --fc-now-indicator-color: red;
 
-  --fc-list-event-hover-bg-color: theme(colors.primary.DEFAULT / 10%);
+  --fc-list-event-hover-bg-color: theme(colors.primary.overlay);
 }
 
 /* Toolbar buttons */

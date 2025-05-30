@@ -13,7 +13,7 @@ let handlerFunc = async (event: H3Event) => {
   // Group users by cooking group
   const groupedUsers = groupUsers.reduce(
     (groups, user) => {
-      const groupName = user.cookingGroup?.name || "No Group";
+      const groupName = user.cookingGroup?.name || "Geen groep";
       if (!groups[groupName]) {
         groups[groupName] = {
           id: user.cookingGroup?.id || 0, // Keep id as a number

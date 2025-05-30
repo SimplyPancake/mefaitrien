@@ -3,22 +3,27 @@
 		<div class="col-span-3 row-span-5">
 			<UiCard class="w-100" title="Kokers deze maand">
 				<template #content>
-					<FullCalendar class="p-6" :options="calendarOptions" />
+					<UiCardContent>
+						<!-- keep-alive for making sure that the tab does not go white -->
+						<keep-alive>
+							<FullCalendar :options="calendarOptions" :key="calendarKey" />
+						</keep-alive>
+					</UiCardContent>
 				</template>
 			</UiCard>
 		</div>
 		<div class="row-span-2 col-start-4 row-start-1">
 			<UiCard class="w-100" title="Je beschikbaarheid">
 				<template #content>
-					<UiCalendar class="p-2" :attributes="attributes" borderless expanded :first-day-of-week="2"
-						locale="nl" :masks="{ weekdays: 'WW' }" title-position="right" />
+					<UiCardContent>
+						<UiCalendar :attributes="attributes" borderless expanded :first-day-of-week="2" locale="nl"
+							:masks="{ weekdays: 'WW' }" title-position="right" />
+					</UiCardContent>
 				</template>
 			</UiCard>
-			<UiCardContent>
-			</UiCardContent>
 		</div>
 		<div class="row-span-3 col-start-4 row-start-3">
-			<BaseAuthenticatedHomeUserOverview></BaseAuthenticatedHomeUserOverview>
+			<BaseAuthenticatedHomeUserOverview />
 		</div>
 	</div>
 </template>
@@ -31,12 +36,14 @@ import dayjs from "dayjs";
 import { addDays, startOfMonth, startOfToday } from "date-fns";
 import type { CalendarOptions } from "@fullcalendar/core";
 import { usePageInfoStore } from '~/composables/usePageInfoStore';
+import { useRoute } from "vue-router";
+
 usePageInfoStore().setPageInfo({
 	title: 'Koken',
 });
 
 useSeoMeta({
-	title: "Koken Dashboard"
+	title: "Koken - Dashboard"
 })
 
 // Await data
@@ -97,4 +104,12 @@ const attributes = ref([
 		dates: addDays(startOfMonth(startOfToday()), 2).toString()
 	}
 ])
+
+const calendarKey = ref(0);
+const route = useRoute();
+
+// // Increment the key when switching tabs to force re-rendering if needed
+// watch(() => route.path, () => {
+// 	calendarKey.value++;
+// });
 </script>

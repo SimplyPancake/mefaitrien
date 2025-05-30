@@ -7,7 +7,7 @@
     /* Custom Color Scheme */
     --primary-orange: #f25922;
     --primary-light-orange: #f2845c;
-    --even-lighter-orange: #f2dcd3;
+    --orange-accent-on-bg: #f9eae5;
     --secondary-dark-blue: #222050;
     --secondary-light-blue: #5a5c8c;
     --darker-blue: #14116f;
@@ -67,9 +67,9 @@
     /* Custom Color Scheme */
     --primary-orange: #d9481e; /* Dark variant of #f25922 */
     --primary-light-orange: #d96c43; /* Dark variant of #f2845c */
-    --even-lighter-orange: #bfa59d; /* Dark variant of #f2dcd3 */
+    --orange-accent-on-bg: #291b36; /* Dark variant of #f2dcd3 */
     --secondary-dark-blue: #1e1a3c; /* Dark variant of #222050 */
-    --secondary-light-blue: #4a4a7a; /* Dark variant of #5a5c8c */
+    --secondary-light-blue: #141415; /* Dark variant of #5a5c8c */
     --darker-blue: #a3a3ff; /* Lighter text for contrast */
 
     /* Darkblue color variants */

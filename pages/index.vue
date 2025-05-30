@@ -66,7 +66,7 @@
 		<div class="col-span-2">
 			<UiCard class="mt-8" title="Schema van deze week" :description="weekRange">
 				<template #content>
-					<div class="p-4">
+					<UiCardContent>
 						<UiTimeline :model-value="3" orientation="horizontal">
 							<UiTimelineItem v-for="item in timelineItems" :key="item.id" :step="item.id">
 								<UiTimelineHeader>
@@ -78,7 +78,7 @@
 								<UiTimelineContent>{{ item.description }}</UiTimelineContent>
 							</UiTimelineItem>
 						</UiTimeline>
-					</div>
+					</UiCardContent>
 				</template>
 			</UiCard>
 		</div>
