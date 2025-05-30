@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
   });
 
   if (!user) {
-    return new Response("User not found", { status: 404 });
+    throw createError({ statusCode: 404, statusMessage: "Die gebruiker bestaat niet" });
   }
 
   // Check if the password is correct

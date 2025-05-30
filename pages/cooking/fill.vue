@@ -13,11 +13,12 @@
 			</UiCard>
 		</div>
 		<div class="col-start-4">
-			<UiCard class="w-100" title="Handige informatie">
+			<UiCard class="w-100" title="Hoe gebruik je dit?">
 				<template #content>
 					<UiCardContent>
-						Klik en sleep om een range aan data te selecteren.
-						Gebruik de knoppen rechts om je data aan te passen
+						Klik en sleep om een range aan data te selecteren. <br />
+						Gebruik daarna de knoppen rechts om je data aan te passen, of druk op <UiKbd>X</UiKbd>, <UiKbd>V
+						</UiKbd>, <UiKbd>-</UiKbd> of <UiKbd>+</UiKbd>
 					</UiCardContent>
 				</template>
 			</UiCard>
@@ -35,18 +36,18 @@
 								<Icon class="size-4" name="lucide:x" />
 							</UiButton>
 							<!-- Default state; ik kan WEL -->
-							<UiButton>
+							<UiButton variant="positive">
 								<Icon class="size-4" name="lucide:check" />
 							</UiButton>
 
 							<UiSeparator orientation="vertical" />
 
 							<!-- Liever niet -->
-							<UiButton>
+							<UiButton variant="caution">
 								<Icon class="size-4" name="lucide:minus" />
 							</UiButton>
 							<!-- Graag -->
-							<UiButton>
+							<UiButton variant="constructive">
 								<Icon class="size-4" name="lucide:plus" />
 							</UiButton>
 						</div>
@@ -82,6 +83,27 @@ type SelectedDate = {
 let selecteddates: SelectedDate[] = [];
 // Await data
 
+function getAvailableEventsForMonth(): any[] {
+	const today = dayjs();
+	const startOfMonth = today.startOf("month");
+	const endOfMonth = today.endOf("month");
+
+	const events: any[] = [];
+
+	for (let date = startOfMonth; date.isBefore(endOfMonth); date = date.add(1, "day")) {
+		// Skip weekends if necessary
+		if (date.day() === 0 || date.day() === 6) continue;
+
+		events.push({
+			start: date.format("YYYY-MM-DD"),
+			display: "background",
+			className: "bg-red", // You'll define this
+			allDay: true,
+		});
+	}
+	return events;
+}
+
 // TODO: selectConstraint to make the user not be able to
 // select dates that have been marked as unneeded
 const calendarOptions: CalendarOptions = {
@@ -98,19 +120,7 @@ const calendarOptions: CalendarOptions = {
 		right: "dayGridWeek,dayGridMonth",
 	},
 	selectable: true,
-	events: [
-		{
-			title: "Justin",
-			date: dayjs().toDate().toISOString(),
-			url: "https://ui-thing.behonbaker.com/",
-			allDay: true,
-		},
-		{
-			title: "Danny",
-			date: dayjs().add(1, "day").format("YYYY-MM-DD"),
-			allDay: true,
-		},
-	],
+	events: getAvailableEventsForMonth,
 	select: function (info) {
 		selecteddates = [];
 

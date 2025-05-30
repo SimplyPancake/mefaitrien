@@ -68,9 +68,12 @@ enum Role {
   ADMIN
 }
 
+// Maybe not use AVAILABLE since no data means available
 enum AvailabilityType {
   AVAILABLE
   UNAVAILABLE
+  POSITIVE
+  NEGATIVE
 }
 
 enum MonthStatus {
