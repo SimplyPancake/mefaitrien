@@ -16,3 +16,8 @@ export interface AdminUsersDTO {
   users: AdminUserDTO[];
   cookingGroups: CookingGroup[];
 }
+
+export interface CreatedRosterMonth {
+  year: number;
+  month: number;
+}

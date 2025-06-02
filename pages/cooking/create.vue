@@ -38,29 +38,54 @@ ale<template>
 			</UiCard>
 		</div>
 		<div class="col-span-2 row-span-4">
-			<UiCard v-if="stepper == 1 || stepper == 2" class="w-100" :title="stepper == 1 ? 'Kies een maand' : (`Pas
+			<UiCard class="w-100" :title="stepper == 1 ? 'Kies een maand' : (`Pas
 				${months[selectedmonth]} aan`)">
 				<template #content>
 					<UiCardContent>
 						<div class="grid grid-rows-1 grid-cols-3 gap-4">
-							<div class="">
+							<div class="col-span-2">
 								<UiCalendar ref="calendar1" borderless :attributes="attributes" :first-day-of-week="2"
 									locale="nl" :masks="{ weekdays: 'WW' }" title-position="left"
-									v-on:update:pages="updateMonth" v-on:dayclick="clickDay">
+									v-on:update:pages="updateMonth" v-on:dayclick="clickDay" expanded>
 									<template #footer>
-										<UiButton icon-placement="right" type="button" @click="goToStep2"
-											class="w-full">
-											<Icon class="size-4" name="lucide:calendar-check-2" />{{ stepper == 1 ?
-												"Kies maand" : "Maak selectie definitief" }}
-										</UiButton>
+										<div class="flex flex-row gap-4">
+											<UiButton
+												v-if="(stepper == 3 || stepper == 2) && !selectedMonthAlreadyCreated"
+												icon-placement="right" type="button" @click="goBack" class="w-full"
+												variant="linkHover1">
+												Ik weet het nog niet zeker
+											</UiButton>
+											<UiButton v-if="stepper == 3 && !selectedMonthAlreadyCreated"
+												icon-placement="right" type="button" class="w-full"
+												@click="createMonth">
+												Maak definitief aan
+											</UiButton>
+											<UiButton v-if="stepper != 3 && !selectedMonthAlreadyCreated"
+												icon-placement="right" type="button" @click="goToNext" class="w-full">
+												<Icon class="size-4" name="lucide:calendar-check-2" />{{ stepper == 1 ?
+													"Kies maand" : (stepper == 2 ? "Maak selectie definitief" :
+														"Stuur naar server") }}
+											</UiButton>
+											<UiButton v-if="stepper != 3 && selectedMonthAlreadyCreated"
+												icon-placement="right" type="button" @click="" variant="ghost"
+												class="w-full">
+												Deze maand is al aangemaakt.
+											</UiButton>
+										</div>
 									</template>
 								</UiCalendar>
 							</div>
-							<div class="col-span-2 pl-4">
-								<p v-if="stepper == 2">
+							<div class="col-span-1">
+								<p v-if="stepper == 2" class="pb-2">
 									Klik op een datum om de staat van de datum te toggelen. Grijs betekent dat de datum
 									niet
 									kan worden ingevuld.
+								</p>
+								<p v-if="isOnWrongSelectedMonth" class="font-bold">
+									Je zit op de verkeerde maand! Je zit op {{ months[calendarselectedmonth - 1] }},
+									maar je
+									hebt {{
+										months[selectedmonth - 1] }} gekozen!
 								</p>
 							</div>
 						</div>
@@ -74,6 +99,7 @@ ale<template>
 <script lang="ts" setup>
 import dayjs from "dayjs";
 import type Calendar from "~/components/Ui/Calendar.vue";
+import type { CreatedRosterMonth } from "~/types/dto";
 
 usePageInfoStore().setPageInfo({
 	title: 'Kookmaand aanmaken',
@@ -82,6 +108,14 @@ usePageInfoStore().setPageInfo({
 useSeoMeta({
 	title: "Kookmaand aanmaken"
 })
+
+// Get already created months
+const { data: createdmonths, error: createdmonthserror } = await useAPI<CreatedRosterMonth[]>('/api/cooking/roster/months');
+if (createdmonthserror.value) {
+	console.log(createdmonthserror.value)
+	useSonner.error("Kon oude maanden niet ophalen!")
+}
+
 
 // Get weekends of selected month!
 function getWeekendDaysCalendar(year: number, month: number) {
@@ -93,7 +127,7 @@ function getWeekendDaysCalendar(year: number, month: number) {
 		const date = dayjs(`${year}-${month}-${day}`);
 		const dayOfWeek = date.day(); // Sunday = 0, Saturday = 6
 
-		if (dayOfWeek === 0 || dayOfWeek === 6) {
+		if (dayOfWeek == 0 || dayOfWeek == 6 || dayOfWeek == 5) {
 			weekends.push(date.toString()); // Push the dayjs object directly
 		}
 	}
@@ -121,15 +155,25 @@ const calendar1 = ref<InstanceType<typeof Calendar> | null>(null);
 
 const selectedmonth = ref(dayjs().month()) // 0 is january
 const selectedyear = ref(dayjs().year())
+const calendarselectedmonth = ref(dayjs().month())
+
+const selectedMonthAlreadyCreated = computed(() => {
+	return createdmonths.value?.some(x => x.year == selectedyear.value && x.month == selectedmonth.value)
+})
 
 const updateMonth = (e: CalendarPage[]) => {
+	let page = e[0];
+	calendarselectedmonth.value = page.month;
 	if (stepper.value == 1) {
-		let page = e[0];
 		// Januari = 1
 		selectedmonth.value = page.month;
 		selectedyear.value = page.year;
 	}
 }
+
+const isOnWrongSelectedMonth = computed(() => {
+	return selectedmonth.value != calendarselectedmonth.value
+})
 
 // TODO: Filter for only people that have the role
 // Get cooking roster for the next month to fill in
@@ -154,11 +198,25 @@ const steps = [
 
 const attributes = ref<any[]>([])
 
-const goToStep2 = () => {
-	stepper.value = 2
+const goToNext = () => {
+	if (stepper.value == 2) {
+		stepper.value = 3;
+	}
 
-	let days = getWeekendDaysCalendar(selectedyear.value, selectedmonth.value);
-	attributes.value = days;
+	if (stepper.value == 1) {
+
+		stepper.value = 2
+
+		let days = getWeekendDaysCalendar(selectedyear.value, selectedmonth.value);
+		attributes.value = days;
+	}
+}
+
+const goBack = () => {
+	stepper.value = stepper.value - 1;
+	if (stepper.value == 1) {
+		attributes.value = [];
+	}
 }
 
 const clickDay = (day: any, event: any) => {
@@ -182,6 +240,28 @@ const clickDay = (day: any, event: any) => {
 		});
 	}
 };
+
+const createMonth = async () => {
+	let blockedDates: string[] = []
+	blockedDates = attributes.value.map(x => x.dates)
+
+	// Then send the dates with POST
+	const { data, error } = await useAPI('/api/cooking/roster/create', {
+		method: "POST",
+		body: {
+			dates: blockedDates,
+			month: selectedmonth.value,
+			year: selectedyear.value
+		}
+	});
+
+	if (error.value) {
+		useSonner.error(error.value.message);
+	} else {
+		// success!
+		useSonner.success("Aanmaken gelukt!")
+	}
+}
 
 </script>
 

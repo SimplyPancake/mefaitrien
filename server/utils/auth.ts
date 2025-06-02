@@ -117,7 +117,9 @@ export const checkAccessConfig = async (
 
       // Check if role is in array
       let roleExists = settings.role!.some((x) => x.toLowerCase() == userData.role.toLowerCase());
-      return { granted: roleExists, sessionData: userData };
+      // OR with admin
+      let canBeGranted = roleExists || userData.role == "ADMIN";
+      return { granted: canBeGranted, sessionData: userData };
     }
 
     return { granted: true, sessionData: await getSessionData(id) };
