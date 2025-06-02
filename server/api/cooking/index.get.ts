@@ -18,7 +18,7 @@ let handlerFunc = async (event: H3Event) => {
 };
 
 export default defineEventHandler(async (event) => {
-  return new BaseEventHandler(event, handlerFunc).handleConfig({
+  return new BaseEventHandler(event, handlerFunc).handle({
     route: "/api/cooking",
     method: "GET",
     allowType: "AUTHENTICATED",

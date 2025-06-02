@@ -5,9 +5,7 @@
 				<template #content>
 					<UiCardContent>
 						<!-- keep-alive for making sure that the tab does not go white -->
-						<keep-alive>
-							<FullCalendar :options="calendarOptions" />
-						</keep-alive>
+						<FullCalendar ref="calendarRef" :options="calendarOptions" />
 					</UiCardContent>
 				</template>
 			</UiCard>
@@ -17,8 +15,8 @@
 				<template #content>
 					<UiCardContent>
 						Klik en sleep om een range aan data te selecteren. <br />
-						Gebruik daarna de knoppen rechts om je data aan te passen, of druk op <UiKbd>X</UiKbd>, <UiKbd>V
-						</UiKbd>, <UiKbd>-</UiKbd> of <UiKbd>+</UiKbd>
+						Gebruik daarna de knoppen rechts om je data aan te passen, of druk op <UiKbd>Z</UiKbd>, <UiKbd>X
+						</UiKbd>, <UiKbd>C</UiKbd> of <UiKbd>V</UiKbd>
 					</UiCardContent>
 				</template>
 			</UiCard>
@@ -55,7 +53,7 @@
 						</div>
 						<div class="flex justify-between gap-2 pt-2 border-t">
 							<UiButton variant="outline" class="w-full" @click="resetAvailability">Annuleren</UiButton>
-							<UiButton variant="default" class="w-full">Opslaan</UiButton>
+							<UiButton variant="default" class="w-full" @click="submitData">Opslaan</UiButton>
 						</div>
 					</UiCardContent>
 				</template>
@@ -74,6 +72,8 @@ import type { CalendarOptions } from "@fullcalendar/core";
 import { AvailabilityType } from "@prisma/client";
 import { usePageInfoStore } from '~/composables/usePageInfoStore';
 import { useCookingStore } from '~/composables/useCookingStore';
+import { useMagicKeys } from '@vueuse/core'
+import { useAPI } from '~/composables/useAPI';
 
 usePageInfoStore().setPageInfo({
 	title: 'Beschikbaarheid',
@@ -88,6 +88,21 @@ type SelectedDate = {
 	availability: AvailabilityType
 }
 
+const keys = useMagicKeys()
+
+watchEffect(() => {
+	if (keys.z.value) {
+		updateSelectedDatesAvailability('UNAVAILABLE')
+	} else if (keys.x.value) {
+		updateSelectedDatesAvailability('AVAILABLE')
+	} else if (keys.c.value) {
+		updateSelectedDatesAvailability('NEGATIVE')
+	} else if (keys.v.value) {
+		updateSelectedDatesAvailability('POSITIVE')
+	}
+})
+
+const calendarRef = ref<InstanceType<typeof FullCalendar> | null>(null);
 const cookingStore = useCookingStore();
 const selecteddates = ref<Date[]>([]);
 
@@ -96,30 +111,22 @@ const dates = ref<SelectedDate[]>([]);
 // Keep backup for reset
 let olddates: SelectedDate[] = [];
 
-// Initialize from store
 onMounted(() => {
-	const storedDates = cookingStore.getAvailability();
-	if (storedDates && storedDates.length > 0) {
-		dates.value = storedDates;
-	} else {
-		// First fill in dates if store is empty
-		for (let date = startOfMonth; date.isBefore(endOfMonth); date = date.add(1, "day")) {
-			// Skip weekends if necessary
-			if (date.day() === 0 || date.day() === 6) continue;
+	// First fill in dates if store is empty
+	for (let date = startOfMonth; date.isBefore(endOfMonth); date = date.add(1, "day")) {
+		if (date.day() === 0 || date.day() === 6) continue;
 
-			const toAdd: SelectedDate = {
-				date: date.toDate(),
-				availability: "AVAILABLE"
-			}
-
-			dates.value.push(toAdd);
-		}
-
-		olddates = dates.value;
-		console.log("Old dates set as:")
-		console.log(olddates)
+		dates.value.push({
+			date: date.toDate(),
+			availability: "AVAILABLE"
+		});
 	}
+
+	// Backup current state
+	olddates = dates.value.map(d => ({ ...d }));
+	cookingStore.setAvailability(dates.value); // Store the initialized availability
 });
+
 
 // Watch for changes and update store
 watch(dates, (newDates) => {
@@ -127,9 +134,9 @@ watch(dates, (newDates) => {
 }, { deep: true });
 
 const resetAvailability = () => {
-	console.log(olddates);
-	dates.value = olddates;
-}
+	dates.value = olddates.map(d => ({ ...d })); // deep clone!
+	selecteddates.value = []; // clear selection
+};
 
 const updateSelectedDatesAvailability = (availability: AvailabilityType) => {
 	selecteddates.value.forEach(selected => {
@@ -145,6 +152,7 @@ const updateSelectedDatesAvailability = (availability: AvailabilityType) => {
 
 	// Clear selection after updating
 	selecteddates.value = [];
+	calendarRef.value?.getApi().unselect();
 };
 
 // Get month range
@@ -155,15 +163,15 @@ const endOfMonth = today.endOf("month");
 const getColorForAvailability = (availability?: AvailabilityType) => {
 	switch (availability) {
 		case 'UNAVAILABLE':
-			return '#ef4444'; // red
+			return '#fca5a5'; // light red
 		case 'AVAILABLE':
-			return '#22c55e'; // green
-		case "POSITIVE":
-			return '#3b82f6'; // blue
-		case "NEGATIVE":
-			return '#f59e0b'; // amber
+			return '#6ee7b7'; // pastel green
+		case 'POSITIVE':
+			return '#93c5fd'; // light blue
+		case 'NEGATIVE':
+			return '#fde68a'; // soft yellow
 		default:
-			return '#e2e8f0'; // slate-200
+			return '#e5e7eb'; // light gray
 	}
 };
 
@@ -190,10 +198,22 @@ const getAvailableEventsForMonth = computed(() => {
 	return events;
 });
 
+// Dynamically update calendar events when availability changes
+watch(getAvailableEventsForMonth, (newEvents) => {
+	calendarOptions.value.events = newEvents;
+
+	// Refresh events in calendar manually
+	const calendarApi = calendarRef.value?.getApi();
+	if (calendarApi) {
+		calendarApi.removeAllEvents();
+		calendarApi.addEventSource(newEvents);
+	}
+});
+
 // TODO: selectConstraint to make the user not be able to
 // select dates that have been marked as unneeded
 // eventOverlap!
-const calendarOptions = computed((): CalendarOptions => ({
+const calendarOptions = ref<CalendarOptions>({
 	locale: "nl",
 	plugins: [dayGridPlugin, interactionPlugin],
 	initialView: "dayGridMonth",
@@ -202,24 +222,28 @@ const calendarOptions = computed((): CalendarOptions => ({
 	stickyHeaderDates: true,
 	editable: false,
 	headerToolbar: {
-		left: "prevYear,prev,today,next,nextYear",
-		center: "title",
-		right: "dayGridWeek,dayGridMonth",
+		left: "title",
+		center: "",
+		right: "",
 	},
 	selectable: true,
-	events: getAvailableEventsForMonth.value, select: function (info) {
+	events: () => getAvailableEventsForMonth.value,
+	select(info) {
 		selecteddates.value = [];
-
-		// Selected range or day
-		let startDate = info.start;
+		let startDate = new Date(info.start);
 
 		while (startDate < info.end) {
 			selecteddates.value.push(new Date(startDate));
-
-			// Move to the next day
 			startDate.setDate(startDate.getDate() + 1);
 		}
 	}
-}));
+});
+
+const submitData = async () => {
+	const { data, error } = await useAPI('/api/cooking/availability', {
+		method: 'POST',
+		body: dates,
+	});
+}
 
 </script>

@@ -1,4 +1,5 @@
 import type { H3Event, HTTPMethod } from "h3";
+import type { AnySchema } from "yup";
 
 export enum AllowType {
   ANYONE,
@@ -27,4 +28,6 @@ export type SessionDataDto = SessionData;
 
 export interface SessionEvent extends H3Event {
   session: SessionDataDto;
+  schema?: AnySchema;
+  data?: any;
 }

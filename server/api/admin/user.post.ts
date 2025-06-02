@@ -1,29 +1,10 @@
 import prisma from "@@/lib/prisma";
 import { BaseEventHandler } from "~/server/utils/handlers/baseEventHandler";
-import { H3Event } from "h3";
+import { SessionEvent } from "~/types";
 import { number, object, string } from "yup";
 
-let handlerFunc = async (event: H3Event) => {
-  const body = await readBody(event);
-
-  // Define validation schema
-  const schema = object({
-    id: number().required("User ID is required"),
-    name: string().required("Name is required"),
-    email: string().email("Invalid email address").required("Email is required"),
-    role: string().oneOf(["ADMIN", "USER"], "Invalid role").required("Role is required"),
-    username: string(),
-    cookingGroupId: string().nullable(),
-  });
-
-  try {
-    await schema.validate(body);
-  } catch (e: any) {
-    console.error(e);
-    throw createError({ status: 400, statusMessage: e.message });
-  }
-
-  const { id, name, email, role, cookingGroupId, username } = body;
+let handlerFunc = async (event: SessionEvent) => {
+  const { id, name, email, role, cookingGroupId, username } = event.data;
 
   const admins = await prisma.user.findMany({
     where: {
@@ -44,7 +25,7 @@ let handlerFunc = async (event: H3Event) => {
         username: username,
         email: email,
         role: role,
-        cookingGroupId: cookingGroupId,
+        cookingGroupId: parseInt(cookingGroupId),
         modifiedAt: new Date(),
       },
     });
@@ -57,7 +38,18 @@ let handlerFunc = async (event: H3Event) => {
 };
 
 export default defineEventHandler(async (event) => {
-  return new BaseEventHandler(event, handlerFunc).handleConfig({
+  return new BaseEventHandler(
+    event,
+    handlerFunc,
+    object({
+      id: number().required("User ID is required"),
+      name: string().required("Name is required"),
+      email: string().email("Invalid email address").required("Email is required"),
+      role: string().oneOf(["ADMIN", "USER"], "Invalid role").required("Role is required"),
+      username: string(),
+      cookingGroupId: string().nullable(),
+    })
+  ).handle({
     route: "/api/admin/editUser",
     method: "POST",
     allowType: "AUTHENTICATED",

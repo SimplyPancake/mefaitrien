@@ -1,6 +1,7 @@
 <template>
 	<ClientOnly>
-		<VCalendar :trim-weeks="props.trimWeeks || true" :is-dark="false" v-bind="$attrs">
+		<VCalendar ref="calendarRef" :trim-weeks="props.trimWeeks || true" :is-dark="false" v-bind="$attrs"
+			v-on="$attrs">
 			<template v-for="(_, slot) in $slots" #[slot]="scope">
 				<slot :name="slot" v-bind="scope" />
 			</template>
@@ -10,6 +11,14 @@
 
 <script lang="ts" setup>
 import type { Calendar } from "v-calendar";
+import { ref, onMounted, defineExpose } from 'vue';
+
+const calendarRef = ref(null);
+
+// Expose the internal VCalendar ref
+defineExpose({
+	calendarRef,
+});
 
 defineOptions({ inheritAttrs: false });
 

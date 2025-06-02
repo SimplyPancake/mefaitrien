@@ -1,19 +1,33 @@
 import { ServerAuthConfig, SessionEvent } from "~/types";
 import { H3Event } from "h3";
+import { AnySchema } from "yup";
 
 import { checkAccess, checkAccessConfig } from "../../utils/auth";
 
 export class BaseEventHandler {
   protected event: H3Event;
+  protected schema?: AnySchema;
   protected handlerFunc: (event: SessionEvent) => Promise<Response>;
 
-  public constructor(event: H3Event, handlerFunc: (event: SessionEvent) => Promise<any>) {
+  public constructor(
+    event: H3Event,
+    handlerFunc: (event: SessionEvent) => Promise<any>,
+    schema?: AnySchema
+  ) {
     this.event = event;
     this.handlerFunc = handlerFunc;
+
+    this.schema = schema;
   }
 
-  public async handle(): Promise<Response> {
-    let authenticated = await checkAccess(this.event);
+  public async handle(config?: ServerAuthConfig): Promise<Response> {
+    let authenticated: any;
+
+    if (config) {
+      authenticated = await checkAccessConfig(this.event, config);
+    } else {
+      authenticated = await checkAccess(this.event);
+    }
 
     if (!authenticated.granted) {
       return new Response("Unauthorized", { status: 401 });
@@ -26,18 +40,22 @@ export class BaseEventHandler {
     let event = this.event as SessionEvent;
     event.session = authenticated.sessionData!;
 
-    return await this.handlerFunc(event);
-  }
+    // Body
+    // TODO: Use schema cast
+    if (this.schema) {
+      const body = await readBody(event);
 
-  public async handleConfig(config: ServerAuthConfig): Promise<Response> {
-    const authenticated = await checkAccessConfig(this.event, config);
+      try {
+        await this.schema.validate(body);
+      } catch (e: any) {
+        console.error(e);
+        throw createError({ status: 400, statusMessage: e.message });
+      }
 
-    if (!authenticated.sessionData) {
-      authenticated.sessionData = await getSessionDataEvent(this.event);
+      // No errors, so we set the event body
+      event.data = this.schema.cast(body);
+      event.schema = this.schema;
     }
-
-    let event = this.event as SessionEvent;
-    event.session = authenticated.sessionData!;
 
     return await this.handlerFunc(event);
   }

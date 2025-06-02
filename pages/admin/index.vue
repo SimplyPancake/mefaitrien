@@ -3,7 +3,7 @@
 		<div class="col-span-2 row-span-2">
 			<UiCard title="Gebruikers">
 				<template #content>
-					<UserTable />
+					<BaseAuthenticatedAdminUserTable />
 				</template>
 			</UiCard>
 		</div>
@@ -11,7 +11,6 @@
 </template>
 
 <script lang="ts" setup>
-import UserTable from './components/base/authenticated/admin/UserTable.vue';
 useSeoMeta({
 	title: "Admin Dashboard",
 });

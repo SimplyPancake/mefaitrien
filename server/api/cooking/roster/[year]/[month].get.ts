@@ -35,7 +35,7 @@ let handlerFunc = async (event: SessionEvent) => {
 };
 
 export default defineEventHandler(async (event) => {
-  return new BaseEventHandler(event, handlerFunc).handleConfig({
+  return new BaseEventHandler(event, handlerFunc).handle({
     route: "/api/roster/*/*", // Doesn't matter what route is
     method: "GET",
     allowType: "AUTHENTICATED",
