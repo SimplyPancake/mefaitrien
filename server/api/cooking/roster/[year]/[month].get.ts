@@ -28,6 +28,7 @@ let handlerFunc = async (event: SessionEvent) => {
     },
     include: {
       availabilities: true,
+      blockedDates: true,
     },
   });
 

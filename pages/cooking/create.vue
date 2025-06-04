@@ -1,4 +1,4 @@
-ale<template>
+<template>
 	<div class="grid grid-cols-4 grid-rows-5 gap-4">
 		<div class="row-span-4">
 			<UiCard class="w-100">

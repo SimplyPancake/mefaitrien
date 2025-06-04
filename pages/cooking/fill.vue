@@ -4,8 +4,14 @@
 			<UiCard class="w-100" title="Vul je beschikbaarheid in">
 				<template #content>
 					<UiCardContent>
-						<!-- keep-alive for making sure that the tab does not go white -->
-						<FullCalendar ref="calendarRef" :options="calendarOptions" />
+						<UiAlert v-if="!canfillmonth" icon="lucide:circle-alert" variant="destructive"
+							icon-class="mt-0.5" description="Je kan deze maand niet invullen!" />
+						<UiLoader v-if="fillmontshstatus == 'pending'" class="size-10"
+							icon="svg-spinners:blocks-wave" />
+						<keep-alive>
+							<FullCalendar v-if="fillmontshstatus == 'success'" ref="calendarRef"
+								:options="calendarOptions" />
+						</keep-alive>
 					</UiCardContent>
 				</template>
 			</UiCard>
@@ -29,31 +35,33 @@
 							<!-- Kan niet -->
 							<UiButton class="w-full" variant="destructive"
 								@click="updateSelectedDatesAvailability('UNAVAILABLE')"
-								:disabled="selecteddates.length === 0">
+								:disabled="!canfillmonth || selecteddates.length == 0">
 								<Icon class="size-4" name="lucide:x" />
 							</UiButton>
 							<!-- Default state; ik kan WEL -->
 							<UiButton class="w-full" variant="positive"
 								@click="updateSelectedDatesAvailability('AVAILABLE')"
-								:disabled="selecteddates.length === 0">
+								:disabled="!canfillmonth || selecteddates.length == 0">
 								<Icon class="size-4" name="lucide:check" />
 							</UiButton>
 							<!-- Liever niet -->
 							<UiButton class="w-full" variant="caution"
 								@click="updateSelectedDatesAvailability('NEGATIVE')"
-								:disabled="selecteddates.length === 0">
+								:disabled="!canfillmonth || selecteddates.length == 0">
 								<Icon class="size-4" name="lucide:minus" />
 							</UiButton>
 							<!-- Graag -->
 							<UiButton class="w-full" variant="constructive"
 								@click="updateSelectedDatesAvailability('POSITIVE')"
-								:disabled="selecteddates.length === 0">
+								:disabled="!canfillmonth || selecteddates.length == 0">
 								<Icon class="size-4" name="lucide:plus" />
 							</UiButton>
 						</div>
 						<div class="flex justify-between gap-2 pt-2 border-t">
-							<UiButton variant="outline" class="w-full" @click="resetAvailability">Annuleren</UiButton>
-							<UiButton variant="default" class="w-full" @click="submitData">Opslaan</UiButton>
+							<UiButton variant="outline" class="w-full" @click="resetAvailability"
+								:disabled="!canfillmonth">Annuleren</UiButton>
+							<UiButton variant="default" class="w-full" @click="submitData" :disabled="!canfillmonth">
+								Sla deze maand op</UiButton>
 						</div>
 					</UiCardContent>
 				</template>
@@ -69,7 +77,7 @@ import FullCalendar from "@fullcalendar/vue3";
 import dayjs from "dayjs";
 import { computed, onMounted, ref, watch } from 'vue';
 import type { CalendarOptions } from "@fullcalendar/core";
-import { AvailabilityType } from "@prisma/client";
+import { AvailabilityType, type Availability, type BlockedDay, type MonthRoster } from "@prisma/client";
 import { usePageInfoStore } from '~/composables/usePageInfoStore';
 import { useCookingStore } from '~/composables/useCookingStore';
 import { useMagicKeys } from '@vueuse/core'
@@ -106,32 +114,85 @@ const calendarRef = ref<InstanceType<typeof FullCalendar> | null>(null);
 const cookingStore = useCookingStore();
 const selecteddates = ref<Date[]>([]);
 
+const selectedmonth = ref(new Date().getMonth())
+const selectedyear = ref(new Date().getFullYear())
+const canfillmonth = ref(false);
+
 // Get dates from store or initialize to empty array
 const dates = ref<SelectedDate[]>([]);
 // Keep backup for reset
 let olddates: SelectedDate[] = [];
 
-onMounted(() => {
-	// First fill in dates if store is empty
-	for (let date = startOfMonth; date.isBefore(endOfMonth); date = date.add(1, "day")) {
-		if (date.day() === 0 || date.day() === 6) continue;
+type extraStuff = {
+	availabilities: Availability[],
+	blockedDates: BlockedDay[]
+}
 
-		dates.value.push({
-			date: date.toDate(),
-			availability: "AVAILABLE"
-		});
+// Get availability of some months
+const { data: tofillinmonths, error: fillmonthserror, status: fillmontshstatus } = await useAPI<(MonthRoster & extraStuff)[]>("/api/cooking/availability");
+
+if (fillmonthserror.value) {
+	useSonner.error("Kon geen maand data ophalen");
+} else {
+	useSonner.success("Data opgehaald")
+	console.log(tofillinmonths.value)
+}
+
+const currentFillMonth = computed(() => {
+	return tofillinmonths.value?.find(x => x.month == selectedmonth.value + 1 && x.year == selectedyear.value)
+})
+
+watch(selectedmonth, () => {
+	initialiseMonth();
+})
+
+const initialiseMonth = () => {
+	canfillmonth.value = false;
+
+	if (selectedyear.value < new Date().getFullYear() - 2) {
+		canfillmonth.value = false;
+	} else {
+		// May be able to set to true
+		canfillmonth.value = !!currentFillMonth.value
 	}
+
+	if (currentFillMonth.value && currentFillMonth.value?.availabilities.length != 0) {
+		console.log('Huidige maand is al ingevuld')
+		let m = currentFillMonth.value;
+		// Set dates to include the availabilities
+		currentFillMonth.value.availabilities.forEach(av => {
+			dates.value.push({
+				// TODO: Check index of month and day
+				date: new Date(m.year, m.month, av.day),
+				availability: av.availability
+			})
+		});
+	} else if (canfillmonth.value) {
+		// If user hasn't filled in any dates yet
+		console.log('Huidige maand is nog niet ingevuld')
+
+		for (let date = startOfMonth.value; date.isBefore(endOfMonth.value); date = date.add(1, "day")) {
+			if (date.day() === 0 || date.day() === 6) continue;
+
+			dates.value.push({
+				date: date.toDate(),
+				availability: "AVAILABLE"
+			});
+		}
+	}
+
+	// set calendar selectable
+	calendarRef.value?.getApi().setOption("selectable", canfillmonth.value)
 
 	// Backup current state
 	olddates = dates.value.map(d => ({ ...d }));
 	cookingStore.setAvailability(dates.value); // Store the initialized availability
+}
+
+onMounted(() => {
+	initialiseMonth();
 });
 
-
-// Watch for changes and update store
-watch(dates, (newDates) => {
-	cookingStore.setAvailability(newDates);
-}, { deep: true });
 
 const resetAvailability = () => {
 	dates.value = olddates.map(d => ({ ...d })); // deep clone!
@@ -156,9 +217,13 @@ const updateSelectedDatesAvailability = (availability: AvailabilityType) => {
 };
 
 // Get month range
-const today = dayjs();
-const startOfMonth = today.startOf("month");
-const endOfMonth = today.endOf("month");
+const startOfMonth = computed(() => {
+	return dayjs().set("month", selectedmonth.value).set("year", selectedyear.value).startOf("month");
+})
+
+const endOfMonth = computed(() => {
+	return dayjs().set("month", selectedmonth.value).set("year", selectedyear.value).endOf("month");
+})
 
 const getColorForAvailability = (availability?: AvailabilityType) => {
 	switch (availability) {
@@ -178,7 +243,7 @@ const getColorForAvailability = (availability?: AvailabilityType) => {
 const getAvailableEventsForMonth = computed(() => {
 	const events: any[] = [];
 
-	for (let date = dayjs(startOfMonth); date.isBefore(endOfMonth); date = date.add(1, "day")) {
+	for (let date = dayjs(startOfMonth.value); date.isBefore(endOfMonth.value); date = date.add(1, "day")) {
 		// Skip weekends if necessary
 		if (date.day() === 0 || date.day() === 6) continue;
 
@@ -210,6 +275,7 @@ watch(getAvailableEventsForMonth, (newEvents) => {
 	}
 });
 
+
 // TODO: selectConstraint to make the user not be able to
 // select dates that have been marked as unneeded
 // eventOverlap!
@@ -224,9 +290,50 @@ const calendarOptions = ref<CalendarOptions>({
 	headerToolbar: {
 		left: "title",
 		center: "",
-		right: "",
+		right: "gotoprev,gotonext",
 	},
 	selectable: true,
+	buttonIcons: {
+		gotoprev: 'chevron-left',
+		gotonext: 'chevron-right',
+	},
+	customButtons: {
+		gotoprev: {
+			text: '<',
+			click: function () {
+				selectedmonth.value = selectedmonth.value - 1;
+
+				if (selectedmonth.value < 0) {
+					selectedmonth.value = selectedmonth.value + 12;
+					selectedyear.value = selectedyear.value - 1;
+				}
+
+				calendarRef.value?.getApi().prev();
+			}
+		},
+		gotonext: {
+			text: '>',
+			click: function () {
+				selectedmonth.value = selectedmonth.value + 1;
+
+				if (selectedmonth.value > 11) {
+					selectedmonth.value = selectedmonth.value % 12;
+					selectedyear.value = selectedyear.value + 1;
+				}
+
+				calendarRef.value?.getApi().next();
+			}
+		}
+	},
+	// selectConstraint: {
+	// 	start: startOfMonth.toDate(),
+	// 	end: endOfMonth.toDate(),
+	// 	// Prevent selecting blocked days
+	// 	constraint: (date) => {
+	// 		const dateStr = dayjs(date).format("YYYY-MM-DD");
+	// 		return !blockedDates.some(blocked => dayjs().date(blocked.day).format("YYYY-MM-DD") === dateStr);
+	// 	},
+	// },
 	events: () => getAvailableEventsForMonth.value,
 	select(info) {
 		selecteddates.value = [];
