@@ -5,9 +5,9 @@
 				<template #content>
 					<UiCardContent>
 						<!-- keep-alive for making sure that the tab does not go white -->
-						<keep-alive>
+						<KeepAlive>
 							<FullCalendar :options="calendarOptions" :key="calendarKey" />
-						</keep-alive>
+						</KeepAlive>
 					</UiCardContent>
 				</template>
 			</UiCard>
@@ -37,6 +37,8 @@ import { addDays, startOfMonth, startOfToday } from "date-fns";
 import type { CalendarOptions } from "@fullcalendar/core";
 import { usePageInfoStore } from '~/composables/usePageInfoStore';
 import { useRoute } from "vue-router";
+import { AvailabilityType, type Availability, type BlockedDay, type MonthRoster } from "@prisma/client";
+import { computed, onMounted, ref, watch, onBeforeUnmount } from 'vue';
 
 usePageInfoStore().setPageInfo({
 	title: 'Koken',
@@ -46,7 +48,19 @@ useSeoMeta({
 	title: "Koken - Dashboard"
 })
 
+
+type extraStuff = {
+	availabilities: Availability[],
+	blockedDates: BlockedDay[]
+}
 // Await data
+const { data: avaldata, error: avalerror } = await useAPI<(MonthRoster & extraStuff)[]>("/api/cooking/availability");
+if (avalerror.value) {
+	useSonner.error("Kon geen maand data ophalen");
+} else {
+	useSonner.success("Data opgehaald")
+}
+
 
 const calendarOptions: CalendarOptions = {
 	locale: "nl",
@@ -88,28 +102,72 @@ let nextMonthDate = new Date()
 nextMonthDate.setMonth(nextMonthDate.getMonth() + 1)
 let nextMonthName = dateFormatter.format(nextMonthDate)
 
-const attributes = ref([
-	{
-		bar: "green",
-		popover: {
-			label: "Beschikbaar"
+const attributes = ref([]);
+
+onMounted(() => {
+	if (!avaldata.value) return;
+
+	// Get current month's data
+	const currentMonthData = avaldata.value.find(
+		x => x.month === currentMonth && x.year === currentYear
+	);
+
+	if (!currentMonthData) return;
+
+	// Create attribute groups by availability type
+	const availabilityGroups = {
+		AVAILABLE: {
+			bar: "green",
+			popover: { label: "Beschikbaar" },
+			dates: [] as Date[],
 		},
-		dates: addDays(startOfMonth(startOfToday()), 8).toString()
-	},
-	{
-		bar: "red",
-		popover: {
-			label: "Niet beschikbaar"
+		UNAVAILABLE: {
+			bar: "red",
+			popover: { label: "Niet beschikbaar" },
+			dates: [] as Date[],
 		},
-		dates: addDays(startOfMonth(startOfToday()), 2).toString()
-	}
-])
+		POSITIVE: {
+			bar: "blue",
+			popover: { label: "Graag" },
+			dates: [] as Date[],
+		},
+		NEGATIVE: {
+			bar: "yellow",
+			popover: { label: "Liever niet" },
+			dates: [] as Date[],
+		},
+	};
+
+	// Group dates by availability
+	currentMonthData.availabilities.forEach(av => {
+		const date = new Date(currentYear, currentMonth - 1, av.day);
+		if (av.availability in availabilityGroups) {
+			availabilityGroups[av.availability as keyof typeof availabilityGroups].dates.push(date);
+		}
+	});
+
+	// Set attributes array
+	attributes.value = Object.values(availabilityGroups).filter(group => group.dates.length > 0);
+});
 
 const calendarKey = ref(0);
 const route = useRoute();
 
-// // Increment the key when switching tabs to force re-rendering if needed
-// watch(() => route.path, () => {
-// 	calendarKey.value++;
-// });
+const calendarRef = ref<InstanceType<typeof FullCalendar> | null>(null);
+
+// Increment the key when switching tabs to force re-rendering if needed
+watch(() => route.path, () => {
+	calendarKey.value++;
+});
+
+onBeforeUnmount(() => {
+	const calendarApi = calendarRef.value?.getApi();
+	if (calendarApi) {
+		try {
+			calendarApi.destroy();
+		} catch (error) {
+			console.warn('Error while destroying calendar:', error);
+		}
+	}
+});
 </script>

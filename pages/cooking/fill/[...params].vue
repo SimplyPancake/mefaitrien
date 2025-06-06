@@ -6,12 +6,11 @@
 					<UiCardContent>
 						<UiAlert v-if="!canfillmonth" icon="lucide:circle-alert" variant="destructive"
 							icon-class="mt-0.5" description="Je kan deze maand niet invullen!" />
-						<UiLoader v-if="fillmontshstatus == 'pending'" class="size-10"
-							icon="svg-spinners:blocks-wave" />
-						<keep-alive>
-							<FullCalendar v-if="fillmontshstatus == 'success'" ref="calendarRef"
-								:options="calendarOptions" />
-						</keep-alive>
+						<!-- <UiLoader v-if="fillmontshstatus == 'pending'" class="size-10"
+							icon="svg-spinners:blocks-wave" /> -->
+						<KeepAlive>
+							<FullCalendar ref="calendarRef" :options="calendarOptions" />
+						</KeepAlive>
 					</UiCardContent>
 				</template>
 			</UiCard>
@@ -59,8 +58,9 @@
 						</div>
 						<div class="flex justify-between gap-2 pt-2 border-t">
 							<UiButton variant="outline" class="w-full" @click="resetAvailability"
-								:disabled="!canfillmonth">Annuleren</UiButton>
-							<UiButton variant="default" class="w-full" @click="submitData" :disabled="!canfillmonth">
+								:disabled="!canfillmonth && !hasmadechangestothismonth">Annuleren</UiButton>
+							<UiButton variant="default" class="w-full" @click="submitMonthData"
+								:disabled="!canfillmonth">
 								Sla deze maand op</UiButton>
 						</div>
 					</UiCardContent>
@@ -79,7 +79,6 @@ import { computed, onMounted, ref, watch } from 'vue';
 import type { CalendarOptions } from "@fullcalendar/core";
 import { AvailabilityType, type Availability, type BlockedDay, type MonthRoster } from "@prisma/client";
 import { usePageInfoStore } from '~/composables/usePageInfoStore';
-import { useCookingStore } from '~/composables/useCookingStore';
 import { useMagicKeys } from '@vueuse/core'
 import { useAPI } from '~/composables/useAPI';
 
@@ -91,12 +90,21 @@ useSeoMeta({
 	title: "Koken - Beschikbaarheid"
 })
 
+type extraStuff = {
+	availabilities: Availability[],
+	blockedDates: BlockedDay[]
+}
+
+type DateAvailabilityType = AvailabilityType | "BLOCKED"
+
 type SelectedDate = {
 	date: Date,
-	availability: AvailabilityType
+	availability: DateAvailabilityType
 }
 
 const keys = useMagicKeys()
+const route = useRoute()
+
 
 watchEffect(() => {
 	if (keys.z.value) {
@@ -111,43 +119,40 @@ watchEffect(() => {
 })
 
 const calendarRef = ref<InstanceType<typeof FullCalendar> | null>(null);
-const cookingStore = useCookingStore();
 const selecteddates = ref<Date[]>([]);
 
 const selectedmonth = ref(new Date().getMonth())
 const selectedyear = ref(new Date().getFullYear())
 const canfillmonth = ref(false);
+const hasmadechangestothismonth = ref(false);
 
 // Get dates from store or initialize to empty array
 const dates = ref<SelectedDate[]>([]);
 // Keep backup for reset
 let olddates: SelectedDate[] = [];
 
-type extraStuff = {
-	availabilities: Availability[],
-	blockedDates: BlockedDay[]
-}
-
 // Get availability of some months
-const { data: tofillinmonths, error: fillmonthserror, status: fillmontshstatus } = await useAPI<(MonthRoster & extraStuff)[]>("/api/cooking/availability");
+const { data: tofillinmonths, error: fillmonthserror, status: fillmontshstatus, execute: getmonthdata } = await useAPI<(MonthRoster & extraStuff)[]>("/api/cooking/availability");
 
-if (fillmonthserror.value) {
-	useSonner.error("Kon geen maand data ophalen");
-} else {
-	useSonner.success("Data opgehaald")
-	console.log(tofillinmonths.value)
+const getMonths = async () => {
+	await getmonthdata();
+	if (fillmonthserror.value) {
+		useSonner.error("Kon geen maand data ophalen");
+	} else {
+		useSonner.success("Data opgehaald")
+	}
 }
 
 const currentFillMonth = computed(() => {
 	return tofillinmonths.value?.find(x => x.month == selectedmonth.value + 1 && x.year == selectedyear.value)
 })
 
-watch(selectedmonth, () => {
-	initialiseMonth();
-})
-
 const initialiseMonth = () => {
 	canfillmonth.value = false;
+	dates.value = [];
+	olddates = [];
+	hasmadechangestothismonth.value = false;
+
 
 	if (selectedyear.value < new Date().getFullYear() - 2) {
 		canfillmonth.value = false;
@@ -157,27 +162,39 @@ const initialiseMonth = () => {
 	}
 
 	if (currentFillMonth.value && currentFillMonth.value?.availabilities.length != 0) {
-		console.log('Huidige maand is al ingevuld')
 		let m = currentFillMonth.value;
 		// Set dates to include the availabilities
 		currentFillMonth.value.availabilities.forEach(av => {
 			dates.value.push({
 				// TODO: Check index of month and day
-				date: new Date(m.year, m.month, av.day),
+				date: new Date(m.year, m.month - 1, av.day),
 				availability: av.availability
+			})
+		});
+
+		// and push blocked days
+		currentFillMonth.value.blockedDates.forEach(av => {
+			dates.value.push({
+				// TODO: Check index of month and day
+				date: new Date(m.year, m.month - 1, av.day),
+				availability: "BLOCKED"
 			})
 		});
 	} else if (canfillmonth.value) {
 		// If user hasn't filled in any dates yet
-		console.log('Huidige maand is nog niet ingevuld')
-
 		for (let date = startOfMonth.value; date.isBefore(endOfMonth.value); date = date.add(1, "day")) {
-			if (date.day() === 0 || date.day() === 6) continue;
-
-			dates.value.push({
-				date: date.toDate(),
-				availability: "AVAILABLE"
-			});
+			// If date is in a date that cannot be selected, set it to gray!
+			if (currentFillMonth.value?.blockedDates.some(x => x.day == date.day() + 1)) {
+				dates.value.push({
+					date: date.toDate(),
+					availability: "BLOCKED"
+				});
+			} else {
+				dates.value.push({
+					date: date.toDate(),
+					availability: "AVAILABLE"
+				});
+			}
 		}
 	}
 
@@ -186,10 +203,25 @@ const initialiseMonth = () => {
 
 	// Backup current state
 	olddates = dates.value.map(d => ({ ...d }));
-	cookingStore.setAvailability(dates.value); // Store the initialized availability
 }
 
 onMounted(() => {
+	const now = new Date()
+	const params = route.params.params as string[] | undefined
+
+	if (params) {
+		const yearParam = params?.[0]
+		const monthParam = params?.[1]
+
+		const year = parseInt(yearParam ?? '')
+		const month = parseInt(monthParam ?? '')
+
+		selectedyear.value = !isNaN(year) ? year : now.getFullYear()
+		selectedmonth.value = !isNaN(month) ? month - 1 : now.getMonth()
+		calendarRef.value?.getApi().gotoDate(startOfMonth.value.toDate());
+	}
+
+	getMonths();
 	initialiseMonth();
 });
 
@@ -200,6 +232,8 @@ const resetAvailability = () => {
 };
 
 const updateSelectedDatesAvailability = (availability: AvailabilityType) => {
+	hasmadechangestothismonth.value = true;
+
 	selecteddates.value.forEach(selected => {
 		const dateStr = dayjs(selected).format('YYYY-MM-DD');
 		const existingDateIndex = dates.value.findIndex(
@@ -225,7 +259,7 @@ const endOfMonth = computed(() => {
 	return dayjs().set("month", selectedmonth.value).set("year", selectedyear.value).endOf("month");
 })
 
-const getColorForAvailability = (availability?: AvailabilityType) => {
+const getColorForAvailability = (availability?: DateAvailabilityType) => {
 	switch (availability) {
 		case 'UNAVAILABLE':
 			return '#fca5a5'; // light red
@@ -235,6 +269,8 @@ const getColorForAvailability = (availability?: AvailabilityType) => {
 			return '#93c5fd'; // light blue
 		case 'NEGATIVE':
 			return '#fde68a'; // soft yellow
+		case "BLOCKED":
+			return '#e5e7eb' // light gray
 		default:
 			return '#e5e7eb'; // light gray
 	}
@@ -244,9 +280,6 @@ const getAvailableEventsForMonth = computed(() => {
 	const events: any[] = [];
 
 	for (let date = dayjs(startOfMonth.value); date.isBefore(endOfMonth.value); date = date.add(1, "day")) {
-		// Skip weekends if necessary
-		if (date.day() === 0 || date.day() === 6) continue;
-
 		const dateStr = date.format("YYYY-MM-DD");
 		const existingDate = dates.value.find(d => dayjs(d.date).format("YYYY-MM-DD") === dateStr);
 
@@ -256,6 +289,7 @@ const getAvailableEventsForMonth = computed(() => {
 				display: "background",
 				backgroundColor: getColorForAvailability(existingDate.availability),
 				allDay: true,
+				overlap: existingDate.availability == "BLOCKED"
 			});
 		}
 	}
@@ -275,6 +309,9 @@ watch(getAvailableEventsForMonth, (newEvents) => {
 	}
 });
 
+watch(selectedmonth, () => {
+	initialiseMonth();
+})
 
 // TODO: selectConstraint to make the user not be able to
 // select dates that have been marked as unneeded
@@ -283,7 +320,7 @@ const calendarOptions = ref<CalendarOptions>({
 	locale: "nl",
 	plugins: [dayGridPlugin, interactionPlugin],
 	initialView: "dayGridMonth",
-	weekends: false,
+	// weekends: false,
 	firstDay: 1,
 	stickyHeaderDates: true,
 	editable: false,
@@ -299,6 +336,7 @@ const calendarOptions = ref<CalendarOptions>({
 	},
 	customButtons: {
 		gotoprev: {
+			// TODO: Want to save availability? Changing months will remov
 			text: '<',
 			click: function () {
 				selectedmonth.value = selectedmonth.value - 1;
@@ -325,15 +363,16 @@ const calendarOptions = ref<CalendarOptions>({
 			}
 		}
 	},
-	// selectConstraint: {
-	// 	start: startOfMonth.toDate(),
-	// 	end: endOfMonth.toDate(),
-	// 	// Prevent selecting blocked days
-	// 	constraint: (date) => {
-	// 		const dateStr = dayjs(date).format("YYYY-MM-DD");
-	// 		return !blockedDates.some(blocked => dayjs().date(blocked.day).format("YYYY-MM-DD") === dateStr);
-	// 	},
-	// },
+	selectOverlap: (event) => {
+		if (event) {
+			if (event.start?.getMonth() != selectedmonth.value) {
+				return false;
+			}
+
+			return !currentFillMonth.value?.blockedDates.some(x => x.day == event?.start?.getDate())
+		}
+		return false;
+	},
 	events: () => getAvailableEventsForMonth.value,
 	select(info) {
 		selecteddates.value = [];
@@ -346,11 +385,24 @@ const calendarOptions = ref<CalendarOptions>({
 	}
 });
 
-const submitData = async () => {
-	const { data, error } = await useAPI('/api/cooking/availability', {
-		method: 'POST',
-		body: dates,
-	});
+
+async function submitMonthData() {
+	try {
+		const $fetch = useNuxtApp().$api;
+		await $fetch('/api/cooking/availability', {
+			method: 'POST',
+			body: {
+				year: selectedyear.value,
+				month: selectedmonth.value,
+				dates: dates.value.filter(x => x.availability != "BLOCKED"),
+			},
+		});
+
+		useSonner.success("Maand opgeslagen!");
+		olddates = dates.value.map(d => ({ ...d }));
+	} catch (error: any) {
+		useSonner.error(error.message);
+	}
 }
 
 </script>
