@@ -7,14 +7,14 @@ import { H3Event } from "h3";
 // Returns the months and year that rosters have been made.
 let handlerFunc = async (event: H3Event) => {
   const data = await prisma.monthRoster.findMany({
-    select: {
-      year: true,
-      month: true,
-    },
     where: {
       year: {
         gte: new Date().getFullYear() - 2, // Limit to 2 years previous
       },
+    },
+    include: {
+      availabilities: true,
+      blockedDates: true,
     },
   });
 

@@ -71,6 +71,6 @@ export default defineEventHandler(async (event) => {
     route: "/api/cooking/roster/create",
     method: "POST",
     allowType: "AUTHENTICATED",
-    role: ["ADMIN"], // TODO: role change to cooking master person
+    role: ["ADMIN", "COOKING"],
   });
 });

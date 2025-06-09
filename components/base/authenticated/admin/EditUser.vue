@@ -29,6 +29,7 @@
 											<UiSelectContent>
 												<UiSelectLabel>Rollen</UiSelectLabel>
 												<UiSelectItem key="ADMIN" value="ADMIN" text="Admin" />
+												<UiSelectItem key="COOKING" value="COOKING" text="Kookbeheer" />
 												<UiSelectItem key="USER" value="USER" text="Gebruiker" />
 											</UiSelectContent>
 										</UiSelect>

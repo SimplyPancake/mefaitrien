@@ -130,7 +130,7 @@ const sidebarSections: SidebarSection[] = [
 	{
 		label: "Gebruiker",
 		items: [
-			{ title: "Instellingen", url: "/settings", icon: "lucide:user-cog" },
+			{ title: "Instellingen", url: "#", icon: "lucide:user-cog" },
 			{ title: "Uitloggen", icon: "lucide:log-out", action: "logout" },
 		]
 	},
@@ -139,6 +139,7 @@ const sidebarSections: SidebarSection[] = [
 		items: [
 			{ title: "Admin", url: "/admin", icon: "lucide:shield-ellipsis", role: "ADMIN" },
 			{ title: "Aanmaken", url: "/cooking/create", icon: "lucide:calendar-cog", role: "ADMIN" },
+			{ title: "Indelen", url: "/cooking/manage", icon: "lucide:calendar-range", role: "ADMIN" }
 		]
 	}
 ];
