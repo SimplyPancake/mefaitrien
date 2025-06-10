@@ -5,7 +5,7 @@
 				<template #content>
 					<UiCardContent>
 						<UiAlert v-if="!canfillmonth" icon="lucide:circle-alert" variant="destructive"
-							icon-class="mt-0.5" description="Je kan deze maand niet invullen!" />
+							icon-class="mt-0.5" description="Je kan deze maand niet invullen!" class="animate-fadeIn" />
 						<!-- <UiLoader v-if="fillmontshstatus == 'pending'" class="size-10"
 							icon="svg-spinners:blocks-wave" /> -->
 						<KeepAlive>

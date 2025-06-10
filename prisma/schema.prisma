@@ -22,6 +22,7 @@ model User {
   cookingGroup   CookingGroup?  @relation(fields: [cookingGroupId], references: [id])
   cookingGroupId Int?
   Availability   Availability[]
+  AssignedDay    AssignedDay[]
 
   createdAt  DateTime @default(now())
   modifiedAt DateTime @updatedAt
@@ -57,7 +58,16 @@ model BlockedDay {
   monthRosterId Int
 }
 
-// TODO: Create model for assigned spots
+model AssignedDay {
+  id  Int @id @default(autoincrement())
+  day Int // 1 - 31
+
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
+
+  monthRoster   MonthRoster @relation(fields: [monthRosterId], references: [id])
+  monthRosterId Int
+}
 
 model MonthRoster {
   id     Int         @id @default(autoincrement())
@@ -67,6 +77,7 @@ model MonthRoster {
 
   availabilities Availability[]
   blockedDates   BlockedDay[]
+  AssignedDay    AssignedDay[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -1,10 +1,12 @@
 <template>
 	<div class="flex flex-row gap-4 w-2/5">
-		<UiSelect v-model="selectedGroup" class="">
+		<UiSelect v-model="selectedGroupName" class="">
 			<UiSelectTrigger placeholder="Kies kookgroep" />
 			<UiSelectContent>
 				<UiSelectGroup>
-					<UiSelectItem v-for="group in groups" :key="group.id" :value="group.id" :text="group.name" />
+					<UiSelectItem v-for="group in props.groupInfo" :key="group.id" :value="group.name"
+						:text="group.name" />
+					<!-- <UiSelectItem :value="''" :key="" :text="'Geen groep geselecteerd'" /> -->
 				</UiSelectGroup>
 			</UiSelectContent>
 		</UiSelect>
@@ -20,22 +22,22 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
+import { type GroupUsersDto } from "~/types/dto";
 
-interface Group {
-	id: string;
-	name: string;
-}
+const props = defineProps<{
+	groupInfo: GroupUsersDto[];
+}>()
 
-const groups = [
-	{ id: 'groep1', name: 'Groep 1' },
-	{ id: 'groep2', name: 'Groep 2' },
-]
-
-const selectedGroup = ref('');
+const selectedGroupName = ref('');
 const useAutomatic = ref(false)
+
+const selectedGroup = computed(() => {
+	return props.groupInfo.find(x => x.name == selectedGroupName.value)
+})
 
 defineExpose({
 	selectedGroup,
+	selectedGroupName,
 	useAutomatic
 })
 

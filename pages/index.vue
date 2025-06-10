@@ -44,7 +44,7 @@
 					</UiListItem>
 					<!-- Schoonmaak -->
 					<UiListItem class="px-6">
-						<Icon name="lucide:cooking-pot" class="size-10 text-primary" />
+						<Icon name="lucide:cooking-pot" class="size-8 text-primary" />
 						<UiListContent>
 							<UiListTitle title="Jouw kookdagen deze week" />
 							<UiListSubtitle class="line-clamp-2" subtitle="Jij moet koken op maandag en donderdag" />

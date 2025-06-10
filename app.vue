@@ -8,7 +8,7 @@ const sessionStore = useSessionStore();
 <template>
 	<NuxtLoadingIndicator />
 	<UiToastToaster></UiToastToaster>
-	<UiVueSonner />
+	<UiVueSonner class="animate-fadeIn" />
 	<NuxtPage v-if="sessionStore.status !== 'authenticated'"></NuxtPage>
 
 	<AuthenticatedBase v-if="sessionStore.status === 'authenticated'">

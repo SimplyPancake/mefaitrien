@@ -1,5 +1,6 @@
 import prisma from "@@/lib/prisma";
 import { BaseEventHandler } from "~/server/utils/handlers/baseEventHandler";
+import { GroupUsersDto } from "~/types/dto";
 import { H3Event } from "h3";
 
 let handlerFunc = async (event: H3Event) => {
@@ -31,7 +32,7 @@ let handlerFunc = async (event: H3Event) => {
   );
 
   // Transform grouped users into an array with unfolded people
-  const result = Object.values(groupedUsers).map((group) => ({
+  const result: GroupUsersDto[] = Object.values(groupedUsers).map((group) => ({
     id: group.id,
     name: group.name,
     people: group.people.map((person) => ({

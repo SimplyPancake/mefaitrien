@@ -15,76 +15,73 @@
 			<UiCard title="Maand informatie">
 				<template #content>
 					<UiCardContent>
-						<UiDescriptionList>
+						<UiDescriptionList class="pb-4">
 							<template v-for="item in items" :key="item.term">
 								<UiDescriptionListTerm>{{ item.term }}</UiDescriptionListTerm>
 								<UiDescriptionListDetails>{{ item.details }}</UiDescriptionListDetails>
 							</template>
 						</UiDescriptionList>
 
-						<!-- Maand al ingedeeld: -->
-						<!-- Verander indeling -->
-
-						<!-- Maand nog niet ingedeeld maar wel ingevuld -->
-						<!-- Deel in -->
-
 						<!-- Maand bestaat nog niet -->
 						<!-- Link naar aanmaken OF doe het hier. Maakt voor nu nog niet uit. -->
-					</UiCardContent>
-				</template>
-			</UiCard>
-		</div>
-		<div class="col-span-2 row-span-5 row-start-3">
-			<UiCard title="Creeer of wijzig maand">
-				<template #content>
-					<UiCardContent>
-						<BaseAuthenticatedCookingPlannercontrols ref="cookingChooser" />
-						<FullCalendar></FullCalendar>
-						Hier komt de maand
-						Dropdown met kookgroep en selectiemanier voor 'zelf indelen' of 'automatisch indeling'
-						daarna moet mogelijk zijn om te wijzigen
-						{{ cookingChooserRef?.useAutomatic }}
-					</UiCardContent>
-				</template>
-			</UiCard>
-		</div>
-		<div class="row-span-5 col-start-3 row-start-3">
-			<UiCard title="Maar hoe vaak koken ze dan?">
-				<template #content>
-					<UiCardContent>
-						Kies een groep eerst ofzo
+						<template v-if="emptyMonth">
+							<NuxtLink href="/cooking/create">
+								<UiButton>
+									Maak een nieuwe maand aan
+								</UiButton>
+							</NuxtLink>
+						</template>
 
-						Als we een NIEUWE maand aan het indelen zijn, dan laten we zien hoeveel kookpunten mensen er bij
-						krijgen (dus bijv. 47 + 2)
-						Als je een oude maand bekijkt (of al ingedeelde) dan laten we alleen zien hoevaak ze hebben
-						gekookt
+						<!-- Maand bestaat! -->
+						<template v-else>
+							<!-- Maand al ingedeeld: -->
+							<!-- Verander indeling -->
+							<UiButton v-if="selectedMonth?.status == 'ASSIGNED'">Verander indeling</UiButton>
+
+							<!-- Maand nog niet ingedeeld maar wel ingevuld -->
+							<!-- Deel in -->
+							<UiButton
+								v-if="selectedMonth?.status == 'CANFILLIN' || selectedMonth?.status == 'NOFILLIN'">Deel
+								maand in</UiButton>
+						</template>
 					</UiCardContent>
 				</template>
 			</UiCard>
 		</div>
+		<BaseAuthenticatedCookingEditMonthAvailability v-if="selectedMonth" :month="selectedMonth"
+			:group-data="groupsData" />
 	</div>
 </template>
 
 <script lang="ts" setup>
 import { useTemplateRef, ref } from 'vue';
 import { UiMonthChooser } from '#components';
-import { BaseAuthenticatedCookingPlannercontrols } from '#components';
-import type { MonthRoster, Availability, BlockedDay } from "@prisma/client"
+import type { GroupUsersDto, ManageMonthDto } from '~/types/dto';
+
+usePageInfoStore().setPageInfo({
+	title: 'Kookmaand beheren',
+});
+
+useSeoMeta({
+	title: "Kookmaand beheren"
+})
 
 type ChooserType = InstanceType<typeof UiMonthChooser>
-type CookingChooserType = InstanceType<typeof BaseAuthenticatedCookingPlannercontrols>;
 
 const chooserref = useTemplateRef<ChooserType>('monthchooser')
-const cookingChooserRef = useTemplateRef<CookingChooserType>('cookingChooser')
+const { data: groupData, error } = await useAPI<GroupUsersDto[]>('/api/cooking/users');
+const groupsData = groupData.value ?? [];
 
 const items = computed(() => {
 	if (selectedMonth.value) {
 		return [
 			{ term: "Maand type", details: selectedMonth.value.status },
-			{ term: "Mensen ingevuld", details: "13/15" },
-			{ term: "Laatste wijziging", details: "8 juni 2025, 11:42" },
-			{ term: "Dagen zonder beschikbare kok", details: "Geen" },
-			{ term: "Gemiddelde beschikbaarheid", details: "63%" },
+			{ term: "Mensen ingevuld", details: `${selectedMonth.value.filledIn}/${selectedMonth.value.maxAssigned}` },
+			{ term: "Gemiddelde beschikbaarheid", details: `${selectedMonth.value.averageAvailability}%` },
+			{ term: "Dagen zonder beschikbare kok", details: `${selectedMonth.value.daysWithoutCook ?? 'n.v.t.'}` },
+			{
+				term: "Laatste wijziging", details: `${selectedMonth.value.updatedAt}`
+			},
 		]
 	}
 
@@ -97,12 +94,7 @@ const items = computed(() => {
 	]
 })
 
-type FullMonth = MonthRoster & {
-	availabilities: Availability[],
-	blockedDates: BlockedDay[]
-}
-
-const { data: createdmonths, error: createdmonthserror } = await useAPI<FullMonth[]>('/api/cooking/roster/months');
+const { data: createdmonths, error: createdmonthserror } = await useAPI<ManageMonthDto[]>('/api/cooking/roster/manage');
 if (createdmonthserror.value) {
 	console.log(createdmonthserror.value)
 	useSonner.error("Kon oude maanden niet ophalen!")

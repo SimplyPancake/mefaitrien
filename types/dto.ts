@@ -1,4 +1,4 @@
-import type { CookingGroup } from "@prisma/client";
+import type { Availability, BlockedDay, CookingGroup, MonthRoster, User } from "@prisma/client";
 
 export interface AdminUserDTO {
   id: number;
@@ -21,3 +21,32 @@ export interface CreatedRosterMonth {
   year: number;
   month: number;
 }
+
+export interface ExtraAvailability extends Availability {
+  user: User;
+}
+export interface ManageMonthDto extends MonthRoster {
+  availabilities: ExtraAvailability[];
+  blockedDates: BlockedDay[];
+  filledIn: number;
+  maxAssigned: number;
+  daysWithoutCook?: number;
+  averageAvailability: number;
+}
+
+export interface GroupUsersDto {
+  id: number;
+  name: string;
+  people: Array<{
+    id: number;
+    name: string;
+  }>;
+}
+// const result = Object.values(groupedUsers).map((group) => ({
+//   id: group.id,
+//   name: group.name,
+//   people: group.people.map((person) => ({
+//     id: person.id,
+//     name: person.name,
+//   })),
+// }));
