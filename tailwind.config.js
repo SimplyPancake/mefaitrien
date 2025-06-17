@@ -94,6 +94,10 @@ module.exports = {
         ring: "var(--ring)",
         background: "var(--background)",
         foreground: "var(--foreground)",
+        "av-avail": "var(--col-avail)",
+        "av-unavail": "var(--col-unavail)",
+        "av-posi": "var(--col-positive)",
+        "av-nega": "var(--col-negative",
         primary: {
           DEFAULT: "var(--primary)",
           foreground: "var(--primary-foreground)",

@@ -43,9 +43,4 @@ defineExpose({
 
 </script>
 
-<style scoped>
-input[type='radio'] {
-	accent-color: #3b82f6;
-	/* Tailwind 'blue-500' */
-}
-</style>
+<style scoped></style>

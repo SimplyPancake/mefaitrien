@@ -22,6 +22,12 @@
     --popover: var(--white);
     --popover-foreground: var(--darker-blue);
 
+    --col-avail: #d0f4e6;
+    --col-unavail: #fbe1e1;
+    --col-positive: #dbeafb;
+    --col-negative: #fbf6d8;
+    --col-blocked: #f4f4f6;
+
     /* Primary Colors */
     --primary: var(--primary-orange);
     --primary-foreground: var(--white);
@@ -84,6 +90,12 @@
     --card-foreground: var(--foreground);
     --popover: var(--background-lighter);
     --popover-foreground: var(--foreground);
+
+    --col-avail: #30545e; /* dark green */
+    --col-unavail: #5b4159; /* dark red */
+    --col-positive: #3b4a73; /* dark blue */
+    --col-negative: #5b5450; /* dark yellow */
+    --col-blocked: #54546e;
 
     /* Primary Colors */
     --primary: var(--primary-orange);

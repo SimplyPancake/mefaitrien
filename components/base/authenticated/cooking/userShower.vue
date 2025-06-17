@@ -1,14 +1,14 @@
 <template>
 	<div>
 		<!-- If no group is selected, show everyone! -->
-		<UiListbox :highlight-on-hover="false">
+		<UiListbox :highlight-on-hover="false" v-model="selected">
 			<UiListboxContent>
 				<template v-for="group in groupInfo" :key="group.id">
 					<UiListboxGroup class="animate-fadeIn">
 						<UiListboxGroupLabel>{{ group.name }}</UiListboxGroupLabel>
 						<template v-if="group.people.length > 0">
 							<template v-for="p in group.people" :key="p.id">
-								<UiListboxItem :value="p">
+								<UiListboxItem :value="p" :class="getUiListboxItemClass(p.availability)">
 									<div class="flex items-center gap-5">
 										<UiAvatar src="/img/dannyprofielfoto.png" class="size-8" />
 										<div class="text-sm">
@@ -32,10 +32,34 @@
 
 <script lang="ts" setup>
 import { type GroupUsersDto } from "~/types/dto";
+const selected = ref();
 
 const props = defineProps<{
 	groupInfo: GroupUsersDto[];
 }>()
+
+defineExpose({
+	selectedPerson: selected
+})
+
+const getUiListboxItemClass = computed(() => {
+	return (availability?: string) => {
+		if (selected.value || !availability) return '';
+
+		switch (availability) {
+			case 'AVAILABLE':
+				return 'bg-av-avail';
+			case 'NEGATIVE':
+				return 'bg-av-nega';
+			case 'POSITIVE':
+				return 'bg-av-posi';
+			case 'UNAVAILABLE':
+				return 'bg-av-unavail'
+			default:
+				return '';
+		}
+	};
+});
 </script>
 
 <style></style>

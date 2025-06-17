@@ -1,4 +1,11 @@
-import type { Availability, BlockedDay, CookingGroup, MonthRoster, User } from "@prisma/client";
+import type {
+  Availability,
+  AvailabilityType,
+  BlockedDay,
+  CookingGroup,
+  MonthRoster,
+  User,
+} from "@prisma/client";
 
 export interface AdminUserDTO {
   id: number;
@@ -40,6 +47,7 @@ export interface GroupUsersDto {
   people: Array<{
     id: number;
     name: string;
+    availability?: AvailabilityType;
   }>;
 }
 // const result = Object.values(groupedUsers).map((group) => ({
