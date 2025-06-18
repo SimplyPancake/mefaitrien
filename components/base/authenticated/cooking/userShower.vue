@@ -8,7 +8,7 @@
 						<UiListboxGroupLabel>{{ group.name }}</UiListboxGroupLabel>
 						<template v-if="group.people.length > 0">
 							<template v-for="p in group.people" :key="p.id">
-								<UiListboxItem :value="p" :class="getUiListboxItemClass(p.availability)">
+								<UiListboxItem :value="p" class="mb-1" :class="getUiListboxItemClass(p.availability)">
 									<div class="flex items-center gap-5">
 										<UiAvatar src="/img/dannyprofielfoto.png" class="size-8" />
 										<div class="text-sm">

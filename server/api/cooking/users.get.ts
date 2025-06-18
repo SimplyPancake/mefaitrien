@@ -17,7 +17,7 @@ let handlerFunc = async (event: H3Event) => {
       const groupName = user.cookingGroup?.name || "Geen groep";
       if (!groups[groupName]) {
         groups[groupName] = {
-          id: user.cookingGroup?.id || 0, // Keep id as a number
+          id: user.cookingGroup?.id || -1, // Keep id as a number
           name: groupName,
           people: [],
         };

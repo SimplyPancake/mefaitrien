@@ -17,7 +17,7 @@
 		</UiCard>
 	</div>
 	<div class="row-span-5 col-start-3 row-start-3 animate-fadeIn">
-		<UiCard title="Kookleden">
+		<UiCard title="Kookleden" class="mb-4">
 			<template #content>
 				<UiCardContent>
 					<p class="mb-2">Druk op een persoon en bekijk de beschikbaarheid van alleen dat persoon.</p>
@@ -26,12 +26,24 @@
 				</UiCardContent>
 			</template>
 		</UiCard>
+		<UiCard title="Legenda">
+			<template #content>
+				<UiCardContent>
+					<div class="flex flex-auto gap-4">
+						<div class="bg-av-avail rounded-md ring-offset-background px-4 py-2">Beschikbaar</div>
+						<div class="bg-av-unavail rounded-md ring-offset-background px-4 py-2">Onbeschikbaar</div>
+						<div class="bg-av-posi rounded-md ring-offset-background px-4 py-2">Graag</div>
+						<div class="bg-av-nega rounded-md ring-offset-background px-4 py-2">Skip</div>
+					</div>
+				</UiCardContent>
+			</template>
+		</UiCard>
 	</div>
 </template>
 
 <script lang="ts" setup>
 import dayGridPlugin from "@fullcalendar/daygrid";
-import interactionPlugin from "@fullcalendar/interaction";
+import interactionPlugin, { type DateClickArg } from "@fullcalendar/interaction";
 import type { GroupUsersDto, ManageMonthDto } from '~/types/dto';
 import { BaseAuthenticatedCookingPlannercontrols, BaseAuthenticatedCookingUserShower } from '#components';
 import { AvailabilityType } from "@prisma/client"; import FullCalendar from "@fullcalendar/vue3";
@@ -102,13 +114,24 @@ const sidebarGroups = computed(() => {
 	}
 
 	// If a certain day is highlighted, add users' availabilities to group as well
-	let day = new Date(hoverDate.value).getDate()
+	let dateObj = new Date(hoverDate.value);
+	let day = dateObj.getDate();
 	if (hoverDate.value == '') {
 		day = new Date().setFullYear(1900)
 	}
 	// For all users, map their availability to the data
 	data.forEach(group => {
-		group.people.map(x => x.availability = selectedMonth.value.availabilities.find(y => y.userId == x.id && y.day == day)?.availability ?? undefined)
+		// TODO: Betere manier om te testen of iemand geen groep heeft
+		if (group.name != "Geen groep") {
+			const shouldHaveAvailabilities = ((dateObj.getMonth() + 1) == selectedMonth.value.month) && !selectedMonth.value.blockedDates.some(x => x.day == day);
+			if (shouldHaveAvailabilities) {
+				// If user did not fill in schema, it means that they are automatically available
+				// TODO: Beslissen of we willen laten zien dat de gebruiker niet beschikbaar is
+				group.people.map(x => x.availability = selectedMonth.value.availabilities.find(y => y.userId == x.id && y.day == day)?.availability ?? "AVAILABLE")
+			} else {
+				group.people.map(x => x.availability = undefined)
+			}
+		}
 	});
 
 	// Otherwise, return all groups from groupData
@@ -156,16 +179,39 @@ const calendarEvents = computed(() => {
 
 	} else if (mode.value == "PersonSelect") {
 		// Show the availability of the selected person
-		selectedMonthPerson.value.availabilities.forEach(x => {
-			const dayobj = dayjs().set("month", selectedMonth.value.month - 1).set("year", selectedMonth.value.year).set("date", x.day);
+		// If user did not fill in, they have zero availabilitiues.
+		const userFilledIn = selectedMonthPerson.value.availabilities.length != 0;
 
-			events.push({
-				start: dayobj.format("YYYY-MM-DD"),
-				display: "background",
-				backgroundColor: getColorForAvailability(x.availability),
-				allDay: true,
-			});
-		})
+		if (userFilledIn) {
+			selectedMonthPerson.value.availabilities.forEach(x => {
+				const dayobj = dayjs().set("month", selectedMonth.value.month - 1).set("year", selectedMonth.value.year).set("date", x.day);
+
+				events.push({
+					start: dayobj.format("YYYY-MM-DD"),
+					display: "background",
+					backgroundColor: getColorForAvailability(x.availability),
+					allDay: true,
+				});
+			})
+
+			return events;
+		}
+
+		// Add all days to available
+		const monthObj = dayjs().set("month", selectedMonth.value.month - 1).set("year", selectedMonth.value.year);
+		let startOfMonth = monthObj.startOf("month");
+		let endOfMonth = monthObj.endOf("month");
+		for (let date = dayjs(startOfMonth); date.isBefore(endOfMonth); date = date.add(1, "day")) {
+			const isBlockedDate = selectedMonth.value.blockedDates.some(x => x.day == date.day() + 1)
+			if (!isBlockedDate) {
+				events.push({
+					start: date.format("YYYY-MM-DD"),
+					display: "background",
+					backgroundColor: getColorForAvailability("AVAILABLE"),
+					allDay: true,
+				})
+			}
+		}
 	}
 
 	return events;
@@ -189,12 +235,12 @@ const calendarOptions = computed(() => {
 		events: calendarEvents.value,
 		eventMouseEnter: (info: any) => {
 			hoverDate.value = info.event.start
-			console.log(hoverDate.value)
 		},
 		eventMouseLeave: () => {
 			hoverDate.value = "";
-			console.log(hoverDate.value)
-
+		},
+		dateClick: (info: DateClickArg) => {
+			clickDate(info);
 		}
 	}
 });
@@ -214,6 +260,9 @@ const getColorForAvailability = (availability?: AvailabilityType) => {
 			return '#e5e7eb'; // light gray
 	}
 };
+
+const clickDate = (info: DateClickArg) => {
+}
 </script>
 
 <style></style>
