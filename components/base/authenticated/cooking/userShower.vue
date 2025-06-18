@@ -32,6 +32,7 @@
 
 <script lang="ts" setup>
 import { type GroupUsersDto } from "~/types/dto";
+import type { AvailabilityType } from "@prisma/client"
 const selected = ref();
 
 const props = defineProps<{
@@ -43,7 +44,7 @@ defineExpose({
 })
 
 const getUiListboxItemClass = computed(() => {
-	return (availability?: string) => {
+	return (availability?: AvailabilityType) => {
 		if (selected.value || !availability) return '';
 
 		switch (availability) {

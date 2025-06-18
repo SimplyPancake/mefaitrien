@@ -97,7 +97,7 @@ module.exports = {
         "av-avail": "var(--col-avail)",
         "av-unavail": "var(--col-unavail)",
         "av-posi": "var(--col-positive)",
-        "av-nega": "var(--col-negative",
+        "av-nega": "var(--col-negative)",
         primary: {
           DEFAULT: "var(--primary)",
           foreground: "var(--primary-foreground)",
