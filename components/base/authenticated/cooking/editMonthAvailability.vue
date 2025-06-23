@@ -1,4 +1,8 @@
 <template>
+	<!-- Dialog -->
+	<BaseAuthenticatedCookingPersonDayBrowser ref="dayBrowserRef" :selected-date-string="hoverDate"
+		:group-info="sidebarGroups" @savePerson="saveCookingPerson">
+	</BaseAuthenticatedCookingPersonDayBrowser>
 	<div class="col-span-2 row-span-5 row-start-3 animate-fadeIn">
 		<UiCard title="Creeer of wijzig maand">
 			<template #content>
@@ -29,11 +33,18 @@
 		<UiCard title="Legenda">
 			<template #content>
 				<UiCardContent>
+					<!-- TODO: Maak dit mooi ofzo -->
+					<div class="flex flex-auto gap-4 pb-4">
+						<div class="bg-av-avail rounded-md ring-offset-background px-4 py-2">{{
+							availabilityTranslations.AVAILABLE }}</div>
+						<div class="bg-av-unavail rounded-md ring-offset-background px-4 py-2">{{
+							availabilityTranslations.UNAVAILABLE }}</div>
+					</div>
 					<div class="flex flex-auto gap-4">
-						<div class="bg-av-avail rounded-md ring-offset-background px-4 py-2">Beschikbaar</div>
-						<div class="bg-av-unavail rounded-md ring-offset-background px-4 py-2">Onbeschikbaar</div>
-						<div class="bg-av-posi rounded-md ring-offset-background px-4 py-2">Graag</div>
-						<div class="bg-av-nega rounded-md ring-offset-background px-4 py-2">Skip</div>
+						<div class="bg-av-posi rounded-md ring-offset-background px-4 py-2">
+							{{ availabilityTranslations.POSITIVE }}</div>
+						<div class="bg-av-nega rounded-md ring-offset-background px-4 py-2">{{
+							availabilityTranslations.NEGATIVE }}</div>
 					</div>
 				</UiCardContent>
 			</template>
@@ -45,9 +56,11 @@
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin, { type DateClickArg } from "@fullcalendar/interaction";
 import type { GroupUsersDto, ManageMonthDto } from '~/types/dto';
-import { BaseAuthenticatedCookingPlannercontrols, BaseAuthenticatedCookingUserShower } from '#components';
+import { BaseAuthenticatedCookingPlannercontrols, BaseAuthenticatedCookingUserShower, BaseAuthenticatedCookingPersonDayBrowser } from '#components';
 import { AvailabilityType } from "@prisma/client"; import FullCalendar from "@fullcalendar/vue3";
+import { availabilityTranslations } from "~/i18n/enumTranslations";
 import dayjs from "dayjs";
+import Plannercontrols from "./plannercontrols.vue";
 
 // 0-based month number
 const props = defineProps<{
@@ -58,12 +71,14 @@ const props = defineProps<{
 // TYPES
 type CookingChooserType = InstanceType<typeof BaseAuthenticatedCookingPlannercontrols>;
 type UserShowerType = InstanceType<typeof BaseAuthenticatedCookingUserShower>;
+type DayBrowserType = InstanceType<typeof BaseAuthenticatedCookingPersonDayBrowser>;
 type ModeType = "FullOverview" | "CookingGroupSelect" | "PersonSelect"
 
 // REFS
 const cookingChooserRef = useTemplateRef<CookingChooserType>('cookingChooser')
 const calendarRef = ref<InstanceType<typeof FullCalendar> | null>(null);
 const userShowerRef = useTemplateRef<UserShowerType>('userShowerRef')
+const dayBrowser = useTemplateRef<DayBrowserType>('dayBrowserRef')
 const oldMode = ref<ModeType>("FullOverview")
 const mode = ref<ModeType>("FullOverview")
 const hoverDate = ref("");
@@ -102,6 +117,19 @@ watch(
 		}
 	})
 
+watch(
+	() => cookingChooserRef.value?.selectedGroupName,
+	(name) => {
+		if (name) {
+			// Set to a value (cooking group selected)
+			oldMode.value = mode.value
+			mode.value = "CookingGroupSelect"
+		} else {
+			// group deselected
+			mode.value = oldMode.value
+		}
+	})
+
 // COMPUTED
 
 const sidebarGroups = computed(() => {
@@ -123,11 +151,10 @@ const sidebarGroups = computed(() => {
 	data.forEach(group => {
 		// TODO: Betere manier om te testen of iemand geen groep heeft
 		if (group.name != "Geen groep") {
+			// Should we show availability outside of current month? No
 			const shouldHaveAvailabilities = ((dateObj.getMonth() + 1) == selectedMonth.value.month) && !selectedMonth.value.blockedDates.some(x => x.day == day);
 			if (shouldHaveAvailabilities) {
-				// If user did not fill in schema, it means that they are automatically available
-				// TODO: Beslissen of we willen laten zien dat de gebruiker niet beschikbaar is
-				group.people.map(x => x.availability = selectedMonth.value.availabilities.find(y => y.userId == x.id && y.day == day)?.availability ?? "AVAILABLE")
+				group.people.map(x => x.availability = selectedMonth.value.availabilities.find(y => y.userId == x.id && y.day == day)?.availability!)
 			} else {
 				group.people.map(x => x.availability = undefined)
 			}
@@ -166,8 +193,12 @@ const calendarEvents = computed(() => {
 			}
 		});
 
-		availabilityCounts.forEach((count, day) => {
-			const dayobj = dayjs().set("month", selectedMonth.value.month - 1).set("year", selectedMonth.value.year).set("date", day);
+		const daysInMonth = new Date(selectedMonth.value.year, selectedMonth.value.month + 1, 0).getDate()
+
+		for (let index = 1; index <= daysInMonth; index++) {
+			const count = availabilityCounts.get(index) ?? 0;
+
+			const dayobj = dayjs().set("month", selectedMonth.value.month - 1).set("year", selectedMonth.value.year).set("date", index);
 
 			events.push({
 				start: dayobj.format("YYYY-MM-DD"),
@@ -175,43 +206,23 @@ const calendarEvents = computed(() => {
 				backgroundColor: `rgba(110, 231, 183, ${count / selectedMonth.value.maxAssigned})`,
 				allDay: true,
 			});
-		});
+		}
 
 	} else if (mode.value == "PersonSelect") {
 		// Show the availability of the selected person
 		// If user did not fill in, they have zero availabilitiues.
-		const userFilledIn = selectedMonthPerson.value.availabilities.length != 0;
+		selectedMonthPerson.value.availabilities.forEach(x => {
+			const dayobj = dayjs().set("month", selectedMonth.value.month - 1).set("year", selectedMonth.value.year).set("date", x.day);
 
-		if (userFilledIn) {
-			selectedMonthPerson.value.availabilities.forEach(x => {
-				const dayobj = dayjs().set("month", selectedMonth.value.month - 1).set("year", selectedMonth.value.year).set("date", x.day);
+			events.push({
+				start: dayobj.format("YYYY-MM-DD"),
+				display: "background",
+				backgroundColor: getColorForAvailability(x.availability),
+				allDay: true,
+			});
+		})
 
-				events.push({
-					start: dayobj.format("YYYY-MM-DD"),
-					display: "background",
-					backgroundColor: getColorForAvailability(x.availability),
-					allDay: true,
-				});
-			})
-
-			return events;
-		}
-
-		// Add all days to available
-		const monthObj = dayjs().set("month", selectedMonth.value.month - 1).set("year", selectedMonth.value.year);
-		let startOfMonth = monthObj.startOf("month");
-		let endOfMonth = monthObj.endOf("month");
-		for (let date = dayjs(startOfMonth); date.isBefore(endOfMonth); date = date.add(1, "day")) {
-			const isBlockedDate = selectedMonth.value.blockedDates.some(x => x.day == date.day() + 1)
-			if (!isBlockedDate) {
-				events.push({
-					start: date.format("YYYY-MM-DD"),
-					display: "background",
-					backgroundColor: getColorForAvailability("AVAILABLE"),
-					allDay: true,
-				})
-			}
-		}
+		return events;
 	}
 
 	return events;
@@ -233,10 +244,13 @@ const calendarOptions = computed(() => {
 		},
 		selectable: false,
 		events: calendarEvents.value,
-		eventMouseEnter: (info: any) => {
-			hoverDate.value = info.event.start
+		eventMouseEnter: (info: any) => { // Does not work if day hovered over is empty!
+			hoverDate.value = (info.event.start as Date).toString();
 		},
 		eventMouseLeave: () => {
+			if (dayBrowser.value?.opened) {
+				return
+			}
 			hoverDate.value = "";
 		},
 		dateClick: (info: DateClickArg) => {
@@ -262,6 +276,31 @@ const getColorForAvailability = (availability?: AvailabilityType) => {
 };
 
 const clickDate = (info: DateClickArg) => {
+	if (mode.value != "CookingGroupSelect") {
+		useSonner.warning("Je moet een kookgroep selecteren om het rooster in te delen")
+		return;
+	}
+
+	// Popup day browser
+	if (selectedMonth.value.month != info.date.getMonth() + 1) {
+		return
+	}
+	if (selectedMonth.value.blockedDates.some(x => info.date.getDate() == x.day)) {
+		return
+	}
+	dayBrowser.value?.openDialog();
+}
+
+const saveCookingPerson = (selectedPerson: { id: Number, name: String }, selectedDateString: String) => {
+	console.log("Saved person!")
+	console.dir(selectedPerson)
+	console.dir(selectedDateString)
+	const dateToAdd = new Date(selectedDateString.toString());
+	calendarRef.value?.getApi().addEvent({
+		title: "K2: Je moeder kookt ofzo",
+		allDay: true,
+		start: dateToAdd
+	})
 }
 </script>
 
