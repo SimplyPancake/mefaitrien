@@ -50,6 +50,15 @@ export interface GroupUsersDto {
     availability?: AvailabilityType;
   }>;
 }
+
+// Dto for assigning users in a month
+export interface AssignedUsersDto {
+  name: string;
+  people: Array<{
+    date: Date;
+    id: number;
+  }>;
+}
 // const result = Object.values(groupedUsers).map((group) => ({
 //   id: group.id,
 //   name: group.name,

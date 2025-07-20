@@ -55,7 +55,7 @@
 <script lang="ts" setup>
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin, { type DateClickArg } from "@fullcalendar/interaction";
-import type { GroupUsersDto, ManageMonthDto } from '~/types/dto';
+import type { AssignedUsersDto, GroupUsersDto, ManageMonthDto } from '~/types/dto';
 import { BaseAuthenticatedCookingPlannercontrols, BaseAuthenticatedCookingUserShower, BaseAuthenticatedCookingPersonDayBrowser } from '#components';
 import { AvailabilityType } from "@prisma/client"; import FullCalendar from "@fullcalendar/vue3";
 import { availabilityTranslations } from "~/i18n/enumTranslations";
@@ -82,9 +82,11 @@ const dayBrowser = useTemplateRef<DayBrowserType>('dayBrowserRef')
 const oldMode = ref<ModeType>("FullOverview")
 const mode = ref<ModeType>("FullOverview")
 const hoverDate = ref("");
+const assignedUsers = ref<AssignedUsersDto[]>([]);
 
 // COMPUTED
 const selectedMonth = computed(() => {
+	// Set calendar to selected month
 	if (!cookingChooserRef.value?.selectedGroupName) {
 		return props.month
 	}
@@ -180,6 +182,8 @@ const calendarEvents = computed(() => {
 		});
 	})
 
+	// TODO: Add assigned users into this
+
 	if (mode.value == "CookingGroupSelect" || mode.value == "FullOverview") {
 		// Compute density of available
 		const availabilityCounts = new Map<number, number>();
@@ -229,6 +233,7 @@ const calendarEvents = computed(() => {
 })
 
 const calendarOptions = computed(() => {
+	const dayobj = dayjs().set("month", selectedMonth.value.month - 1).set("year", selectedMonth.value.year)
 	return {
 		locale: "nl",
 		plugins: [dayGridPlugin, interactionPlugin],
@@ -244,6 +249,7 @@ const calendarOptions = computed(() => {
 		},
 		selectable: false,
 		events: calendarEvents.value,
+		initialDate: dayobj.format('YYYY-MM-DD'), // set selected month
 		eventMouseEnter: (info: any) => { // Does not work if day hovered over is empty!
 			hoverDate.value = (info.event.start as Date).toString();
 		},
@@ -292,16 +298,24 @@ const clickDate = (info: DateClickArg) => {
 }
 
 const saveCookingPerson = (selectedPerson: { id: Number, name: String }, selectedDateString: String) => {
-	console.log("Saved person!")
-	console.dir(selectedPerson)
-	console.dir(selectedDateString)
+	// Local list of objects to keep track of dates on which person cooks
 	const dateToAdd = new Date(selectedDateString.toString());
-	calendarRef.value?.getApi().addEvent({
-		title: "K2: Je moeder kookt ofzo",
-		allDay: true,
-		start: dateToAdd
-	})
 }
+
+const addAssignedUser = (selectedPerson: { id: Number, name: String }, cookingGroupName: String, dateToAdd: Date) => {
+	// calendarRef.value?.getApi().addEvent({
+	// 	title: "K2: Je moeder kookt ofzo",
+	// 	allDay: true,
+	// 	start: dateToAdd
+	// })
+	if (!assignedUsers.value.some(x => x.name == cookingGroupName)) {
+		// add a new group if it did not exist already
+		// TODO ongoing
+	}
+
+	// add to group
+}
+
 </script>
 
 <style></style>
