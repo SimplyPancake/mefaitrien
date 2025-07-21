@@ -43,8 +43,8 @@ const opened = ref(false);
 const selected = ref<PersonSmall>();
 
 type PersonSmall = {
-	id: Number,
-	name: String
+	id: number,
+	name: string
 }
 type AvailabilityGroup = {
 	availability: AvailabilityType,

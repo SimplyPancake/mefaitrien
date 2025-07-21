@@ -57,6 +57,7 @@ export interface AssignedUsersDto {
   people: Array<{
     date: Date;
     id: number;
+    name: string;
   }>;
 }
 // const result = Object.values(groupedUsers).map((group) => ({

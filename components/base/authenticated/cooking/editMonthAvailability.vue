@@ -61,6 +61,7 @@ import { AvailabilityType } from "@prisma/client"; import FullCalendar from "@fu
 import { availabilityTranslations } from "~/i18n/enumTranslations";
 import dayjs from "dayjs";
 import Plannercontrols from "./plannercontrols.vue";
+import type { EventClickArg } from "@fullcalendar/core/index.js";
 
 // 0-based month number
 const props = defineProps<{
@@ -122,13 +123,13 @@ watch(
 watch(
 	() => cookingChooserRef.value?.selectedGroupName,
 	(name) => {
-		if (name) {
+		oldMode.value = mode.value
+		if (name != "") {
 			// Set to a value (cooking group selected)
-			oldMode.value = mode.value
 			mode.value = "CookingGroupSelect"
 		} else {
 			// group deselected
-			mode.value = oldMode.value
+			mode.value = "FullOverview";
 		}
 	})
 
@@ -182,7 +183,22 @@ const calendarEvents = computed(() => {
 		});
 	})
 
-	// TODO: Add assigned users into this
+	// Then add all events for assigned persons
+	assignedUsers.value.forEach(cookingGroup => {
+		if (cookingChooserRef.value?.selectedGroupName) {
+			// If a name is selected, then we must filter for that name
+			if (cookingGroup.name != cookingChooserRef.value?.selectedGroupName) {
+				return;
+			}
+		}
+		cookingGroup.people.forEach(assignedVals => {
+			events.push({
+				title: `${cookingGroup.name}: ${assignedVals.name}`,
+				allDay: true,
+				start: assignedVals.date
+			})
+		})
+	});
 
 	if (mode.value == "CookingGroupSelect" || mode.value == "FullOverview") {
 		// Compute density of available
@@ -211,7 +227,6 @@ const calendarEvents = computed(() => {
 				allDay: true,
 			});
 		}
-
 	} else if (mode.value == "PersonSelect") {
 		// Show the availability of the selected person
 		// If user did not fill in, they have zero availabilitiues.
@@ -260,7 +275,11 @@ const calendarOptions = computed(() => {
 			hoverDate.value = "";
 		},
 		dateClick: (info: DateClickArg) => {
-			clickDate(info);
+			clickDate(info.date);
+		},
+		eventClick: (info: EventClickArg) => {
+			let isCorrectTypeOfEvent = info.event.display != 'background';
+			clickDate(info.event.start!, true, isCorrectTypeOfEvent)
 		}
 	}
 });
@@ -281,39 +300,72 @@ const getColorForAvailability = (availability?: AvailabilityType) => {
 	}
 };
 
-const clickDate = (info: DateClickArg) => {
+const clickDate = (date: Date, isEvent: boolean = false, isCorrectEvent: boolean = false) => {
+	if (isEvent) {
+		// Modify event with correct cooking group
+		if (isCorrectEvent) {
+			// do something
+			dayBrowser.value?.openDialog();
+		}
+		return;
+	}
+
 	if (mode.value != "CookingGroupSelect") {
 		useSonner.warning("Je moet een kookgroep selecteren om het rooster in te delen")
 		return;
 	}
 
-	// Popup day browser
-	if (selectedMonth.value.month != info.date.getMonth() + 1) {
+	if (selectedMonth.value.month != date.getMonth() + 1) {
 		return
 	}
-	if (selectedMonth.value.blockedDates.some(x => info.date.getDate() == x.day)) {
+	if (selectedMonth.value.blockedDates.some(x => date.getDate() == x.day)) {
 		return
 	}
 	dayBrowser.value?.openDialog();
 }
 
-const saveCookingPerson = (selectedPerson: { id: Number, name: String }, selectedDateString: String) => {
-	// Local list of objects to keep track of dates on which person cooks
+const saveCookingPerson = (selectedPerson: { id: number, name: string }, selectedDateString: String) => {
 	const dateToAdd = new Date(selectedDateString.toString());
+	const selectedCookingGroup = cookingChooserRef.value!.selectedGroupName;
+	assignCookingPerson(selectedPerson, selectedCookingGroup, dateToAdd);
 }
 
-const addAssignedUser = (selectedPerson: { id: Number, name: String }, cookingGroupName: String, dateToAdd: Date) => {
-	// calendarRef.value?.getApi().addEvent({
-	// 	title: "K2: Je moeder kookt ofzo",
-	// 	allDay: true,
-	// 	start: dateToAdd
-	// })
+const assignCookingPerson = (selectedPerson: { id: number, name: string }, cookingGroupName: string, dateToAdd: Date) => {
 	if (!assignedUsers.value.some(x => x.name == cookingGroupName)) {
 		// add a new group if it did not exist already
-		// TODO ongoing
+		assignedUsers.value.push({
+			name: cookingGroupName,
+			people: [{
+				date: dateToAdd,
+				...selectedPerson
+			}]
+		})
+	} else {
+		let currentCookingGroup = assignedUsers.value.find(x => x.name == cookingGroupName);
+		// If date already exists, just change the user id and name
+		if (currentCookingGroup?.people.some(x => x.date.getDate() == dateToAdd.getDate())) {
+			const newAssignedUsers = assignedUsers.value.map(group => {
+				if (group.name === cookingGroupName) {
+					return {
+						...group,
+						people: group.people.map(person =>
+							person.date.getDate() === dateToAdd.getDate()
+								? { ...person, id: selectedPerson.id, name: selectedPerson.name }
+								: person
+						)
+					};
+				}
+				return group;
+			});
+			assignedUsers.value = newAssignedUsers;
+		} else {
+			// add to group
+			currentCookingGroup?.people.push({
+				date: dateToAdd,
+				...selectedPerson
+			})
+		}
 	}
-
-	// add to group
 }
 
 </script>
