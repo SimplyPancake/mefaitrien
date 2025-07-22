@@ -41,6 +41,7 @@ import { availabilityTranslations } from "~/i18n/enumTranslations";
 
 const opened = ref(false);
 const selected = ref<PersonSmall>();
+let cookingGroupName = '';
 
 type PersonSmall = {
 	id: number,
@@ -57,7 +58,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-	(e: 'savePerson', selectedPerson: PersonSmall, selectedDateString: String): void
+	(e: 'savePerson', selectedPerson: PersonSmall, selectedDateString: string, cookingGroupName: string): void
 }>();
 
 const AVAILABILITY_ORDER: AvailabilityType[] = [
@@ -69,8 +70,13 @@ const AVAILABILITY_ORDER: AvailabilityType[] = [
 
 const availabilityGroups = computed<AvailabilityGroup[]>(() => {
 	const availMap = new Map<AvailabilityType, AvailabilityGroup>();
+	console.log(props.groupInfo);
 
 	props.groupInfo.forEach(group => {
+		if (cookingGroupName != '' && group.name != cookingGroupName) {
+			return;
+		}
+
 		group.people.forEach(person => {
 			//TODO: Not filled in means available  on backend!
 			const availability = person.availability || 'UNAVAILABLE';
@@ -92,9 +98,10 @@ const availabilityGroups = computed<AvailabilityGroup[]>(() => {
 	return values;
 });
 
-const openDialog = () => {
+const openDialog = (selectedCookingGroupName: string = '') => {
 	selected.value = undefined;
 	opened.value = true;
+	cookingGroupName = selectedCookingGroupName;
 }
 
 defineExpose({
@@ -107,7 +114,8 @@ const closeDialog = (save: boolean) => {
 	opened.value = false;
 
 	if (save) {
-		emit("savePerson", selected.value!, props.selectedDateString)
+		console.log("Saving cooking name and person", cookingGroupName)
+		emit("savePerson", selected.value!, props.selectedDateString, cookingGroupName)
 	}
 };
 

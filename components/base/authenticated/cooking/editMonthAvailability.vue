@@ -62,6 +62,7 @@ import { availabilityTranslations } from "~/i18n/enumTranslations";
 import dayjs from "dayjs";
 import Plannercontrols from "./plannercontrols.vue";
 import type { EventClickArg } from "@fullcalendar/core/index.js";
+import type { EventImpl } from "@fullcalendar/core/internal";
 
 // 0-based month number
 const props = defineProps<{
@@ -192,11 +193,14 @@ const calendarEvents = computed(() => {
 			}
 		}
 		cookingGroup.people.forEach(assignedVals => {
-			events.push({
+			let eventObj = {
 				title: `${cookingGroup.name}: ${assignedVals.name}`,
 				allDay: true,
-				start: assignedVals.date
-			})
+				start: assignedVals.date,
+				cookingGroupName: cookingGroup.name
+			};
+
+			events.push(eventObj)
 		})
 	});
 
@@ -279,7 +283,8 @@ const calendarOptions = computed(() => {
 		},
 		eventClick: (info: EventClickArg) => {
 			let isCorrectTypeOfEvent = info.event.display != 'background';
-			clickDate(info.event.start!, true, isCorrectTypeOfEvent)
+			let cookingGroupName = info.event._def.extendedProps.cookingGroupName ?? "";
+			clickDate(info.event.start!, true, isCorrectTypeOfEvent, cookingGroupName)
 		}
 	}
 });
@@ -300,12 +305,12 @@ const getColorForAvailability = (availability?: AvailabilityType) => {
 	}
 };
 
-const clickDate = (date: Date, isEvent: boolean = false, isCorrectEvent: boolean = false) => {
+const clickDate = (date: Date, isEvent: boolean = false, isCorrectEvent: boolean = false, cookingGroupName: string = '') => {
 	if (isEvent) {
 		// Modify event with correct cooking group
 		if (isCorrectEvent) {
 			// do something
-			dayBrowser.value?.openDialog();
+			dayBrowser.value?.openDialog(cookingGroupName);
 		}
 		return;
 	}
@@ -324,9 +329,9 @@ const clickDate = (date: Date, isEvent: boolean = false, isCorrectEvent: boolean
 	dayBrowser.value?.openDialog();
 }
 
-const saveCookingPerson = (selectedPerson: { id: number, name: string }, selectedDateString: String) => {
+const saveCookingPerson = (selectedPerson: { id: number, name: string }, selectedDateString: String, selectedCookingGroupName: string) => {
 	const dateToAdd = new Date(selectedDateString.toString());
-	const selectedCookingGroup = cookingChooserRef.value!.selectedGroupName;
+	const selectedCookingGroup = cookingChooserRef.value!.selectedGroupName == '' ? selectedCookingGroupName : cookingChooserRef.value!.selectedGroupName;
 	assignCookingPerson(selectedPerson, selectedCookingGroup, dateToAdd);
 }
 
