@@ -32,18 +32,6 @@
 							</NuxtLink>
 						</template>
 
-						<!-- Maand bestaat! -->
-						<template v-else>
-							<!-- Maand al ingedeeld: -->
-							<!-- Verander indeling -->
-							<UiButton v-if="selectedMonth?.status == 'ASSIGNED'">Verander indeling</UiButton>
-
-							<!-- Maand nog niet ingedeeld maar wel ingevuld -->
-							<!-- Deel in -->
-							<UiButton
-								v-if="selectedMonth?.status == 'CANFILLIN' || selectedMonth?.status == 'NOFILLIN'">Deel
-								maand in</UiButton>
-						</template>
 					</UiCardContent>
 				</template>
 			</UiCard>

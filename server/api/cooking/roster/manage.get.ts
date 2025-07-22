@@ -1,32 +1,11 @@
 // Post availability
 import prisma from "@@/lib/prisma";
 import { AvailabilityType, Role } from "@prisma/client";
+import { ExtendedMonthRoster, fillDefaultAvailability } from "~/server/utils/functions";
 import { BaseEventHandler } from "~/server/utils/handlers/baseEventHandler";
 import { type ManageMonthDto } from "~/types/dto";
 import { H3Event } from "h3";
 import type { BlockedDay, MonthRoster, User } from "@prisma/client";
-
-type ExtendedMonthRoster = MonthRoster & {
-  blockedDates: BlockedDay[];
-};
-
-const fillDefaultAvailability = (monthRoster: ExtendedMonthRoster, user: User) => {
-  const blockedDays = new Set(monthRoster.blockedDates.map((day) => day.day));
-  const amountOfDays = new Date(monthRoster.year, monthRoster.month, 0).getDate();
-  const allDays = Array.from({ length: amountOfDays }, (_, i) => i + 1);
-  const unblocked = allDays.filter((day) => !blockedDays.has(day));
-
-  return unblocked.map((day) => ({
-    id: -1, // Placeholder ID for default availability
-    day,
-    availability: "AVAILABLE" as AvailabilityType,
-    userId: user.id,
-    monthRosterId: monthRoster.id,
-    user: user,
-    createdAt: new Date(),
-    modifiedAt: new Date(),
-  }));
-};
 
 // Returns the months and year that rosters have been made.
 let handlerFunc = async (event: H3Event) => {
@@ -70,7 +49,7 @@ let handlerFunc = async (event: H3Event) => {
       availabilities: allAvailabilities,
       averageAvailability: percentage,
       daysWithoutCook: monthAssignedYet ? -1 : undefined,
-      filledIn: totalFilledIn,
+      filledIn: usersWithAvailability.size,
       maxAssigned: totalUsers,
     };
   });

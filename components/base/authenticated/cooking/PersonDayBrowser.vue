@@ -10,7 +10,7 @@
 								</UiListboxGroupLabel>
 								<template v-for="p in avail.people" :key="p.id">
 									<UiListboxItem :value="p" class="mb-1">
-										<div class="flex items-center gap-5">
+										<div class=" flex items-center gap-5">
 											<UiAvatar src="/img/dannyprofielfoto.png" class="size-8" />
 											<div class="text-sm">
 												<p class="font-medium">{{ p.name }}</p>
@@ -125,6 +125,7 @@ const selectedDate = computed(() => {
 		month: 'long'
 	})
 })
+
 </script>
 
 <style></style>

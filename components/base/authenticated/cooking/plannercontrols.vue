@@ -1,5 +1,5 @@
 <template>
-	<div class="flex flex-row gap-4 w-2/5">
+	<div class="flex flex-row gap-4 w-3/5">
 		<UiSelect v-model="selectedGroupName" class="">
 			<UiSelectTrigger placeholder="Kies kookgroep" />
 			<UiSelectContent>
@@ -12,13 +12,10 @@
 				</UiSelectGroup>
 			</UiSelectContent>
 		</UiSelect>
-		<div class=" flex items-center space-x-2">
-			<UiSwitch id="auto-mode" @click="useAutomatic = !useAutomatic" />
-			<UiLabel for="auto-mode">Automatische indeling</UiLabel>
+		<div class="flex items-center space-x-4">
+			<UiButton variant="outline" @click="emit('automaticOrganize')">Automatisch indelen</UiButton>
+			<UiButton class="ml-auto" @click="emit('submitAssignees')">Indeling opslaan</UiButton>
 		</div>
-	</div>
-	<div v-if="useAutomatic" class="text-sm text-gray-600 italic">
-		Automatische planning actief, je kunt individuele dagen alsnog aanpassen
 	</div>
 </template>
 
@@ -31,16 +28,19 @@ const props = defineProps<{
 }>()
 
 const selectedGroupName = ref('');
-const useAutomatic = ref(false)
 
 const selectedGroup = computed(() => {
 	return props.groupInfo.find(x => x.name == selectedGroupName.value)
 })
 
+const emit = defineEmits<{
+	(e: 'automaticOrganize'): void
+	(e: 'submitAssignees'): void
+}>();
+
 defineExpose({
 	selectedGroup,
 	selectedGroupName,
-	useAutomatic
 })
 
 const removeSelection = () => {

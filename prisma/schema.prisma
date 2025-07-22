@@ -11,13 +11,14 @@ datasource db {
 }
 
 model User {
-  id           Int     @id @default(autoincrement())
-  username     String  @unique
-  passwordHash String
-  refreshToken String?
-  name         String
-  email        String  @unique
-  role         Role    @default(USER)
+  id            Int     @id @default(autoincrement())
+  username      String  @unique
+  passwordHash  String
+  refreshToken  String?
+  name          String
+  email         String  @unique
+  role          Role    @default(USER)
+  cookingpoints Int     @default(0)
 
   cookingGroup   CookingGroup?  @relation(fields: [cookingGroupId], references: [id])
   cookingGroupId Int?

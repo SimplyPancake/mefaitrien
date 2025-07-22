@@ -8,7 +8,7 @@
 			<template #content>
 				<UiCardContent>
 					<BaseAuthenticatedCookingPlannercontrols v-if="groupData" :group-info="props.groupData"
-						ref="cookingChooser" />
+						ref="cookingChooser" @automatic-organize="doAutomaticOrganize()" />
 
 					<!-- If selectedGroup is empty; display empty calendar with selected month -->
 
@@ -60,9 +60,7 @@ import { BaseAuthenticatedCookingPlannercontrols, BaseAuthenticatedCookingUserSh
 import { AvailabilityType } from "@prisma/client"; import FullCalendar from "@fullcalendar/vue3";
 import { availabilityTranslations } from "~/i18n/enumTranslations";
 import dayjs from "dayjs";
-import Plannercontrols from "./plannercontrols.vue";
 import type { EventClickArg } from "@fullcalendar/core/index.js";
-import type { EventImpl } from "@fullcalendar/core/internal";
 
 // 0-based month number
 const props = defineProps<{
@@ -101,23 +99,31 @@ const selectedMonth = computed(() => {
 })
 
 const selectedMonthPerson = computed(() => {
-	return {
+	let obj = {
 		...selectedMonth.value,
-		availabilities: selectedMonth.value.availabilities.filter(x => x.userId == userShowerRef.value?.selectedPerson.id)
+		availabilities: selectedMonth.value.availabilities.filter(x => x.userId == userShowerRef.value?.selectedPerson?.id) ?? []
 	}
+
+	return obj
 })
 
 // WATCH
 watch(
 	() => userShowerRef.value?.selectedPerson,
 	(person) => {
+		console.log("New selected person value", person)
+		console.log("Old mode value is ", oldMode.value)
 		if (person) {
 			// Set to a value (user selected)
-			oldMode.value = mode.value
 			mode.value = "PersonSelect"
 		} else {
 			// user deselected
-			mode.value = oldMode.value
+			oldMode.value = mode.value;
+			if (cookingChooserRef.value?.selectedGroupName != '') {
+				mode.value = "CookingGroupSelect"
+			} else {
+				mode.value = "FullOverview"
+			}
 		}
 	})
 
@@ -371,6 +377,10 @@ const assignCookingPerson = (selectedPerson: { id: number, name: string }, cooki
 			})
 		}
 	}
+}
+
+const doAutomaticOrganize = () => {
+	console.log("Automatic organisation! Wooepwoep")
 }
 
 </script>
