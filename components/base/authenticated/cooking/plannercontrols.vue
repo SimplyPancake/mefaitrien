@@ -13,7 +13,9 @@
 			</UiSelectContent>
 		</UiSelect>
 		<div class="flex items-center space-x-4">
-			<UiButton variant="outline" @click="emit('automaticOrganize')">Automatisch indelen</UiButton>
+			<UiButton v-if="selectedGroupName != ''" variant="outline" @click="emit('automaticOrganize')">{{
+				selectedGroupName }} automatisch indelen</UiButton>
+			<UiButton v-else variant="outline" @click="emit('automaticOrganize')">Alles automatisch indelen</UiButton>
 			<UiButton class="ml-auto" @click="emit('submitAssignees')">Indeling opslaan</UiButton>
 		</div>
 	</div>

@@ -38,13 +38,13 @@ export const calculateVariance = (numbers: number[]): number => {
   return variance;
 };
 
-export const scoreAvailability = (
+export const availabilityValid = (
   availabilities: MiniAvailability,
   roster: ExtendedMonthRoster
-): number => {
+): boolean => {
   // Check all days for uniqueness
   if ([...new Set(availabilities.map((x) => x.day))].length != availabilities.length) {
-    return -1;
+    return false;
   }
 
   let daysInMonth = new Date(roster.year, roster.month, 0).getDate();
@@ -52,19 +52,10 @@ export const scoreAvailability = (
 
   // If not all days have been filled, return -1
   if (daysToCook != availabilities.length) {
-    return -1;
+    return false;
   }
 
-  // If any week has >1 cook per housemate, +50 penalty per housemate
-  // TODO: Cache the weeks of the month because they do not need to be recomputed each evaluation
-  let weeks = getFullWeeksStartAndEndInMonth(roster.month, roster.year);
-
-  // calculate variance by importing function from functions.ts
-  // preference bonus = #rather would like to cook used
-  // Also preference penalty for #rather nots
-  // return 1000 - penalty - variance + (10 * preferenceBonus)]
-  let score = 1;
-  return Math.max(0, score);
+  return true;
 };
 
 function getFullWeeksStartAndEndInMonth(month: number, year: number) {

@@ -379,8 +379,27 @@ const assignCookingPerson = (selectedPerson: { id: number, name: string }, cooki
 	}
 }
 
-const doAutomaticOrganize = () => {
-	console.log("Automatic organisation! Wooepwoep")
+const doAutomaticOrganize = async () => {
+	// Begin loading
+
+	let body = {};
+	if (cookingChooserRef.value?.selectedGroup) {
+		body = {
+			cookingGroups: [cookingChooserRef.value?.selectedGroup?.id]
+		}
+	}
+	const { data: data, error: error } = await useAPI(`/api/cooking/roster/${selectedMonth.value.year}/${selectedMonth.value.month}/auto`, {
+		method: "POST",
+		body: body
+	});
+
+	if (error.value) {
+		useSonner.error(error.value!.statusMessage!);
+		return;
+	}
+
+	// End loading and assignCookingPerson
+	console.log(data.value);
 }
 
 </script>
