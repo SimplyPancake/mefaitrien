@@ -55,7 +55,7 @@
 <script lang="ts" setup>
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin, { type DateClickArg } from "@fullcalendar/interaction";
-import type { AssignedUsersDto, GroupUsersDto, ManageMonthDto } from '~/types/dto';
+import type { AssignedUsersDto, groupAssign, GroupUsersDto, ManageMonthDto } from '~/types/dto';
 import { BaseAuthenticatedCookingPlannercontrols, BaseAuthenticatedCookingUserShower, BaseAuthenticatedCookingPersonDayBrowser } from '#components';
 import { AvailabilityType } from "@prisma/client"; import FullCalendar from "@fullcalendar/vue3";
 import { availabilityTranslations } from "~/i18n/enumTranslations";
@@ -335,8 +335,12 @@ const clickDate = (date: Date, isEvent: boolean = false, isCorrectEvent: boolean
 	dayBrowser.value?.openDialog();
 }
 
-const saveCookingPerson = (selectedPerson: { id: number, name: string }, selectedDateString: String, selectedCookingGroupName: string) => {
-	const dateToAdd = new Date(selectedDateString.toString());
+function saveCookingPerson(
+	selectedPerson: { id: number, name: string },
+	dateOrString: Date | string,
+	selectedCookingGroupName: string
+) {
+	const dateToAdd = typeof dateOrString === "string" ? new Date(dateOrString.toString()) : dateOrString;
 	const selectedCookingGroup = cookingChooserRef.value!.selectedGroupName == '' ? selectedCookingGroupName : cookingChooserRef.value!.selectedGroupName;
 	assignCookingPerson(selectedPerson, selectedCookingGroup, dateToAdd);
 }
@@ -388,7 +392,7 @@ const doAutomaticOrganize = async () => {
 			cookingGroups: [cookingChooserRef.value?.selectedGroup?.id]
 		}
 	}
-	const { data: data, error: error } = await useAPI(`/api/cooking/roster/${selectedMonth.value.year}/${selectedMonth.value.month}/auto`, {
+	const { data: data, error: error } = await useAPI<groupAssign>(`/api/cooking/roster/${selectedMonth.value.year}/${selectedMonth.value.month}/auto`, {
 		method: "POST",
 		body: body
 	});
@@ -399,7 +403,14 @@ const doAutomaticOrganize = async () => {
 	}
 
 	// End loading and assignCookingPerson
-	console.log(data.value);
+	data.value!.forEach(cookingGroup => {
+		cookingGroup.availabilities.forEach(availability => {
+			saveCookingPerson({
+				id: availability.userId,
+				name: availability.userName
+			}, new Date(selectedMonth.value.year, selectedMonth.value.month - 1, availability.day), cookingGroup.groupName)
+		});
+	});
 }
 
 </script>

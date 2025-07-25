@@ -60,6 +60,16 @@ export interface AssignedUsersDto {
     name: string;
   }>;
 }
+
+export type groupAssign = Array<{
+  groupName: string;
+  groupId: number;
+  availabilities: Array<{
+    userId: number;
+    day: number;
+    userName: string;
+  }>;
+}>;
 // const result = Object.values(groupedUsers).map((group) => ({
 //   id: group.id,
 //   name: group.name,

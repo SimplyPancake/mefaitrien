@@ -6,6 +6,7 @@ import {
 } from "~/server/utils/functions";
 import { BaseEventHandler } from "~/server/utils/handlers/baseEventHandler";
 import { SessionEvent } from "~/types";
+import { groupAssign } from "~/types/dto";
 import { array, number, object, string } from "yup";
 
 let handlerFunc = async (event: SessionEvent) => {
@@ -51,6 +52,7 @@ let handlerFunc = async (event: SessionEvent) => {
 
   // Filter out
   const allUsers = await prisma.user.findMany();
+  const allGroups = await prisma.cookingGroup.findMany();
   const usersWithAvailability = new Set(roster.availabilities.map((av) => av.userId));
   const defaultAvailabilities = allUsers
     .filter((user) => !usersWithAvailability.has(user.id))
@@ -65,11 +67,24 @@ let handlerFunc = async (event: SessionEvent) => {
     cookingGroups = cookingGroups.filter((x) => selectedCookingGroups?.includes(x));
   }
 
-  let allAssigns: MiniAvailability = [];
+  let allAssigns: groupAssign = [];
+
+  // Create map from userId to username
+  let nameMap: Map<number, string> = new Map();
+  allUsers.forEach((user) => {
+    nameMap.set(user.id, user.name);
+  });
 
   // Now we find the best way to divide a month.
   // We go over each date and sort by days with least people available
-  cookingGroups.forEach((groupId) => {
+  cookingGroups.forEach((groupId: number) => {
+    if (!allGroups.some((x) => x.id == groupId)) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "Je moet wel om een bestaande groep vragen",
+      });
+    }
+
     let assigned: MiniAvailability = [];
     // go over availability days with least available persons
     // at this point all days (nonblocking) should have an availability assigned,
@@ -150,18 +165,18 @@ let handlerFunc = async (event: SessionEvent) => {
       userCookScore.set(preferredUser.id, userCookScore.get(preferredUser.id)! + 1);
     });
 
-    // Check validity
-    // if (!availabilityValid(assigned, roster)) {
-    //   throw createError({
-    //     status: 500,
-    //     statusMessage: "Er ging wat fout bij het automatiseren van dit proces",
-    //   });
-    // }
+    let extendedAssigned = assigned.map((x) => ({
+      ...x,
+      userName: nameMap.get(x.userId)!,
+    }));
 
-    allAssigns = allAssigns.concat(assigned);
+    allAssigns.push({
+      groupId: groupId,
+      groupName: allGroups.find((x) => x.id == groupId)!.name,
+      availabilities: extendedAssigned,
+    });
   });
 
-  console.log("Returning all assigns");
   return allAssigns;
 };
 
