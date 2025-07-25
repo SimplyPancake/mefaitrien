@@ -1,5 +1,5 @@
 <template>
-	<div class="flex flex-row gap-4 w-3/5">
+	<div class="flex flex-row gap-4 w-5/5">
 		<UiSelect v-model="selectedGroupName" class="">
 			<UiSelectTrigger placeholder="Kies kookgroep" />
 			<UiSelectContent>
@@ -16,6 +16,11 @@
 			<UiButton v-if="selectedGroupName != ''" variant="outline" @click="emit('automaticOrganize')">{{
 				selectedGroupName }} automatisch indelen</UiButton>
 			<UiButton v-else variant="outline" @click="emit('automaticOrganize')">Alles automatisch indelen</UiButton>
+
+			<UiButton v-if="selectedGroupName != ''" variant="outline" @click="emit('removeAssigned')">{{
+				selectedGroupName }} indeling verwijderen</UiButton>
+			<UiButton v-else variant="outline" @click="emit('removeAssigned')">Volledige indeling verwijderen</UiButton>
+
 			<UiButton class="ml-auto" @click="emit('submitAssignees')">Indeling opslaan</UiButton>
 		</div>
 	</div>
@@ -38,6 +43,7 @@ const selectedGroup = computed(() => {
 const emit = defineEmits<{
 	(e: 'automaticOrganize'): void
 	(e: 'submitAssignees'): void
+	(e: 'removeAssigned'): void
 }>();
 
 defineExpose({

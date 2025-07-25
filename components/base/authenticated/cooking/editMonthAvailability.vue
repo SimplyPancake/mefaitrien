@@ -8,7 +8,8 @@
 			<template #content>
 				<UiCardContent>
 					<BaseAuthenticatedCookingPlannercontrols v-if="groupData" :group-info="props.groupData"
-						ref="cookingChooser" @automatic-organize="doAutomaticOrganize()" />
+						ref="cookingChooser" @automatic-organize="doAutomaticOrganize()"
+						@remove-assigned="removeAssigned()" @submit-assignees="submitAssingees()" />
 
 					<!-- If selectedGroup is empty; display empty calendar with selected month -->
 
@@ -111,8 +112,6 @@ const selectedMonthPerson = computed(() => {
 watch(
 	() => userShowerRef.value?.selectedPerson,
 	(person) => {
-		console.log("New selected person value", person)
-		console.log("Old mode value is ", oldMode.value)
 		if (person) {
 			// Set to a value (user selected)
 			mode.value = "PersonSelect"
@@ -411,6 +410,20 @@ const doAutomaticOrganize = async () => {
 			}, new Date(selectedMonth.value.year, selectedMonth.value.month - 1, availability.day), cookingGroup.groupName)
 		});
 	});
+}
+
+const removeAssigned = () => {
+	if (cookingChooserRef.value?.selectedGroup) {
+		assignedUsers.value = assignedUsers.value.filter(x => x.name != cookingChooserRef.value?.selectedGroup?.name)
+		return
+	}
+
+	// remove all assigned
+	assignedUsers.value = [];
+}
+
+const submitAssingees = () => {
+	console.log("TODO: Submit! :)")
 }
 
 </script>
