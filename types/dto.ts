@@ -5,7 +5,7 @@ import type {
   CookingGroup,
   MonthRoster,
   User,
-} from "@prisma/client";
+} from "../generated/prisma/browser";
 
 export interface AdminUserDTO {
   id: number;

@@ -1,11 +1,10 @@
 // Post availability
 import prisma from "@@/lib/prisma";
-import { AvailabilityType, Role } from "@prisma/client";
+import { AvailabilityType, Role, type BlockedDay, type MonthRoster, type User } from "../../../../generated/prisma/browser";
 import { ExtendedMonthRoster, fillDefaultAvailability } from "~/server/utils/functions";
 import { BaseEventHandler } from "~/server/utils/handlers/baseEventHandler";
 import { type ManageMonthDto } from "~/types/dto";
 import { H3Event } from "h3";
-import type { BlockedDay, MonthRoster, User } from "@prisma/client";
 
 // Returns the months and year that rosters have been made.
 let handlerFunc = async (event: H3Event) => {

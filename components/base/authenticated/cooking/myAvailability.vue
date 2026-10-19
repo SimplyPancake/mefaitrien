@@ -4,7 +4,7 @@
 </template>
 
 <script lang="ts" setup>
-import { type Availability, type BlockedDay, type MonthRoster } from "@prisma/client";
+import { type Availability, type BlockedDay, type MonthRoster } from "@/generated/prisma/browser";
 
 type extraStuff = {
 	availabilities: Availability[],

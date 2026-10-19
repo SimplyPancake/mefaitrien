@@ -1,6 +1,6 @@
 // Post availability
 import prisma from "@@/lib/prisma";
-import { AvailabilityType } from "@prisma/client";
+import { AvailabilityType } from "../../../generated/prisma/browser";
 import { BaseEventHandler } from "~/server/utils/handlers/baseEventHandler";
 import { H3Event } from "h3";
 import { array, date, number, object, string } from "yup";

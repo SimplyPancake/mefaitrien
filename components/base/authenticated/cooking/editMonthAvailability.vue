@@ -58,7 +58,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin, { type DateClickArg } from "@fullcalendar/interaction";
 import type { AssignedUsersDto, groupAssign, GroupUsersDto, ManageMonthDto } from '~/types/dto';
 import { BaseAuthenticatedCookingPlannercontrols, BaseAuthenticatedCookingUserShower, BaseAuthenticatedCookingPersonDayBrowser } from '#components';
-import { AvailabilityType } from "@prisma/client"; import FullCalendar from "@fullcalendar/vue3";
+import { AvailabilityType } from "@/generated/prisma/browser"; import FullCalendar from "@fullcalendar/vue3";
 import { availabilityTranslations } from "~/i18n/enumTranslations";
 import dayjs from "dayjs";
 import type { EventClickArg } from "@fullcalendar/core/index.js";

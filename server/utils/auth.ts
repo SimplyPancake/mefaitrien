@@ -17,6 +17,10 @@ export const verifyPassword = async (password: string, hash: string): Promise<bo
 };
 
 export const generateToken = (userId: number, secret: string): string => {
+  if (!secret) {
+    throw new Error("JWT signing secret is missing. Set NUXT_JWT_SECRET in the runtime environment.");
+  }
+
   return jwt.sign({ id: userId }, secret, { expiresIn: "12h" });
 };
 
@@ -30,9 +34,14 @@ export const verifyToken = (event: H3Event): { valid: boolean; id?: number } => 
   }
 
   const token = authHeader.split(" ")[1];
+  const secret = config.jwtSecret;
+
+  if (!secret) {
+    throw new Error("JWT signing secret is missing. Set NUXT_JWT_SECRET in the runtime environment.");
+  }
 
   try {
-    const decoded = jwt.verify(token, config.jwtSecret);
+    const decoded = jwt.verify(token, secret);
     const { id, exp } = decoded as { id: number; exp: number };
 
     if (Date.now() >= exp * 1000) {

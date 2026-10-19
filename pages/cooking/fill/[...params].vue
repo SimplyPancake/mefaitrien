@@ -77,7 +77,7 @@ import FullCalendar from "@fullcalendar/vue3";
 import dayjs from "dayjs";
 import { computed, onMounted, ref, watch } from 'vue';
 import type { CalendarOptions } from "@fullcalendar/core";
-import { AvailabilityType, type Availability, type BlockedDay, type MonthRoster } from "@prisma/client";
+import { AvailabilityType, type Availability, type BlockedDay, type MonthRoster } from "@/generated/prisma/browser";
 import { usePageInfoStore } from '~/composables/usePageInfoStore';
 import { useMagicKeys } from '@vueuse/core'
 import { useAPI } from '~/composables/useAPI';

@@ -36,7 +36,7 @@
 
 <script lang="ts" setup>
 import type { GroupUsersDto } from '~/types/dto';
-import { AvailabilityType } from "@prisma/client";
+import { AvailabilityType } from "@/generated/prisma/browser";
 import { availabilityTranslations } from "~/i18n/enumTranslations";
 
 const opened = ref(false);

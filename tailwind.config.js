@@ -120,7 +120,7 @@ module.exports = {
           foreground: "var(--accent-foreground)",
         },
         "accent-foreground": {
-          DEFAULT: "var(-accent-foreground)",
+          DEFAULT: "var(--accent-foreground)",
         },
         popover: {
           DEFAULT: "var(--popover)",

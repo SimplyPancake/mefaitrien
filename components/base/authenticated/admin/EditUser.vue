@@ -68,7 +68,7 @@
 
 <script lang="ts" setup>
 import type { AdminUserDTO } from '~/types/dto';
-import type { CookingGroup } from '@prisma/client';
+import type { CookingGroup } from '@/generated/prisma/browser';
 import { cloneDeep } from 'lodash';
 import { useAPI } from '~/composables/useAPI';
 

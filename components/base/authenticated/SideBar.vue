@@ -95,7 +95,7 @@
 <script lang="ts" setup>
 import { UiDropdownMenu, UiDropdownMenuContent, UiDropdownMenuItem, UiDropdownMenuLabel, UiDropdownMenuSeparator, UiDropdownMenuTrigger, UiSidebarGroupLabel, UiSidebarMenuSubItem } from '#components';
 // import { useSessionStore } from '~/composables/useSessionStore'
-import { Role } from "@prisma/client";
+import { Role } from "@/generated/prisma/browser";
 const sessionStore = useSessionStore()
 const colorMode = useColorMode()
 const pageInfoStore = usePageInfoStore();

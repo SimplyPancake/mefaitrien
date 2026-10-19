@@ -1,5 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+  srcDir: ".",
   compatibilityDate: "2024-11-01",
   devtools: {
     enabled: true,
@@ -7,7 +8,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     baseUrl: process.env.BASE_URL,
-    jwtSecret: process.env.JWT_SECRET,
+    jwtSecret: process.env.NUXT_JWT_SECRET ?? process.env.JWT_SECRET,
     authMiddleware: {
       routes: [
         { route: "/api/auth/login", method: "post", allowType: "ANYONE" },
@@ -28,9 +29,7 @@ export default defineNuxtConfig({
     "@nuxt/fonts",
     "@vee-validate/nuxt",
     "@morev/vue-transitions/nuxt",
-    "@prisma/nuxt",
     "@sidebase/nuxt-auth",
-    "@samk-dev/nuxt-vcalendar",
     "@pinia/nuxt",
   ],
 
@@ -101,8 +100,8 @@ export default defineNuxtConfig({
   },
 
   build: {
-    transpile: ["vue-sonner"],
+    transpile: ["vue-sonner", "v-calendar", "@popperjs/core"],
   },
 
-  css: ["@/assets/css/full-calendar.css"],
+  css: ["@/assets/css/full-calendar.css", "v-calendar/style.css"],
 });

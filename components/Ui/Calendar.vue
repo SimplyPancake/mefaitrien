@@ -10,8 +10,8 @@
 </template>
 
 <script lang="ts" setup>
-import type { Calendar } from "v-calendar";
-import { ref, onMounted, defineExpose } from 'vue';
+import { Calendar as VCalendar, type Calendar } from "v-calendar";
+import { ref } from "vue";
 
 const calendarRef = ref(null);
 

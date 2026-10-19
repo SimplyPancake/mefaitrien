@@ -32,7 +32,7 @@
 
 <script lang="ts" setup>
 import { type GroupUsersDto } from "~/types/dto";
-import type { AvailabilityType } from "@prisma/client"
+import type { AvailabilityType } from "@/generated/prisma/browser"
 const selected = ref();
 
 const props = defineProps<{

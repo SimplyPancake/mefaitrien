@@ -1,3 +1,11 @@
+type Placement = import("@popperjs/core").Placement;
+type Locale = import("v-calendar/dist/types/src/utils/locale.d.ts").default;
+type DateRepeatConfig = import("v-calendar/dist/types/src/utils/date/repeat.d.ts").DateRepeatConfig;
+type CalendarView = import("v-calendar/dist/types/src/use/calendar.d.ts").CalendarView;
+type PageView = import("v-calendar/dist/types/src/utils/page.d.ts").PageView;
+type TitlePosition = import("v-calendar/dist/types/src/utils/page.d.ts").TitlePosition;
+type MonthParts = import("v-calendar/dist/types/src/utils/date/helpers.d.ts").MonthParts;
+
 interface AttributeConfig {
   key: string | number;
   content: string | Partial<Content | Profile<Partial<Content>>>;

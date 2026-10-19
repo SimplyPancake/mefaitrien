@@ -1,4 +1,4 @@
-import type { AvailabilityType, Role } from "@prisma/client";
+import type { AvailabilityType, Role } from "../generated/prisma/browser";
 
 export const roleTranslations: Record<Role, string> = {
   ADMIN: "Beheerder",

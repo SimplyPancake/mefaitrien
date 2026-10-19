@@ -1,4 +1,4 @@
-import { AvailabilityType, BlockedDay, MonthRoster, User } from "@prisma/client";
+import { AvailabilityType, type BlockedDay, type MonthRoster, type User } from "../../generated/prisma/browser";
 
 export type MiniAvailability = Array<{
   userId: number;

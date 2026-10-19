@@ -1,4 +1,4 @@
-import { AvailabilityType } from "@prisma/client";
+import { AvailabilityType } from "@/generated/prisma/browser";
 import { defineStore } from "pinia";
 import { ref } from "vue";
 
