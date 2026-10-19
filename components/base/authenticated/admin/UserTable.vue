@@ -12,7 +12,7 @@
 			</UiTableRow>
 		</UiTableHeader>
 		<UiTableBody>
-			<template v-for="(user, index) in data.users" :key="user.id">
+			<template v-for="user in data.users" :key="user.id">
 				<UiTableRow>
 					<UiTableCell>
 						<div class="flex items-center gap-3">
@@ -35,12 +35,18 @@
 			</template>
 		</UiTableBody>
 	</UiTable>
+	<div class="flex justify-end p-4">
+		<BaseAuthenticatedAdminCreateUser
+			:cooking-groups="data?.cookingGroups ?? []"
+			@created="refresh()"
+		/>
+	</div>
 </template>
 
 <script lang="ts" setup>
 import type { AdminUsersDTO } from '@/types/dto';
 
-const { data, status } = await useAPI<AdminUsersDTO>('/api/admin/users');
+const { data, status, refresh } = await useAPI<AdminUsersDTO>('/api/admin/users');
 </script>
 
 <style>
