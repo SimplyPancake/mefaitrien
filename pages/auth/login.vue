@@ -5,7 +5,7 @@
 				<h1 class="text-2xl font-bold tracking-tight lg:text-3xl">Log in</h1>
 				<p class="mt-1 text-muted-foreground">Zet je gebruikersnaam en wachtwoord hiero!</p>
 
-				<form class="mt-10" @submit="submit">
+				<form class="mt-10" @submit.prevent="submit">
 					<fieldset :disabled="isSubmitting" class="grid gap-5">
 						<div>
 							<UiVeeInput label="Gebruikersnaam" type="text" name="username" placeholder="hans kazan" />
