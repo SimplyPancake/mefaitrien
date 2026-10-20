@@ -8,7 +8,6 @@ let handlerFunc = async (event: SessionEvent) => {
   // Get month roster of this month by all users
   const roster = await prisma.monthRoster.findMany({
     where: {
-      status: "CANFILLIN",
       year: {
         gte: new Date().getFullYear() - 2, // Only fetch the last 2 years of data, we don't want to bombard user
       },

@@ -6,6 +6,13 @@ export default defineNuxtConfig({
     enabled: true,
   },
 
+  postcss: {
+    plugins: {
+      "tailwindcss/nesting": false,
+      "postcss-nesting": {},
+    },
+  },
+
   runtimeConfig: {
     baseUrl: process.env.BASE_URL,
     jwtSecret: process.env.NUXT_JWT_SECRET ?? process.env.JWT_SECRET,

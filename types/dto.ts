@@ -68,6 +68,18 @@ export type AssignedDayDto = Pick<
   cookingGroup: Pick<CookingGroup, "id" | "name">;
 };
 
+export interface CurrentMonthRosterDto {
+  year: number;
+  month: number;
+  assignedDays: AssignedDayDto[];
+}
+
+export interface HomeDashboardDto {
+  todayAssignments: AssignedDayDto[];
+  cookingPoints: number;
+  cookingDaysThisWeek: string[];
+}
+
 export interface ManageMonthDto extends MonthRoster {
   availabilities: ExtraAvailability[];
   blockedDates: BlockedDay[];

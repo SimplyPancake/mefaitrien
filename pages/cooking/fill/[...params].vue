@@ -134,15 +134,6 @@ let olddates: SelectedDate[] = [];
 // Get availability of some months
 const { data: tofillinmonths, error: fillmonthserror, status: fillmontshstatus, execute: getmonthdata } = await useAPI<(MonthRoster & extraStuff)[]>("/api/cooking/availability");
 
-const getMonths = async () => {
-	await getmonthdata();
-	if (fillmonthserror.value) {
-		useSonner.error("Kon geen maand data ophalen");
-	} else {
-		useSonner.success("Data opgehaald")
-	}
-}
-
 const currentFillMonth = computed(() => {
 	return tofillinmonths.value?.find(x => x.month == selectedmonth.value + 1 && x.year == selectedyear.value)
 })
@@ -158,7 +149,7 @@ const initialiseMonth = () => {
 		canfillmonth.value = false;
 	} else {
 		// May be able to set to true
-		canfillmonth.value = !!currentFillMonth.value
+		canfillmonth.value = currentFillMonth.value?.status === "CANFILLIN"
 	}
 
 	if (currentFillMonth.value && currentFillMonth.value?.availabilities.length != 0) {
@@ -205,7 +196,7 @@ const initialiseMonth = () => {
 	olddates = dates.value.map(d => ({ ...d }));
 }
 
-onMounted(() => {
+onMounted(async () => {
 	const now = new Date()
 	const params = route.params.params as string[] | undefined
 
@@ -221,7 +212,10 @@ onMounted(() => {
 		calendarRef.value?.getApi().gotoDate(startOfMonth.value.toDate());
 	}
 
-	getMonths();
+	await getmonthdata();
+	if (fillmonthserror.value) {
+		useSonner.error(fillmonthserror.value.statusMessage ?? "Kon geen maand data ophalen");
+	}
 	initialiseMonth();
 });
 

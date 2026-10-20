@@ -30,19 +30,22 @@
 								</UiSidebarMenuButton>
 								<UiSidebarMenuSub>
 									<template v-for="(child, k) in section.items" :key="`child-${k}`">
-										<UiSidebarMenuSubItem>
+										<div v-if="child.sort === SidebarItemType.Divider" class="my-1"></div>
+										<UiSidebarMenuSubItem v-else>
 											<UiSidebarMenuSubButton as-child class="text-lg">
-												<NuxtLink v-if="child.url" :href="child.url" class="text-base">
+												<NuxtLink v-if="child.sort === SidebarItemType.Link && child.url"
+													:to="child.url" class="text-base">
 													<Icon :name="child.icon"
 														class="size-6 mr-3 text-primary shrink-0" />
 													{{ child.title }}
 												</NuxtLink>
-												<NuxtLink v-if="child.action" class="cursor-pointer text-base"
-													@click="child.action && handleSidebarAction(child.action)">
+												<button v-else-if="child.sort === SidebarItemType.Link && child.action"
+													type="button" class="cursor-pointer text-base"
+													@click="handleSidebarAction(child.action)">
 													<Icon :name="child.icon"
 														class="size-6 mr-3 text-primary shrink-0" />
 													{{ child.title }}
-												</NuxtLink>
+												</button>
 											</UiSidebarMenuSubButton>
 										</UiSidebarMenuSubItem>
 									</template>
@@ -93,8 +96,6 @@
 </template>
 
 <script lang="ts" setup>
-import { UiDropdownMenu, UiDropdownMenuContent, UiDropdownMenuItem, UiDropdownMenuLabel, UiDropdownMenuSeparator, UiDropdownMenuTrigger, UiSidebarGroupLabel, UiSidebarMenuSubItem } from '#components';
-// import { useSessionStore } from '~/composables/useSessionStore'
 import { Role } from "@/generated/prisma/browser";
 const sessionStore = useSessionStore()
 const colorMode = useColorMode()
@@ -104,16 +105,33 @@ const changeColors = () => {
 	colorMode.preference = colorMode.preference == "light" ? "dark" : "light"
 }
 
+enum SidebarItemType {
+	Link,
+	Divider
+}
+
 // Sidebar structure for clarity and maintainability
-interface SidebarItem {
+interface SidebarItemBase {
+	sort: SidebarItemType,
+	role?: Role;
+}
+
+interface SidebarLink extends SidebarItemBase {
+	sort: SidebarItemType.Link
 	title: string;
 	url?: string;
 	icon: string;
-	role?: string;
-	action?: string;
+	action?: "logout";
 }
+
+interface SidebarDivider extends SidebarItemBase {
+	sort: SidebarItemType.Divider
+}
+
+type SidebarItem = SidebarLink | SidebarDivider;
+
 interface SidebarSection {
-	label: string | null;
+	label: string;
 	items: SidebarItem[];
 }
 
@@ -121,31 +139,32 @@ const sidebarSections: SidebarSection[] = [
 	{
 		label: 'Algemeen', // Main navigation
 		items: [
-			{ title: "Dashboard", url: "/", icon: "lucide:home" },
+			{ sort: SidebarItemType.Link, title: "Dashboard", url: "/", icon: "lucide:home" },
 		]
 	},
 	{
 		label: 'Koken',
 		items: [
-			{ title: "Overzicht", url: "/cooking/overview", icon: "lucide:chart-no-axes-combined" },
-			{ title: "Schema", url: "/cooking", icon: "lucide:cooking-pot" },
-			{ title: "Invullen", url: "/cooking/fill", icon: "lucide:calendar-search" },
-			{ title: "Beheren", url: "/cooking/points", icon: "lucide:cog", role: "COOKING" },
-			{ title: "Aanmaken", url: "/cooking/create", icon: "lucide:calendar-cog", role: "COOKING" },
-			{ title: "Indelen", url: "/cooking/manage-month", icon: "lucide:calendar-range", role: "COOKING" }
+			{ sort: SidebarItemType.Link, title: "Schema", url: "/cooking", icon: "lucide:cooking-pot" },
+			{ sort: SidebarItemType.Link, title: "Punten", url: "/cooking/overview", icon: "lucide:chart-no-axes-combined" },
+			{ sort: SidebarItemType.Link, title: "Invullen", url: "/cooking/fill", icon: "lucide:calendar-search" },
+			{ sort: SidebarItemType.Divider, role: Role.COOKING },
+			{ sort: SidebarItemType.Link, title: "Beheren", url: "/cooking/points", icon: "lucide:cog", role: Role.COOKING },
+			{ sort: SidebarItemType.Link, title: "Aanmaken", url: "/cooking/create", icon: "lucide:calendar-cog", role: Role.COOKING },
+			{ sort: SidebarItemType.Link, title: "Indelen", url: "/cooking/manage-month", icon: "lucide:calendar-range", role: Role.COOKING }
 		]
 	},
 	{
 		label: "Ik",
 		items: [
-			{ title: "Instellingen", url: "#", icon: "lucide:user-cog" },
-			{ title: "Uitloggen", icon: "lucide:log-out", action: "logout" },
+			{ sort: SidebarItemType.Link, title: "Instellingen", url: "#", icon: "lucide:user-cog" },
+			{ sort: SidebarItemType.Link, title: "Uitloggen", icon: "lucide:log-out", action: "logout" },
 		]
 	},
 	{
 		label: "Tools",
 		items: [
-			{ title: "Admin", url: "/admin", icon: "lucide:shield-ellipsis", role: "ADMIN" },
+			{ sort: SidebarItemType.Link, title: "Admin", url: "/admin", icon: "lucide:shield-ellipsis", role: Role.ADMIN },
 		]
 	}
 ];
@@ -155,7 +174,7 @@ const visibleSidebarSections = computed(() => {
 		.map(section => {
 			const filteredItems = section.items.filter(item => {
 				// Admins can see everything
-				if (sessionStore!.sessionData!.roles.includes("ADMIN")) {
+				if (sessionStore!.sessionData!.roles.includes(Role.ADMIN)) {
 					return true;
 				}
 				return !item.role || sessionStore!.sessionData!.roles.includes(item.role);

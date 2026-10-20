@@ -1,10 +1,28 @@
 <template>
-	<UiCalendar :attributes="attributes" borderless expanded :first-day-of-week="2" locale="nl"
-		:masks="{ weekdays: 'WW' }" title-position="right" />
+	<div>
+		<UiCalendar
+			:key="`${props.year}-${props.month}`"
+			:initial-page="{ year: props.year, month: props.month }"
+			:attributes="attributes"
+			borderless
+			expanded
+			:first-day-of-week="2"
+			locale="nl"
+			:masks="{ weekdays: 'WW' }" title-position="right" />
+		<p v-if="avaldata && !currentMonthData?.availabilities.length"
+			class="mt-2 text-center text-sm text-muted-foreground">
+			Geen beschikbaarheid voor deze maand gevonden.
+		</p>
+	</div>
 </template>
 
 <script lang="ts" setup>
 import { type Availability, type BlockedDay, type MonthRoster } from "@/generated/prisma/browser";
+
+const props = defineProps<{
+	year: number;
+	month: number;
+}>();
 
 type extraStuff = {
 	availabilities: Availability[],
@@ -13,25 +31,18 @@ type extraStuff = {
 // Await data
 const { data: avaldata, error: avalerror } = await useAPI<(MonthRoster & extraStuff)[]>("/api/cooking/availability");
 if (avalerror.value) {
-	useSonner.error("Kon geen maand data ophalen");
+	useSonner.error(avalerror.value.statusMessage ?? "Kon geen maand data ophalen");
 }
 
-const attributes = ref([]);
-
-let currentYear = new Date().getFullYear()
-let currentMonth = new Date().getMonth() + 1
-
-onMounted(() => {
-	if (!avaldata.value) return;
-
-	// Get current month's data
-	const currentMonthData = avaldata.value.find(
-		x => x.month === currentMonth && x.year === currentYear
+const currentMonthData = computed(() => {
+	return avaldata.value?.find(
+		roster => roster.month === props.month && roster.year === props.year
 	);
+});
 
-	if (!currentMonthData) return;
+const attributes = computed(() => {
+	if (!currentMonthData.value) return [];
 
-	// Create attribute groups by availability type
 	const availabilityGroups = {
 		AVAILABLE: {
 			bar: "green",
@@ -55,16 +66,17 @@ onMounted(() => {
 		},
 	};
 
-	// Group dates by availability
-	currentMonthData.availabilities.forEach(av => {
-		const date = new Date(currentYear, currentMonth - 1, av.day);
-		if (av.availability in availabilityGroups) {
-			availabilityGroups[av.availability as keyof typeof availabilityGroups].dates.push(date);
-		}
+	currentMonthData.value.availabilities.forEach(availability => {
+		availabilityGroups[availability.availability].dates.push(
+			new Date(
+				props.year,
+				props.month - 1,
+				availability.day
+			)
+		);
 	});
 
-	// Set attributes array
-	attributes.value = Object.values(availabilityGroups).filter(group => group.dates.length > 0);
+	return Object.values(availabilityGroups).filter(group => group.dates.length > 0);
 });
 </script>
 

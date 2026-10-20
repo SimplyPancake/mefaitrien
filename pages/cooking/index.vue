@@ -8,6 +8,13 @@
 						<KeepAlive>
 							<FullCalendar :options="calendarOptions" :key="calendarKey" />
 						</KeepAlive>
+						<p v-if="currentMonthRoster && !currentMonthRoster.assignedDays.length"
+							class="mt-3 text-center text-sm text-muted-foreground">
+							Er zijn nog geen koks voor deze maand ingedeeld.
+						</p>
+						<p v-else-if="currentMonthRoster === null" class="mt-3 text-center text-sm text-muted-foreground">
+							Er is nog geen rooster voor deze maand.
+						</p>
 					</UiCardContent>
 				</template>
 			</UiCard>
@@ -16,14 +23,17 @@
 			<UiCard class="w-100" title="Je beschikbaarheid">
 				<template #content>
 					<UiCardContent>
-						<BaseAuthenticatedCookingMyAvailability />
+						<BaseAuthenticatedCookingMyAvailability
+							:year="displayedMonth.getFullYear()"
+							:month="displayedMonth.getMonth() + 1"
+						/>
 					</UiCardContent>
 				</template>
 			</UiCard>
 		</div>
-		<div class="row-span-3 col-start-4 row-start-3">
+		<!-- <div class="row-span-3 col-start-4 row-start-3">
 			<BaseAuthenticatedHomeUserOverview />
-		</div>
+		</div> -->
 	</div>
 </template>
 
@@ -31,11 +41,11 @@
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import FullCalendar from "@fullcalendar/vue3";
-import dayjs from "dayjs";
 import type { CalendarOptions } from "@fullcalendar/core";
 import { usePageInfoStore } from '~/composables/usePageInfoStore';
 import { useRoute } from "vue-router";
 import { ref, watch, onBeforeUnmount } from 'vue';
+import type { CurrentMonthRosterDto } from "~/types/dto";
 
 usePageInfoStore().setPageInfo({
 	title: 'Koken',
@@ -46,13 +56,22 @@ useSeoMeta({
 })
 
 
-const calendarOptions: CalendarOptions = {
+const displayedMonth = ref(new Date());
+const rosterUrl = computed(
+	() => `/api/cooking?year=${displayedMonth.value.getFullYear()}&month=${displayedMonth.value.getMonth() + 1}`
+);
+const { data: currentMonthRoster, error } = await useAPI<CurrentMonthRosterDto | null>(
+	() => rosterUrl.value
+);
+
+if (error.value) {
+	useSonner.error(error.value.statusMessage ?? "Kon de indeling van deze maand niet ophalen.");
+}
+
+const calendarOptions = computed<CalendarOptions>(() => ({
 	locale: "nl",
 	plugins: [dayGridPlugin, interactionPlugin],
 	initialView: "dayGridMonth",
-	dateClick: (info) => {
-		console.log(info.dateStr);
-	},
 	firstDay: 1,
 	stickyHeaderDates: true,
 	editable: false,
@@ -61,25 +80,25 @@ const calendarOptions: CalendarOptions = {
 		center: "title",
 		right: "dayGridWeek,dayGridMonth",
 	},
-	events: [
-		{
-			title: "Justin",
-			date: dayjs().toDate().toISOString(),
-			url: "https://ui-thing.behonbaker.com/",
-			allDay: true,
-		},
-		{
-			title: "Danny",
-			date: dayjs().add(1, "day").format("YYYY-MM-DD"),
-			allDay: true,
-		},
-	],
-};
-
-// const { data: currentMonthRoster } = await useAPI<MonthRoster>("/api/cooking")
-
-let nextMonthDate = new Date()
-nextMonthDate.setMonth(nextMonthDate.getMonth() + 1)
+	datesSet: (info) => {
+		const date = info.view.calendar.getDate();
+		if (
+			displayedMonth.value.getFullYear() !== date.getFullYear() ||
+			displayedMonth.value.getMonth() !== date.getMonth()
+		) {
+			displayedMonth.value = new Date(date.getFullYear(), date.getMonth(), 1);
+		}
+	},
+	events: (currentMonthRoster.value?.assignedDays ?? []).map((assignment) => ({
+		title: `${assignment.cookingGroup.name}: ${assignment.user.name}`,
+		start: new Date(
+			currentMonthRoster.value.year,
+			currentMonthRoster.value.month - 1,
+			assignment.day
+		),
+		allDay: true,
+	})),
+}));
 
 const calendarKey = ref(0);
 const route = useRoute();

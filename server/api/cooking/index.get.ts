@@ -1,20 +1,39 @@
 import prisma from "@@/lib/prisma";
 import { BaseEventHandler } from "~/server/utils/handlers/baseEventHandler";
 import { H3Event } from "h3";
+import { number, object } from "yup";
 
 let handlerFunc = async (event: H3Event) => {
-  // Get month roster of this month by all users
+  const querySchema = object({
+    year: number().integer().min(1).optional(),
+    month: number().integer().min(1).max(12).optional(),
+  });
+  let query;
+  try {
+    query = await querySchema.validate(getQuery(event));
+  } catch (cause) {
+    const message = cause instanceof Error ? cause.message : "Invalid roster month";
+    throw createError({ statusCode: 400, statusMessage: message });
+  }
+
+  const now = new Date();
   const roster = await prisma.monthRoster.findFirst({
     where: {
-      year: new Date().getFullYear(),
-      month: new Date().getMonth() + 1,
+      year: query.year ?? now.getFullYear(),
+      month: query.month ?? now.getMonth() + 1,
     },
     include: {
       availabilities: true,
+      assignedDays: {
+        include: {
+          user: { select: { id: true, name: true } },
+          cookingGroup: { select: { id: true, name: true } },
+        },
+      },
     },
   });
 
-  return roster;
+  return roster ?? null;
 };
 
 export default defineEventHandler(async (event) => {
