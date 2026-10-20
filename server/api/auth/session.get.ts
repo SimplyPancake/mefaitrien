@@ -1,17 +1,17 @@
-import prisma from "../../../lib/prisma";
-import { getSessionData, verifyToken } from "../../utils/auth";
+import { BaseEventHandler } from "~/server/utils/handlers/baseEventHandler";
+import type { SessionEvent } from "~/types";
 
-export default defineEventHandler(async (event) => {
-  const { valid, id } = verifyToken(event);
-
-  if (!valid || !id) {
-    return new Response("Unauthorized", { status: 401 });
-  }
-  
-  let userData = await getSessionData(id);
-
-  return new Response(JSON.stringify(userData), {
+const handlerFunc = async (event: SessionEvent) => {
+  return new Response(JSON.stringify(event.session), {
     status: 200,
     headers: { "Content-Type": "application/json" },
+  });
+};
+
+export default defineEventHandler(async (event) => {
+  return new BaseEventHandler(event, handlerFunc).handle({
+    route: "/api/auth/session",
+    method: "GET",
+    allowType: "AUTHENTICATED",
   });
 });

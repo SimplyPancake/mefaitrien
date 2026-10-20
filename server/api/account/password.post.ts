@@ -1,6 +1,8 @@
 import { object, string } from "yup";
 import prisma from "~/lib/prisma";
-import { hashPassword, verifyPassword, verifyToken } from "~/server/utils/auth";
+import { hashPassword, verifyPassword } from "~/server/utils/auth";
+import { BaseEventHandler } from "~/server/utils/handlers/baseEventHandler";
+import type { SessionEvent } from "~/types";
 
 const passwordSchema = object({
   currentPassword: string().required("Vul je huidige wachtwoord in."),
@@ -9,22 +11,9 @@ const passwordSchema = object({
     .required("Vul een nieuw wachtwoord in."),
 });
 
-export default defineEventHandler(async (event) => {
-  const { valid, id } = verifyToken(event);
-  if (!valid || !id) {
-    throw createError({ statusCode: 401, statusMessage: "Je moet ingelogd zijn." });
-  }
-
-  const body = await readBody(event);
-  let values: Awaited<ReturnType<typeof passwordSchema.validate>>;
-  try {
-    values = await passwordSchema.validate(body, { abortEarly: false, stripUnknown: true });
-  } catch (error) {
-    if (error instanceof Error) {
-      throw createError({ statusCode: 400, statusMessage: error.message });
-    }
-    throw error;
-  }
+const handlerFunc = async (event: SessionEvent) => {
+  const id = event.session.id;
+  const { currentPassword, newPassword } = event.data;
 
   const user = await prisma.user.findUnique({
     where: { id },
@@ -34,17 +23,25 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 401, statusMessage: "Dit account is niet actief." });
   }
 
-  if (!(await verifyPassword(values.currentPassword, user.passwordHash))) {
+  if (!(await verifyPassword(currentPassword, user.passwordHash))) {
     throw createError({ statusCode: 400, statusMessage: "Je huidige wachtwoord is onjuist." });
   }
-  if (await verifyPassword(values.newPassword, user.passwordHash)) {
+  if (await verifyPassword(newPassword, user.passwordHash)) {
     throw createError({ statusCode: 400, statusMessage: "Kies een ander wachtwoord dan je huidige." });
   }
 
   await prisma.user.update({
     where: { id },
-    data: { passwordHash: await hashPassword(values.newPassword) },
+    data: { passwordHash: await hashPassword(newPassword) },
   });
 
   return { success: true };
+};
+
+export default defineEventHandler(async (event) => {
+  return new BaseEventHandler(event, handlerFunc, passwordSchema).handle({
+    route: "/api/account/password",
+    method: "POST",
+    allowType: "AUTHENTICATED",
+  });
 });

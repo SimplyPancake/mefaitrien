@@ -38,6 +38,42 @@
 			</template>
 		</UiCard>
 
+		<UiCard title="Kookdiensten in je agenda">
+			<template #content>
+				<UiCardContent class="grid gap-4">
+					<p class="text-sm text-muted-foreground">
+						Kopieer de persoonlijke agenda-URL om je kookdiensten in je agenda-app te abonneren.
+						Iedereen met de link kan je kookdiensten bekijken. Vernieuw de link om de oude ongeldig te maken.
+					</p>
+					<div v-if="calendarUrl" class="grid gap-3">
+						<div class="grid gap-2">
+							<UiLabel for="calendar-url">Privé agenda-link</UiLabel>
+							<UiInput id="calendar-url" :model-value="calendarUrl" readonly />
+						</div>
+						<div class="flex flex-wrap gap-2">
+							<a
+								:href="calendarUrl"
+								target="_blank"
+								rel="noopener noreferrer"
+								class="inline-flex items-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
+							>
+								Download agenda (.ics)
+							</a>
+							<UiButton type="button" variant="outline" @click="copyCalendarUrl">
+								Link kopiëren
+							</UiButton>
+							<UiButton type="button" variant="outline" :disabled="calendarSaving" @click="createCalendarLink">
+								{{ calendarSaving ? "Bezig..." : "Vernieuw link" }}
+							</UiButton>
+						</div>
+					</div>
+					<UiButton v-else type="button" :disabled="calendarSaving" @click="createCalendarLink">
+						{{ calendarSaving ? "Bezig..." : "Maak agenda-link" }}
+					</UiButton>
+				</UiCardContent>
+			</template>
+		</UiCard>
+
 		<UiCard title="Wachtwoord wijzigen">
 			<template #content>
 				<UiCardContent>
@@ -85,18 +121,24 @@
 usePageInfoStore().setPageInfo({ title: "Instellingen" });
 useSeoMeta({ title: "Instellingen" });
 
-const { data: settings, error: settingsError } = await useAPI<{ email: string }>("/api/account/settings");
+const { data: settings, error: settingsError } = await useAPI<{ id: number; email: string; calendarToken: string | null }>("/api/account/settings");
 if (settingsError.value) {
 	useSonner.error(settingsError.value.statusMessage ?? "Kon je instellingen niet laden.");
 }
 
 const email = ref(settings.value?.email ?? "");
+const calendarToken = ref(settings.value?.calendarToken ?? null);
 const emailCurrentPassword = ref("");
 const passwordCurrentPassword = ref("");
 const newPassword = ref("");
 const confirmPassword = ref("");
 const emailSaving = ref(false);
 const passwordSaving = ref(false);
+const calendarSaving = ref(false);
+const requestUrl = useRequestURL();
+const calendarUrl = computed(() => calendarToken.value
+	? new URL(`/api/calendar/${settings.value?.id}/${calendarToken.value}.ics`, requestUrl.origin).toString()
+	: "");
 
 const getErrorMessage = (cause: unknown, fallback: string) => {
 	const error = cause as { data?: { statusMessage?: string }; statusMessage?: string };
@@ -140,6 +182,30 @@ const savePassword = async () => {
 		useSonner.error(getErrorMessage(cause, "Kon het wachtwoord niet bijwerken."));
 	} finally {
 		passwordSaving.value = false;
+	}
+};
+
+const createCalendarLink = async () => {
+	calendarSaving.value = true;
+	try {
+		const result = await useNuxtApp().$api<{ calendarToken: string }>("/api/account/calendar-token", {
+			method: "POST",
+		});
+		calendarToken.value = result.calendarToken;
+		useSonner.success("Agenda-link bijgewerkt.");
+	} catch (cause) {
+		useSonner.error(getErrorMessage(cause, "Kon geen agenda-link maken."));
+	} finally {
+		calendarSaving.value = false;
+	}
+};
+
+const copyCalendarUrl = async () => {
+	try {
+		await navigator.clipboard.writeText(calendarUrl.value);
+		useSonner.success("Agenda-link gekopieerd.");
+	} catch (cause) {
+		useSonner.error(getErrorMessage(cause, "Kon de agenda-link niet kopiëren."));
 	}
 };
 </script>

@@ -20,3 +20,9 @@ Build the production image with `docker build -t mefaitrien .`, then provide
 `DATABASE_URL` and the app's required auth environment variables at runtime.
 The Nuxt server listens on port 3000. Database migrations are not run
 automatically by the container.
+
+## Calendar subscriptions
+
+Users can create a private cooking calendar link from **Instellingen**. The
+feed is available at `/api/calendar/{userId}/{token}.ics`; treat the tokenized
+URL as a secret. Creating a new link revokes the previous one.

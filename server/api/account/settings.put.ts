@@ -1,29 +1,17 @@
 import * as bcrypt from "bcrypt";
 import { object, string } from "yup";
 import prisma from "~/lib/prisma";
-import { verifyToken } from "~/server/utils/auth";
+import { BaseEventHandler } from "~/server/utils/handlers/baseEventHandler";
+import type { SessionEvent } from "~/types";
 
 const settingsSchema = object({
   email: string().trim().lowercase().email("Vul een geldig e-mailadres in.").required("E-mailadres is verplicht."),
   currentPassword: string().required("Vul je huidige wachtwoord in."),
 });
 
-export default defineEventHandler(async (event) => {
-  const { valid, id } = verifyToken(event);
-  if (!valid || !id) {
-    throw createError({ statusCode: 401, statusMessage: "Je moet ingelogd zijn." });
-  }
-
-  const body = await readBody(event);
-  let values: Awaited<ReturnType<typeof settingsSchema.validate>>;
-  try {
-    values = await settingsSchema.validate(body, { abortEarly: false, stripUnknown: true });
-  } catch (error) {
-    if (error instanceof Error) {
-      throw createError({ statusCode: 400, statusMessage: error.message });
-    }
-    throw error;
-  }
+const handlerFunc = async (event: SessionEvent) => {
+  const id = event.session.id;
+  const { email, currentPassword } = event.data;
 
   const user = await prisma.user.findUnique({
     where: { id },
@@ -33,14 +21,14 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 401, statusMessage: "Dit account is niet actief." });
   }
 
-  if (!(await bcrypt.compare(values.currentPassword, user.passwordHash))) {
+  if (!(await bcrypt.compare(currentPassword, user.passwordHash))) {
     throw createError({ statusCode: 400, statusMessage: "Je huidige wachtwoord is onjuist." });
   }
 
   try {
     const updatedUser = await prisma.user.update({
       where: { id },
-      data: { email: values.email },
+      data: { email },
       select: { email: true },
     });
     return updatedUser;
@@ -50,4 +38,12 @@ export default defineEventHandler(async (event) => {
     }
     throw error;
   }
+};
+
+export default defineEventHandler(async (event) => {
+  return new BaseEventHandler(event, handlerFunc, settingsSchema).handle({
+    route: "/api/account/settings",
+    method: "PUT",
+    allowType: "AUTHENTICATED",
+  });
 });

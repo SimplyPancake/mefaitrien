@@ -24,6 +24,7 @@ export default defineNuxtConfig({
         { route: "/api/account/settings", method: "get", allowType: "AUTHENTICATED" },
         { route: "/api/account/settings", method: "put", allowType: "AUTHENTICATED" },
         { route: "/api/account/password", method: "post", allowType: "AUTHENTICATED" },
+        { route: "/api/account/calendar-token", method: "post", allowType: "AUTHENTICATED" },
         { route: "/api/admin", method: "get", allowType: "ROLE", role: ["admin"] },
         { route: "/api/admin/users", method: "get", allowType: "ROLE", role: ["admin"] },
       ],
