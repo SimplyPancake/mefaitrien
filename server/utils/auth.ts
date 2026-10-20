@@ -3,7 +3,7 @@ import prisma from "~/lib/prisma";
 import * as bcrypt from "bcrypt";
 import { H3Event } from "h3";
 import jwt from "jsonwebtoken";
-import type { ServerAuthConfig, SessionDataDto } from "@@/types.ts";
+import { AllowType, type ServerAuthConfig, type SessionDataDto } from "@@/types.ts";
 
 const config = useRuntimeConfig();
 const BCRYPT_SALT_ROUNDS = 15;
@@ -110,11 +110,12 @@ export const checkAccessConfig = async (
   settings: ServerAuthConfig
 ): Promise<{ granted: boolean; sessionData?: SessionDataDto }> => {
   // Route found!
-  if (settings.allowType == "ANYONE") {
+  if (settings.allowType == "ANYONE" || settings.allowType == AllowType.ANYONE) {
     return { granted: true };
   }
 
-  if (settings.allowType == "AUTHENTICATED" || settings.allowType == "ROLE") {
+  if (settings.allowType == "AUTHENTICATED" || settings.allowType == AllowType.AUTHENTICATED
+     || settings.allowType == "ROLE" || settings.allowType == AllowType.ROLE) {
     const { valid, id } = verifyToken(event);
 
     if (!valid || !id) {
