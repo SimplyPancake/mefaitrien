@@ -9,6 +9,13 @@ RUN yarn install --frozen-lockfile
 COPY . .
 RUN yarn build
 
+FROM base AS prisma-runtime
+RUN npm install --prefix /opt/prisma --omit=dev --no-save prisma@7.10.1 dotenv@18.0.8 \
+    && npm cache clean --force
+COPY prisma.config.ts /opt/prisma/prisma.config.ts
+COPY prisma/schema.prisma /opt/prisma/prisma/schema.prisma
+COPY prisma/migrations-mariadb /opt/prisma/prisma/migrations-mariadb
+
 FROM base AS runtime
 ENV NODE_ENV=production \
     NITRO_HOST=0.0.0.0 \
@@ -17,12 +24,7 @@ ENV NODE_ENV=production \
 # Copy Nuxt output
 COPY --from=build --chown=node:node /app/.output ./.output
 
-# Copy Prisma schema and migrations for deployment
-COPY --from=build --chown=node:node /app/prisma ./prisma
-
-# Ensure Prisma CLI and dependencies are available at runtime
-COPY --from=build --chown=node:node /app/node_modules ./node_modules
-COPY --from=build --chown=node:node /app/package.json ./package.json
+COPY --from=prisma-runtime --chown=node:node /opt/prisma /opt/prisma
 
 # Copy entrypoint and set permissions before switching user
 COPY --chown=node:node docker-entrypoint.sh ./docker-entrypoint.sh

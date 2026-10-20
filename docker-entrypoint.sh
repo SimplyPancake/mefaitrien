@@ -2,7 +2,7 @@
 set -e
 
 echo "Running Prisma migrations..."
-npx prisma migrate deploy
+(cd /opt/prisma && node node_modules/prisma/build/index.js migrate deploy)
 
 echo "Starting Nuxt..."
 exec node .output/server/index.mjs
