@@ -4,6 +4,7 @@ import * as bcrypt from "bcrypt";
 import { H3Event } from "h3";
 import jwt from "jsonwebtoken";
 import { AllowType, type ServerAuthConfig, type SessionDataDto } from "@@/types.ts";
+import { Role } from "~/generated/prisma/enums";
 
 const config = useRuntimeConfig();
 const BCRYPT_SALT_ROUNDS = 15;
@@ -115,20 +116,20 @@ export const checkAccessConfig = async (
   }
 
   if (settings.allowType == "AUTHENTICATED" || settings.allowType == AllowType.AUTHENTICATED
-     || settings.allowType == "ROLE" || settings.allowType == AllowType.ROLE) {
+    || settings.allowType == "ROLE" || settings.allowType == AllowType.ROLE) {
     const { valid, id } = verifyToken(event);
 
     if (!valid || !id) {
       return { granted: false };
     }
 
-    if (settings.allowType == "ROLE") {
+    if (settings.allowType == "ROLE" || settings.allowType == AllowType.ROLE) {
       let userData = await getSessionDataEvent(event);
 
       // Check if role is in array
-      const userRoles = userData.roles.map((role) => role.toLowerCase());
+      const userRoles = userData.roles.map((role) => role);
       const roleExists = settings.role!.some((role) => userRoles.includes(role.toLowerCase()));
-      const canBeGranted = roleExists || userRoles.includes("admin");
+      const canBeGranted = roleExists || userRoles.includes(Role.ADMIN);
       return { granted: canBeGranted, sessionData: userData };
     }
 

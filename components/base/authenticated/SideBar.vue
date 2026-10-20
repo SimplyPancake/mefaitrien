@@ -122,9 +122,17 @@ const sidebarSections: SidebarSection[] = [
 		label: 'Algemeen', // Main navigation
 		items: [
 			{ title: "Dashboard", url: "/", icon: "lucide:home" },
-			{ title: "Koken", url: "/cooking", icon: "lucide:cooking-pot" },
+		]
+	},
+	{
+		label: 'Koken',
+		items: [
+			{ title: "Overzicht", url: "/cooking/overview", icon: "lucide:chart-no-axes-combined" },
+			{ title: "Schema", url: "/cooking", icon: "lucide:cooking-pot" },
 			{ title: "Invullen", url: "/cooking/fill", icon: "lucide:calendar-search" },
-			{ title: "Punten", url: "#", icon: "lucide:chart-no-axes-combined" },
+			{ title: "Beheren", url: "/cooking/points", icon: "lucide:cog", role: "COOKING" },
+			{ title: "Aanmaken", url: "/cooking/create", icon: "lucide:calendar-cog", role: "COOKING" },
+			{ title: "Indelen", url: "/cooking/manage-month", icon: "lucide:calendar-range", role: "COOKING" }
 		]
 	},
 	{
@@ -138,8 +146,6 @@ const sidebarSections: SidebarSection[] = [
 		label: "Tools",
 		items: [
 			{ title: "Admin", url: "/admin", icon: "lucide:shield-ellipsis", role: "ADMIN" },
-			{ title: "Aanmaken", url: "/cooking/create", icon: "lucide:calendar-cog", role: "ADMIN" },
-			{ title: "Indelen", url: "/cooking/manage", icon: "lucide:calendar-range", role: "ADMIN" }
 		]
 	}
 ];

@@ -1,5 +1,5 @@
 <template>
-  <UiCard class="w-100" title="Wie zitten er allemaal in het huis?">
+  <UiCard class="w-100" title="Wie zit er allemaal in het huis?">
     <template #content>
       <UiCardContent>
         <UiListbox :highlight-on-hover="false">

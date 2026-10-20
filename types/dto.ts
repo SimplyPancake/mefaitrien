@@ -25,6 +25,19 @@ export interface AdminUsersDTO {
   cookingGroups: CookingGroup[];
 }
 
+export interface CookingPointsUserDto {
+  id: number;
+  name: string;
+  cookingpoints: number;
+  cookingGroupId: number | null;
+  cookingGroupName: string | null;
+}
+
+export interface CookingPointsOverviewDto {
+  users: CookingPointsUserDto[];
+  cookingGroups: Array<Pick<CookingGroup, "id" | "name">>;
+}
+
 export interface CreatedRosterMonth {
   year: number;
   month: number;

@@ -9,6 +9,14 @@ export type ExtendedMonthRoster = MonthRoster & {
   blockedDates: BlockedDay[];
 };
 
+export const migrateUserCookingGroup = async (
+  userId: number,
+  cookingGroupId: number | null
+): Promise<void> => {
+  // Set cooking points to average of new group
+  // 
+};
+
 export const fillDefaultAvailability = (monthRoster: ExtendedMonthRoster, user: User) => {
   const blockedDays = new Set(monthRoster.blockedDates.map((day) => day.day));
   const amountOfDays = new Date(monthRoster.year, monthRoster.month, 0).getDate();
