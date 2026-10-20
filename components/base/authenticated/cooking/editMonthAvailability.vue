@@ -106,6 +106,14 @@ const loadAssignedUsers = () => {
 
 watch(() => props.month.id, loadAssignedUsers, { immediate: true });
 
+watch(
+	() => [props.month.year, props.month.month],
+	([year, month]) => {
+		calendarRef.value?.getApi().gotoDate(`${year}-${String(month).padStart(2, "0")}-01`);
+	},
+	{ flush: "post" }
+);
+
 // COMPUTED
 const selectedMonth = computed(() => {
 	// Set calendar to selected month
