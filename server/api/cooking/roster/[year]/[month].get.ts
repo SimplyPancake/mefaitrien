@@ -29,6 +29,12 @@ let handlerFunc = async (event: SessionEvent) => {
     include: {
       availabilities: true,
       blockedDates: true,
+      assignedDays: {
+        include: {
+          user: { select: { id: true, name: true } },
+          cookingGroup: { select: { id: true, name: true } },
+        },
+      },
     },
   });
 

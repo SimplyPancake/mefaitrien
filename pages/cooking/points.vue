@@ -44,22 +44,26 @@
 			<div class="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-4">
 				<div>
 					<h2 class="font-semibold">Kookpunten</h2>
-					<!-- <p class="mt-1 text-sm text-muted-foreground">Pas de puntenstand aan.</p> -->
+					<p class="mt-1 text-sm text-muted-foreground">
+						Berekend is het aantal ingedeelde kookdagen; basis is alleen hier aanpasbaar. Totaal is de som.
+					</p>
 				</div>
 				<span class="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
 					{{ data?.users.length ?? 0 }} huisgenoten
 				</span>
 			</div>
 			<div v-if="data" class="divide-y">
-				<div class="hidden grid-cols-[minmax(0,1fr)_auto_2.5rem] gap-4 bg-muted/40 px-5 py-2.5 text-xs font-medium uppercase tracking-wide text-muted-foreground sm:grid">
+				<div class="hidden grid-cols-[minmax(0,1fr)_auto_auto_auto_2.5rem] gap-4 bg-muted/40 px-5 py-2.5 text-xs font-medium uppercase tracking-wide text-muted-foreground sm:grid">
 					<span>Huisgenoot</span>
-					<span class="text-right">Punten</span>
+					<span class="text-right">Berekend</span>
+					<span class="text-right">Basis</span>
+					<span class="text-right">Totaal</span>
 					<span class="text-right">Actie</span>
 				</div>
 				<div
 					v-for="user in data.users"
 					:key="user.id"
-					class="grid min-h-20 gap-3 px-5 py-3 transition-colors hover:bg-muted/30 sm:grid-cols-[minmax(0,1fr)_auto_2.5rem] sm:items-center sm:gap-4"
+					class="grid min-h-20 gap-3 px-5 py-3 transition-colors hover:bg-muted/30 sm:grid-cols-[minmax(0,1fr)_auto_auto_auto_2.5rem] sm:items-center sm:gap-4"
 				>
 					<div class="flex min-w-0 items-center gap-3">
 						<span class="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-semibold text-muted-foreground">
@@ -77,23 +81,23 @@
 							<p class="truncate text-xs text-muted-foreground">{{ user.cookingGroupName ?? "Geen kookgroep" }}</p>
 						</div>
 					</div>
+					<span class="text-right text-sm tabular-nums">{{ user.computedPoints }}</span>
 					<div class="flex items-center justify-end gap-2">
 						<input
-							v-model.number="selectedPoints[user.id]"
+							v-model.number="selectedBasePoints[user.id]"
 							type="number"
-							min="0"
 							step="1"
-							:aria-label="`Kookpunten voor ${user.name}`"
+							:aria-label="`Basispunten voor ${user.name}`"
 							class="h-10 w-20 rounded-lg border border-input bg-background px-3 text-sm shadow-sm outline-none transition focus-visible:ring-2 focus-visible:ring-ring"
 						/>
-						<!-- <span class="text-xs text-muted-foreground">punten</span> -->
 					</div>
+					<span class="text-right text-sm font-semibold tabular-nums">{{ user.cookingpoints }}</span>
 					<div class="flex justify-end">
 						<UiButton
 							size="sm"
 							variant="outline"
-							:disabled="pointsUnchanged(user.id) || savingPointsUserId === user.id"
-							@click="saveCookingPoints(user.id)"
+							:disabled="basePointsUnchanged(user.id) || savingPointsUserId === user.id"
+							@click="saveBasePoints(user.id)"
 						>
 							<Icon name="lucide:save" class="size-4" />
 						</UiButton>
@@ -175,7 +179,7 @@
 </template>
 
 <script setup lang="ts">
-import type { CookingPointsOverviewDto } from "~/types/dto";
+import type { CookingPointsManagementDto } from "~/types/dto";
 
 usePageInfoStore().setPageInfo({
 	title: "Kookpunten beheren",
@@ -185,9 +189,9 @@ useSeoMeta({
 	title: "Kookpunten beheren",
 });
 
-const { data, error, refresh } = await useAPI<CookingPointsOverviewDto>("/api/cooking/points");
+const { data, error, refresh } = await useAPI<CookingPointsManagementDto>("/api/cooking/points/manage");
 const selectedGroupIds = reactive<Record<number, string>>({});
-const selectedPoints = reactive<Record<number, number>>({});
+const selectedBasePoints = reactive<Record<number, number>>({});
 const savingGroupUserId = ref<number | null>(null);
 const savingPointsUserId = ref<number | null>(null);
 const pointRanks = computed(() =>
@@ -211,7 +215,7 @@ watch(
 		if (!overview) return;
 		overview.users.forEach((user) => {
 			selectedGroupIds[user.id] = user.cookingGroupId === null ? "none" : String(user.cookingGroupId);
-			selectedPoints[user.id] = user.cookingpoints;
+			selectedBasePoints[user.id] = user.basePoints;
 		});
 	},
 	{ immediate: true }
@@ -227,8 +231,8 @@ const groupUnchanged = (userId: number) => {
 	return selectedGroupIds[userId] === (user.cookingGroupId === null ? "none" : String(user.cookingGroupId));
 };
 
-const pointsUnchanged = (userId: number) =>
-	data.value?.users.find((entry) => entry.id === userId)?.cookingpoints === selectedPoints[userId];
+const basePointsUnchanged = (userId: number) =>
+	data.value?.users.find((entry) => entry.id === userId)?.basePoints === selectedBasePoints[userId];
 
 const saveCookingGroup = async (userId: number) => {
 	const selectedGroupId = selectedGroupIds[userId];
@@ -257,10 +261,10 @@ const saveCookingGroup = async (userId: number) => {
 	}
 };
 
-const saveCookingPoints = async (userId: number) => {
-	const cookingpoints = selectedPoints[userId];
-	if (!Number.isInteger(cookingpoints) || cookingpoints < 0) {
-		useSonner.error("Kookpunten moeten een positief heel getal zijn.");
+const saveBasePoints = async (userId: number) => {
+	const basePoints = selectedBasePoints[userId];
+	if (!Number.isInteger(basePoints)) {
+		useSonner.error("Basispunten moeten een heel getal zijn.");
 		return;
 	}
 
@@ -268,17 +272,17 @@ const saveCookingPoints = async (userId: number) => {
 	try {
 		const { error } = await useAPI("/api/cooking/points/update", {
 			method: "POST",
-			body: { userId, cookingpoints },
+			body: { userId, basePoints },
 		});
 		if (error.value) {
-			useSonner.error(error.value.statusMessage ?? "Kon de kookpunten niet bijwerken.");
+			useSonner.error(error.value.statusMessage ?? "Kon de basispunten niet bijwerken.");
 			return;
 		}
 		await refresh();
-		useSonner.success("Kookpunten bijgewerkt.");
+		useSonner.success("Basispunten bijgewerkt.");
 	} catch (cause) {
 		const error = cause as { data?: { statusMessage?: string }; statusMessage?: string };
-		useSonner.error(error.data?.statusMessage ?? error.statusMessage ?? "Kon de kookpunten niet bijwerken.");
+		useSonner.error(error.data?.statusMessage ?? error.statusMessage ?? "Kon de basispunten niet bijwerken.");
 	} finally {
 		savingPointsUserId.value = null;
 	}

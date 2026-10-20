@@ -2,9 +2,10 @@ import prisma from "@@/lib/prisma";
 import { AllowType, type SessionEvent } from "~/types";
 import { BaseEventHandler } from "~/server/utils/handlers/baseEventHandler";
 import { number, object } from "yup";
+import { Role } from "~/generated/prisma/enums";
 
 const handlerFunc = async (event: SessionEvent) => {
-  const { userId, cookingpoints } = event.data;
+  const { userId, basePoints } = event.data;
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { id: true },
@@ -16,7 +17,7 @@ const handlerFunc = async (event: SessionEvent) => {
 
   await prisma.user.update({
     where: { id: userId },
-    data: { cookingpoints },
+    data: { cookingpointsBase: basePoints },
   });
 
   return { success: true };
@@ -28,12 +29,12 @@ export default defineEventHandler(async (event) => {
     handlerFunc,
     object({
       userId: number().integer().required(),
-      cookingpoints: number().integer().min(0).required(),
+      basePoints: number().integer().required(),
     })
   ).handle({
     route: "/api/cooking/points/update",
     method: "POST",
     allowType: AllowType.ROLE,
-    role: ["COOKING"],
+    role: [Role.COOKING],
   });
 });

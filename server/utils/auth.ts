@@ -131,9 +131,9 @@ export const checkAccessConfig = async (
       let userData = await getSessionDataEvent(event);
 
       // Check if role is in array
-      const userRoles = userData.roles.map((role) => role);
-      const roleExists = settings.role!.some((role) => userRoles.includes(role.toLowerCase()));
-      const canBeGranted = roleExists || userRoles.includes(Role.ADMIN);
+      const userRoles = userData.roles.map((role) => role.toLocaleLowerCase());
+      const roleExists = settings.role!.some((role) => userRoles.includes(role.toLocaleLowerCase()));
+      const canBeGranted = roleExists || userRoles.includes(Role.ADMIN.toLocaleLowerCase());
       return { granted: canBeGranted, sessionData: userData };
     }
 

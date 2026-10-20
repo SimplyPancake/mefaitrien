@@ -1,6 +1,7 @@
 import type {
   Availability,
   AvailabilityType,
+  AssignedDay,
   BlockedDay,
   CookingGroup,
   MonthRoster,
@@ -40,6 +41,16 @@ export interface CookingPointsOverviewDto {
   cookingGroups: Array<Pick<CookingGroup, "id" | "name">>;
 }
 
+export interface CookingPointsManagementUserDto extends CookingPointsUserDto {
+  basePoints: number;
+  computedPoints: number;
+}
+
+export interface CookingPointsManagementDto {
+  users: CookingPointsManagementUserDto[];
+  cookingGroups: Array<Pick<CookingGroup, "id" | "name">>;
+}
+
 export interface CreatedRosterMonth {
   year: number;
   month: number;
@@ -48,9 +59,19 @@ export interface CreatedRosterMonth {
 export interface ExtraAvailability extends Availability {
   user: User;
 }
+
+export type AssignedDayDto = Pick<
+  AssignedDay,
+  "id" | "day" | "userId" | "monthRosterId" | "cookingGroupId"
+> & {
+  user: Pick<User, "id" | "name">;
+  cookingGroup: Pick<CookingGroup, "id" | "name">;
+};
+
 export interface ManageMonthDto extends MonthRoster {
   availabilities: ExtraAvailability[];
   blockedDates: BlockedDay[];
+  assignedDays: AssignedDayDto[];
   filledIn: number;
   maxAssigned: number;
   daysWithoutCook?: number;

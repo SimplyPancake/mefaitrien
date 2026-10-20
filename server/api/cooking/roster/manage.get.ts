@@ -22,6 +22,12 @@ let handlerFunc = async (event: H3Event) => {
         },
       },
       blockedDates: true,
+      assignedDays: {
+        include: {
+          user: { select: { id: true, name: true } },
+          cookingGroup: { select: { id: true, name: true } },
+        },
+      },
     },
   });
 

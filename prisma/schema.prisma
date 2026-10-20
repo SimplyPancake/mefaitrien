@@ -17,7 +17,7 @@ model User {
   name          String
   email         String  @unique
   roles         UserRole[]
-  cookingpoints Int     @default(0)
+  cookingpointsBase Int @default(0)
   isActive      Boolean @default(true)
 
   cookingGroup   CookingGroup?  @relation(fields: [cookingGroupId], references: [id])
@@ -38,12 +38,13 @@ model UserRole {
 }
 
 model CookingGroup {
-  id         Int      @id @default(autoincrement())
-  name       String   @unique
-  User       User[]
-  color      String   @default("aaaaaa")
-  createdAt  DateTime @default(now())
-  modifiedAt DateTime @updatedAt
+  id          Int           @id @default(autoincrement())
+  name        String        @unique
+  User        User[]
+  assignedDays AssignedDay[]
+  color       String        @default("aaaaaa")
+  createdAt   DateTime      @default(now())
+  modifiedAt  DateTime      @updatedAt
 }
 
 model Availability {
@@ -68,11 +69,13 @@ model BlockedDay {
 }
 
 model AssignedDay {
-  id  Int @id @default(autoincrement())
-  day Int // 1 - 31
+  id             Int @id @default(autoincrement())
+  day            Int // 1 - 31
+  cookingGroupId Int
 
-  user   User @relation(fields: [userId], references: [id])
-  userId Int
+  user         User         @relation(fields: [userId], references: [id])
+  userId       Int
+  cookingGroup CookingGroup @relation(fields: [cookingGroupId], references: [id], onDelete: Restrict)
 
   monthRoster   MonthRoster @relation(fields: [monthRosterId], references: [id])
   monthRosterId Int
@@ -86,7 +89,7 @@ model MonthRoster {
 
   availabilities Availability[]
   blockedDates   BlockedDay[]
-  AssignedDay    AssignedDay[]
+  assignedDays   AssignedDay[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

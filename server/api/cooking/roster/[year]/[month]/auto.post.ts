@@ -4,6 +4,7 @@ import { BaseEventHandler } from "~/server/utils/handlers/baseEventHandler";
 import { AllowType, type SessionEvent } from "~/types";
 import type { groupAssign } from "~/types/dto";
 import { array, number, object, string } from "yup";
+import { getCookingPointTotals } from "~/server/utils/cookingPoints";
 
 let handlerFunc = async (event: SessionEvent) => {
   const params = getRouterParams(event);
@@ -47,6 +48,7 @@ let handlerFunc = async (event: SessionEvent) => {
   const allUsers = await prisma.user.findMany({
     where: isCurrentOrFuture ? { isActive: true } : {},
   });
+  const pointTotals = await getCookingPointTotals(allUsers);
   const allGroups = await prisma.cookingGroup.findMany();
   let cookingGroups = Array.from(new Set(allUsers.map((user) => user.cookingGroupId))).filter(
     (id): id is number => id !== null
@@ -83,7 +85,9 @@ let handlerFunc = async (event: SessionEvent) => {
   const allAssigns: groupAssign = [];
   for (const groupId of cookingGroups) {
     const users = allUsers.filter((user) => user.cookingGroupId === groupId);
-    const userCookScore = new Map(users.map((user) => [user.id, user.cookingpoints]));
+    const userCookScore = new Map(
+      users.map((user) => [user.id, pointTotals.get(user.id)?.totalPoints ?? 0])
+    );
     const weekOffset = (new Date(roster.year, roster.month - 1, 1).getDay() + 6) % 7;
     const daysByWeek = new Map<number, number[]>();
 

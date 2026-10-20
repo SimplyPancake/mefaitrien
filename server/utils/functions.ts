@@ -1,4 +1,6 @@
 import { AvailabilityType, type BlockedDay, type MonthRoster, type User } from "../../generated/prisma/browser";
+import prisma from "@@/lib/prisma";
+import { getCookingPointTotals } from "~/server/utils/cookingPoints";
 
 export type MiniAvailability = Array<{
   userId: number;
@@ -13,8 +15,30 @@ export const migrateUserCookingGroup = async (
   userId: number,
   cookingGroupId: number | null
 ): Promise<void> => {
-  // Set cooking points to average of new group
-  // 
+  if (cookingGroupId === null) {
+    return;
+  }
+
+  const [groupUsers, userAssignmentCount] = await Promise.all([
+    prisma.user.findMany({
+      where: { cookingGroupId, isActive: true, id: { not: userId } },
+      select: { id: true, cookingpointsBase: true },
+    }),
+    prisma.assignedDay.count({ where: { userId } }),
+  ]);
+
+  const groupPointTotals = await getCookingPointTotals(groupUsers);
+  const averageGroupPoints = groupUsers.length
+    ? Math.round(
+        [...groupPointTotals.values()].reduce((total, points) => total + points.totalPoints, 0) /
+          groupUsers.length
+      )
+    : 0;
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { cookingpointsBase: averageGroupPoints - userAssignmentCount },
+  });
 };
 
 export const fillDefaultAvailability = (monthRoster: ExtendedMonthRoster, user: User) => {

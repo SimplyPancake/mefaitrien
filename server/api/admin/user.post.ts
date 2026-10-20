@@ -38,15 +38,37 @@ let handlerFunc = async (event: SessionEvent) => {
       }
 
       const isReactivating = !user.isActive && isActive;
-      const averageCookingPoints = isReactivating
-        ? await transaction.user.aggregate({
-            where: {
-              isActive: true,
-              ...(cookingGroupId === null ? {} : { cookingGroupId }),
-            },
-            _avg: { cookingpoints: true },
-          })
-        : null;
+      let reactivatedUserBasePoints: number | undefined;
+      if (isReactivating) {
+        const peers = await transaction.user.findMany({
+          where: {
+            isActive: true,
+            cookingGroupId,
+          },
+          select: { id: true, cookingpointsBase: true },
+        });
+        const peerAssignmentCounts = peers.length
+          ? await transaction.assignedDay.groupBy({
+              by: ["userId"],
+              where: { userId: { in: peers.map(({ id }) => id) } },
+              _count: { _all: true },
+            })
+          : [];
+        const countsByUser = new Map(
+          peerAssignmentCounts.map(({ userId, _count }) => [userId, _count._all])
+        );
+        const averageTotalPoints = peers.length
+          ? peers.reduce(
+              (total, peer) =>
+                total + peer.cookingpointsBase + (countsByUser.get(peer.id) ?? 0),
+              0
+            ) / peers.length
+          : 0;
+        const userAssignmentCount = await transaction.assignedDay.count({
+          where: { userId: id },
+        });
+        reactivatedUserBasePoints = Math.round(averageTotalPoints) - userAssignmentCount;
+      }
 
       return transaction.user.update({
         where: { id },
@@ -55,8 +77,8 @@ let handlerFunc = async (event: SessionEvent) => {
           username,
           email,
           isActive,
-          ...(averageCookingPoints && {
-            cookingpoints: Math.round(averageCookingPoints._avg.cookingpoints ?? 0),
+          ...(reactivatedUserBasePoints !== undefined && {
+            cookingpointsBase: reactivatedUserBasePoints,
           }),
           roles: {
             deleteMany: {},

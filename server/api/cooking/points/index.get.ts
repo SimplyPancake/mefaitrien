@@ -2,6 +2,7 @@ import prisma from "@@/lib/prisma";
 import { AllowType } from "~/types";
 import { BaseEventHandler } from "~/server/utils/handlers/baseEventHandler";
 import type { CookingPointsOverviewDto } from "~/types/dto";
+import { getCookingPointTotals } from "~/server/utils/cookingPoints";
 
 const handlerFunc = async (): Promise<CookingPointsOverviewDto> => {
   const [users, cookingGroups] = await Promise.all([
@@ -10,7 +11,7 @@ const handlerFunc = async (): Promise<CookingPointsOverviewDto> => {
       select: {
         id: true,
         name: true,
-        cookingpoints: true,
+        cookingpointsBase: true,
         cookingGroupId: true,
         isActive: true,
         cookingGroup: {
@@ -24,12 +25,13 @@ const handlerFunc = async (): Promise<CookingPointsOverviewDto> => {
       orderBy: { name: "asc" },
     }),
   ]);
+  const pointTotals = await getCookingPointTotals(users);
 
   return {
     users: users.map((user) => ({
       id: user.id,
       name: user.name,
-      cookingpoints: user.cookingpoints,
+      cookingpoints: pointTotals.get(user.id)!.totalPoints,
       cookingGroupId: user.cookingGroupId,
       cookingGroupName: user.cookingGroup?.name ?? null,
       isActive: user.isActive,

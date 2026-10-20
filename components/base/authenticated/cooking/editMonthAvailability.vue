@@ -9,7 +9,7 @@
 				<UiCardContent>
 					<BaseAuthenticatedCookingPlannercontrols v-if="groupData" :group-info="props.groupData"
 						ref="cookingChooser" @automatic-organize="doAutomaticOrganize()"
-						@remove-assigned="removeAssigned()" @submit-assignees="submitAssingees()" />
+						@remove-assigned="removeAssigned()" @submit-assignees="submitAssignees()" />
 
 					<!-- If selectedGroup is empty; display empty calendar with selected month -->
 
@@ -84,6 +84,27 @@ const oldMode = ref<ModeType>("FullOverview")
 const mode = ref<ModeType>("FullOverview")
 const hoverDate = ref("");
 const assignedUsers = ref<AssignedUsersDto[]>([]);
+const savingAssignments = ref(false);
+
+const loadAssignedUsers = () => {
+	const groups = new Map<string, AssignedUsersDto>();
+	props.month.assignedDays.forEach(assignment => {
+		const groupName = assignment.cookingGroup.name;
+		let group = groups.get(groupName);
+		if (!group) {
+			group = { name: groupName, people: [] };
+			groups.set(groupName, group);
+		}
+		group.people.push({
+			date: new Date(props.month.year, props.month.month - 1, assignment.day),
+			id: assignment.user.id,
+			name: assignment.user.name,
+		});
+	});
+	assignedUsers.value = [...groups.values()];
+};
+
+watch(() => props.month.id, loadAssignedUsers, { immediate: true });
 
 // COMPUTED
 const selectedMonth = computed(() => {
@@ -422,8 +443,72 @@ const removeAssigned = () => {
 	assignedUsers.value = [];
 }
 
-const submitAssingees = () => {
-	console.log("TODO: Submit! :)")
+const submitAssignees = async () => {
+	if (savingAssignments.value) {
+		return;
+	}
+
+	const selectedGroupName = cookingChooserRef.value?.selectedGroupName ?? "";
+	const selectedGroup = cookingChooserRef.value?.selectedGroup;
+	if (selectedGroupName && !selectedGroup) {
+		useSonner.error("De geselecteerde kookgroep kon niet worden gevonden.");
+		return;
+	}
+
+	const groupsToSubmit = assignedUsers.value.filter(
+		group => !selectedGroupName || group.name === selectedGroupName
+	);
+	const assignments = groupsToSubmit.flatMap(group => {
+		const groupId = props.groupData.find(item => item.name === group.name)?.id;
+		if (groupId === undefined) {
+			return [];
+		}
+		if (groupId <= 0) {
+			return [];
+		}
+
+		return group.people.map(person => ({
+			groupId,
+			userId: person.id,
+			day: person.date.getDate(),
+		}));
+	});
+
+	if (groupsToSubmit.some(group => {
+		const groupId = props.groupData.find(item => item.name === group.name)?.id;
+		return groupId === undefined || groupId <= 0;
+	})) {
+		useSonner.error("Iedere ingedeelde persoon moet bij een kookgroep horen.");
+		return;
+	}
+
+	const body = {
+		...(selectedGroupName ? { groupId: selectedGroup!.id } : {}),
+		assignments,
+	};
+
+	savingAssignments.value = true;
+	try {
+		const { error } = await useAPI<{ success: boolean }>(
+			`/api/cooking/roster/${selectedMonth.value.year}/${selectedMonth.value.month}/assign`,
+			{
+				method: "POST",
+				body,
+			}
+		);
+
+		if (error.value) {
+			useSonner.error(error.value.statusMessage ?? "Kon de indeling niet opslaan.");
+			return;
+		}
+
+		useSonner.success("Indeling opgeslagen.");
+	} catch (cause) {
+		const error = cause as { data?: { statusMessage?: string }; statusMessage?: string };
+		useSonner.error(error.data?.statusMessage ?? error.statusMessage ?? "Kon de indeling niet opslaan.");
+	} finally {
+		savingAssignments.value = false;
+	}
 }
 
 </script>
