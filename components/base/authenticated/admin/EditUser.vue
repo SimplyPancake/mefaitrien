@@ -1,6 +1,6 @@
 <template>
 	<div class="flex justify-center">
-		<UiDialog>
+		<UiDialog v-model:open="isOpen">
 			<UiDialogTrigger as-child @click="discardChanges">
 				<UiButton variant="outline" text="Wijzig" />
 			</UiDialogTrigger>
@@ -35,6 +35,10 @@
 											<span>{{ role.label }}</span>
 										</label>
 									</div>
+									<div class="flex items-center justify-between">
+										<UiLabel for="account-active" class="text-sm font-medium">Account actief</UiLabel>
+										<UiSwitch id="account-active" v-model:checked="userref.isActive" />
+									</div>
 									<div>
 										<UiLabel for="cooking-group"
 											class="block mb-2 text-sm font-medium text-gray-700">Kookgroep</UiLabel>
@@ -58,9 +62,7 @@
 					<UiDialogClose as-child>
 						<UiButton type="button" variant="outline" text="Cancel" @click="discardChanges" />
 					</UiDialogClose>
-					<UiDialogClose as-child>
-						<UiButton type="button" text="Opslaan" @click="saveChanges" />
-					</UiDialogClose>
+					<UiButton type="button" text="Opslaan" @click="saveChanges" />
 				</UiDialogFooter>
 			</UiDialogContent>
 		</UiDialog>
@@ -81,6 +83,7 @@ const props = defineProps<{
 }>();
 
 const userref = ref(cloneDeep(props.user))
+const isOpen = ref(false);
 
 const cookingGroupname = ref(props.user.cookingGroup?.name ?? '');
 const roleOptions: { value: RoleType; label: string }[] = [
@@ -99,34 +102,44 @@ const toggleRole = (role: RoleType, checked: boolean | 'indeterminate') => {
 
 const saveChanges = async () => {
 	const selectedCookingGroup = props.cookingGroups.find(group => group.name === cookingGroupname.value);
-	if (selectedCookingGroup) {
-		userref.value.cookingGroup = { id: selectedCookingGroup.id, name: selectedCookingGroup.name };
-	}
+	userref.value.cookingGroup = selectedCookingGroup
+		? { id: selectedCookingGroup.id, name: selectedCookingGroup.name }
+		: undefined;
 
-	const { data, error } = await useAPI('/api/admin/user', {
-		method: 'POST',
-		body: {
-			id: userref.value.id,
-			name: userref.value.name,
-			username: userref.value.username,
-			email: userref.value.email,
-			roles: userref.value.roles,
-			cookingGroupId: selectedCookingGroup?.id,
-		},
-	});
+	try {
+		const { data, error } = await useAPI('/api/admin/user', {
+			method: 'POST',
+			body: {
+				id: userref.value.id,
+				name: userref.value.name,
+				username: userref.value.username,
+				email: userref.value.email,
+				roles: userref.value.roles,
+				cookingGroupId: selectedCookingGroup?.id ?? null,
+				isActive: userref.value.isActive,
+			},
+		});
 
-	if (data.value) {
-		console.log(data)
+		if (error.value) {
+			useSonner.error(error.value.statusMessage ?? "Er is iets fout gegaan");
+			return;
+		}
+		if (!data.value) {
+			useSonner.error("Gebruiker opslaan is mislukt.");
+			return;
+		}
+
 		Object.assign(props.user, cloneDeep(userref.value));
 		useSonner.success('Gebruiker succesvol bijgewerkt!');
-	} else if (error) {
-		console.log(error.value)
-		useSonner.error(error.value?.statusMessage ?? "Er is iets fout gegaan")
+		isOpen.value = false;
+	} catch (cause) {
+		useSonner.error(cause instanceof Error ? cause.message : "Gebruiker opslaan is mislukt.");
 	}
 };
 
 const discardChanges = () => {
 	userref.value = cloneDeep(props.user);
+	cookingGroupname.value = props.user.cookingGroup?.name ?? '';
 }
 </script>
 

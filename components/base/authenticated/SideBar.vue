@@ -136,7 +136,7 @@ const sidebarSections: SidebarSection[] = [
 		]
 	},
 	{
-		label: "Gebruiker",
+		label: "Ik",
 		items: [
 			{ title: "Instellingen", url: "#", icon: "lucide:user-cog" },
 			{ title: "Uitloggen", icon: "lucide:log-out", action: "logout" },

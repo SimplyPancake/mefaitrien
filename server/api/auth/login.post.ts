@@ -16,6 +16,10 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: "Die gebruiker bestaat niet" });
   }
 
+  if (!user.isActive) {
+    throw createError({ statusCode: 403, statusMessage: "Dit account is inactief" });
+  }
+
   // Check if the password is correct
   const validPassword = await verifyPassword(password, user.passwordHash);
 

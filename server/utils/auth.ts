@@ -66,6 +66,10 @@ export const getSessionData = async (userId: number): Promise<SessionDataDto> =>
     throw new Error("No user found");
   }
 
+  if (!user.isActive) {
+    throw createError({ statusCode: 401, statusMessage: "This account is inactive" });
+  }
+
   return {
     id: user.id,
     name: user.name,

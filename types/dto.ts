@@ -14,6 +14,7 @@ export interface AdminUserDTO {
   username: string;
   email: string;
   roles: Role[];
+  isActive: boolean;
   cookingGroup?: {
     id: number;
     name: string;
@@ -31,6 +32,7 @@ export interface CookingPointsUserDto {
   cookingpoints: number;
   cookingGroupId: number | null;
   cookingGroupName: string | null;
+  isActive: boolean;
 }
 
 export interface CookingPointsOverviewDto {
@@ -61,6 +63,7 @@ export interface GroupUsersDto {
   people: Array<{
     id: number;
     name: string;
+    isActive: boolean;
     availability?: AvailabilityType;
   }>;
 }

@@ -18,6 +18,7 @@ model User {
   email         String  @unique
   roles         UserRole[]
   cookingpoints Int     @default(0)
+  isActive      Boolean @default(true)
 
   cookingGroup   CookingGroup?  @relation(fields: [cookingGroupId], references: [id])
   cookingGroupId Int?

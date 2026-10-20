@@ -6,6 +6,7 @@
 				<UiTableHead>Email</UiTableHead>
 				<UiTableHead>Kookgroep</UiTableHead>
 				<UiTableHead>Rol</UiTableHead>
+				<UiTableHead>Status</UiTableHead>
 				<UiTableHead class="pl-0">
 					<span class="sr-only">Acties</span>
 				</UiTableHead>
@@ -13,7 +14,7 @@
 		</UiTableHeader>
 		<UiTableBody>
 			<template v-for="user in data.users" :key="user.id">
-				<UiTableRow>
+				<UiTableRow :class="{ 'opacity-60': !user.isActive }">
 					<UiTableCell>
 						<div class="flex items-center gap-3">
 							<UiAvatar class="size-10" src="/img/dannyprofielfoto.png" :alt="user.name" />
@@ -27,6 +28,14 @@
 					<UiTableCell>{{ user.email }}</UiTableCell>
 					<UiTableCell>{{ user.cookingGroup?.name ?? "Geen kookgroep" }}</UiTableCell>
 					<UiTableCell>{{ user.roles.join(", ") }}</UiTableCell>
+					<UiTableCell>
+						<span
+							class="rounded-full px-2.5 py-1 text-xs font-medium"
+							:class="user.isActive ? 'bg-green-100 text-green-800' : 'bg-muted text-muted-foreground'"
+						>
+							{{ user.isActive ? "Actief" : "Inactief" }}
+						</span>
+					</UiTableCell>
 					<UiTableCell class="pl-0 text-right">
 						<!-- <UiButton size="sm" variant="linkHover2">Wijzig</UiButton> -->
 						<BaseAuthenticatedAdminEditUser :user="user" :cooking-groups="data.cookingGroups" />

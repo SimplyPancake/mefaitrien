@@ -12,7 +12,15 @@
 									<div class="flex items-center gap-5">
 										<UiAvatar src="/img/dannyprofielfoto.png" class="size-8" />
 										<div class="text-sm">
-											<p class="font-medium">{{ p.name }}</p>
+											<div class="flex items-center gap-2">
+												<p class="font-medium">{{ p.name }}</p>
+												<span
+													v-if="!p.isActive"
+													class="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground"
+												>
+													Inactief
+												</span>
+											</div>
 										</div>
 									</div>
 								</UiListboxItem>

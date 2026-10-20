@@ -71,12 +71,14 @@ if (error.value) {
 }
 
 const standings = computed(() =>
-	[...(data.value?.users ?? [])]
+	[...(data.value?.users ?? []).filter((user) => user.isActive)]
 		.sort((a, b) => b.cookingpoints - a.cookingpoints || a.name.localeCompare(b.name))
 		.map((user, index) => ({ user, rank: index + 1 }))
 );
 const totalPoints = computed(() =>
-	(data.value?.users ?? []).reduce((total, user) => total + user.cookingpoints, 0)
+	(data.value?.users ?? [])
+		.filter((user) => user.isActive)
+		.reduce((total, user) => total + user.cookingpoints, 0)
 );
 
 </script>

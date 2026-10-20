@@ -6,11 +6,13 @@ import type { CookingPointsOverviewDto } from "~/types/dto";
 const handlerFunc = async (): Promise<CookingPointsOverviewDto> => {
   const [users, cookingGroups] = await Promise.all([
     prisma.user.findMany({
+      where: { isActive: true },
       select: {
         id: true,
         name: true,
         cookingpoints: true,
         cookingGroupId: true,
+        isActive: true,
         cookingGroup: {
           select: { name: true },
         },
@@ -30,6 +32,7 @@ const handlerFunc = async (): Promise<CookingPointsOverviewDto> => {
       cookingpoints: user.cookingpoints,
       cookingGroupId: user.cookingGroupId,
       cookingGroupName: user.cookingGroup?.name ?? null,
+      isActive: user.isActive,
     })),
     cookingGroups,
   };

@@ -57,8 +57,7 @@ useSeoMeta({
 type ChooserType = InstanceType<typeof UiMonthChooser>
 
 const chooserref = useTemplateRef<ChooserType>('monthchooser')
-const { data: groupData, error } = await useAPI<GroupUsersDto[]>('/api/cooking/users');
-const groupsData = groupData.value ?? [];
+const { data: groupData, error } = await useAPI<GroupUsersDto[]>('/api/cooking/users?includeInactive=true');
 
 const items = computed(() => {
 	if (selectedMonth.value) {
@@ -90,6 +89,27 @@ if (createdmonthserror.value) {
 
 const selectedMonth = computed(() => {
 	return createdmonths.value?.find(x => x.year == chooserref.value?.selectedyear && x.month == chooserref.value.selectedmonth)
+})
+
+const groupsData = computed(() => {
+	const groups = groupData.value ?? [];
+	const selectedYear = chooserref.value?.selectedyear;
+	const selectedNumber = chooserref.value?.selectedmonth;
+	const currentDate = new Date();
+	const isHistorical =
+		selectedYear !== undefined &&
+		selectedNumber !== undefined &&
+		(selectedYear < currentDate.getFullYear() ||
+			(selectedYear === currentDate.getFullYear() && selectedNumber < currentDate.getMonth() + 1));
+
+	return groups
+		.map(group => ({
+			...group,
+			people: isHistorical
+				? group.people
+				: group.people.filter(person => person.isActive),
+		}))
+		.filter(group => group.id !== -1 && group.people.length > 0);
 })
 
 const emptyMonth = computed(() => {

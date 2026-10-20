@@ -1,5 +1,5 @@
 import { BaseEventHandler } from "~/server/utils/handlers/baseEventHandler";
-import { AdminUserDTO, AdminUsersDTO } from "~/types/dto";
+import type { AdminUserDTO, AdminUsersDTO } from "~/types/dto";
 import { H3Event } from "h3";
 
 import prisma from "../../../lib/prisma";
@@ -21,6 +21,7 @@ let handlerFunc = async (event: H3Event) => {
     username: user.username,
     email: user.email,
     roles: user.roles.map(({ role }) => role),
+    isActive: user.isActive,
     cookingGroup: user.cookingGroup
       ? {
           id: user.cookingGroup.id,

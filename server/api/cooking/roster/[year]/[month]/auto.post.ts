@@ -40,7 +40,13 @@ let handlerFunc = async (event: SessionEvent) => {
     throw createError({ statusCode: 404, statusMessage: "Roster not found" });
   }
 
-  const allUsers = await prisma.user.findMany();
+  const currentDate = new Date();
+  const isCurrentOrFuture =
+    roster.year > currentDate.getFullYear() ||
+    (roster.year === currentDate.getFullYear() && roster.month >= currentDate.getMonth() + 1);
+  const allUsers = await prisma.user.findMany({
+    where: isCurrentOrFuture ? { isActive: true } : {},
+  });
   const allGroups = await prisma.cookingGroup.findMany();
   let cookingGroups = Array.from(new Set(allUsers.map((user) => user.cookingGroupId))).filter(
     (id): id is number => id !== null

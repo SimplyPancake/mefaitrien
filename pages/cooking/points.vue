@@ -59,7 +59,7 @@
 				<div
 					v-for="user in data.users"
 					:key="user.id"
-					class="grid gap-3 px-5 py-4 transition-colors hover:bg-muted/30 sm:grid-cols-[minmax(0,1fr)_auto_2.5rem] sm:items-center sm:gap-4"
+					class="grid min-h-20 gap-3 px-5 py-3 transition-colors hover:bg-muted/30 sm:grid-cols-[minmax(0,1fr)_auto_2.5rem] sm:items-center sm:gap-4"
 				>
 					<div class="flex min-w-0 items-center gap-3">
 						<span class="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-semibold text-muted-foreground">
@@ -74,7 +74,7 @@
 									:show-rank="false"
 								/>
 							</div>
-							<p class="text-xs text-muted-foreground">{{ user.cookingGroupName ?? "Geen kookgroep" }}</p>
+							<p class="truncate text-xs text-muted-foreground">{{ user.cookingGroupName ?? "Geen kookgroep" }}</p>
 						</div>
 					</div>
 					<div class="flex items-center justify-end gap-2">
@@ -127,7 +127,7 @@
 				<div
 					v-for="user in data.users"
 					:key="user.id"
-					class="grid gap-3 px-5 py-4 transition-colors hover:bg-muted/30 sm:grid-cols-[minmax(0,1fr)_auto_2.5rem] sm:items-center sm:gap-4"
+					class="grid min-h-20 gap-3 px-5 py-3 transition-colors hover:bg-muted/30 sm:grid-cols-[minmax(0,1fr)_auto_2.5rem] sm:items-center sm:gap-4"
 				>
 					<div class="flex min-w-0 items-center gap-3">
 						<span class="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-semibold text-muted-foreground">
@@ -135,7 +135,7 @@
 						</span>
 						<div class="min-w-0">
 							<p class="truncate font-medium">{{ user.name }}</p>
-							<p class="text-xs text-muted-foreground">{{ user.cookingGroupName ?? "Nog niet ingedeeld" }}</p>
+							<p class="truncate text-xs text-muted-foreground">{{ user.cookingGroupName ?? "Nog niet ingedeeld" }}</p>
 						</div>
 					</div>
 					<div class="flex justify-end">
