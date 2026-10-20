@@ -157,7 +157,7 @@ const sidebarSections: SidebarSection[] = [
 	{
 		label: "Ik",
 		items: [
-			{ sort: SidebarItemType.Link, title: "Instellingen", url: "#", icon: "lucide:user-cog" },
+			{ sort: SidebarItemType.Link, title: "Instellingen", url: "/settings", icon: "lucide:user-cog" },
 			{ sort: SidebarItemType.Link, title: "Uitloggen", icon: "lucide:log-out", action: "logout" },
 		]
 	},
