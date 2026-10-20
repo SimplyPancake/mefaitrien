@@ -16,7 +16,7 @@ model User {
   refreshToken  String?
   name          String
   email         String  @unique
-  role          Role    @default(USER)
+  roles         UserRole[]
   cookingpoints Int     @default(0)
 
   cookingGroup   CookingGroup?  @relation(fields: [cookingGroupId], references: [id])
@@ -26,6 +26,14 @@ model User {
 
   createdAt  DateTime @default(now())
   modifiedAt DateTime @updatedAt
+}
+
+model UserRole {
+  userId Int
+  role   Role
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, role])
 }
 
 model CookingGroup {

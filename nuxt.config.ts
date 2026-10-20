@@ -65,7 +65,7 @@ export default defineNuxtConfig({
           id: "string | number",
           name: "string",
           username: "string",
-          role: "string",
+          roles: "string[]",
         },
       },
     },

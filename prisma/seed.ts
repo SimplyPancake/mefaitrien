@@ -14,7 +14,9 @@ async function main() {
     create: {
       email: "admin@mfr.com",
       name: "Admin",
-      role: Role.ADMIN,
+      roles: {
+        create: [{ role: Role.ADMIN }],
+      },
       passwordHash: "$2a$15$Cakv7l/AAIknVl7knoUarOSJMzKPe2s86zRG6q96iR27GTXXXDHsS",
       username: "admin",
     },

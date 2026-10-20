@@ -58,7 +58,7 @@ export const verifyToken = (event: H3Event): { valid: boolean; id?: number } => 
 export const getSessionData = async (userId: number): Promise<SessionDataDto> => {
   let user = await prisma.user.findFirst({
     where: { id: userId },
-    include: { cookingGroup: true },
+    include: { cookingGroup: true, roles: true },
   });
 
   if (!user) {
@@ -70,7 +70,7 @@ export const getSessionData = async (userId: number): Promise<SessionDataDto> =>
     name: user.name,
     username: user.username,
     cookingGroup: user.cookingGroup?.name ?? "",
-    role: user.role,
+    roles: user.roles.map(({ role }) => role),
   };
 };
 
@@ -125,9 +125,9 @@ export const checkAccessConfig = async (
       let userData = await getSessionDataEvent(event);
 
       // Check if role is in array
-      let roleExists = settings.role!.some((x) => x.toLowerCase() == userData.role.toLowerCase());
-      // OR with admin
-      let canBeGranted = roleExists || userData.role == "ADMIN";
+      const userRoles = userData.roles.map((role) => role.toLowerCase());
+      const roleExists = settings.role!.some((role) => userRoles.includes(role.toLowerCase()));
+      const canBeGranted = roleExists || userRoles.includes("admin");
       return { granted: canBeGranted, sessionData: userData };
     }
 

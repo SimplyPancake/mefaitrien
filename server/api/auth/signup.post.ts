@@ -1,4 +1,5 @@
 import { generateToken, hashPassword } from "~/server/utils/auth";
+import { Role } from "@@/generated/prisma/client";
 import prisma from '../../../lib/prisma';
 
 export default defineEventHandler(async (event) => {
@@ -23,7 +24,10 @@ export default defineEventHandler(async (event) => {
       username,
       passwordHash: hashedPassword,
       email,
-      name
+      name,
+      roles: {
+        create: [{ role: Role.USER }],
+      },
     },
   });
 

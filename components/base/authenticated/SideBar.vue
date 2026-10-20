@@ -149,11 +149,10 @@ const visibleSidebarSections = computed(() => {
 		.map(section => {
 			const filteredItems = section.items.filter(item => {
 				// Admins can see everything
-				if (sessionStore!.sessionData!.role === "ADMIN") {
+				if (sessionStore!.sessionData!.roles.includes("ADMIN")) {
 					return true;
 				}
-				// If the item has no role or matches the user's role, include it
-				return !item.role || item.role === sessionStore!.sessionData!.role;
+				return !item.role || sessionStore!.sessionData!.roles.includes(item.role);
 			});
 
 			// Only return sections that have visible items

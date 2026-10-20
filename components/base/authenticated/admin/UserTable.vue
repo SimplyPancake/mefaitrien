@@ -26,7 +26,7 @@
 					</UiTableCell>
 					<UiTableCell>{{ user.email }}</UiTableCell>
 					<UiTableCell>{{ user.cookingGroup?.name ?? "Geen kookgroep" }}</UiTableCell>
-					<UiTableCell>{{ user.role }}</UiTableCell>
+					<UiTableCell>{{ user.roles.join(", ") }}</UiTableCell>
 					<UiTableCell class="pl-0 text-right">
 						<!-- <UiButton size="sm" variant="linkHover2">Wijzig</UiButton> -->
 						<BaseAuthenticatedAdminEditUser :user="user" :cooking-groups="data.cookingGroups" />

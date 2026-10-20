@@ -4,6 +4,7 @@ import type {
   BlockedDay,
   CookingGroup,
   MonthRoster,
+  Role,
   User,
 } from "../generated/prisma/browser";
 
@@ -12,7 +13,7 @@ export interface AdminUserDTO {
   name: string;
   username: string;
   email: string;
-  role: string;
+  roles: Role[];
   cookingGroup?: {
     id: number;
     name: string;

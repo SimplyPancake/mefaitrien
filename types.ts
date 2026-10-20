@@ -19,7 +19,7 @@ export interface SessionData {
   name: string;
   username: string;
   cookingGroup: string;
-  role: string;
+  roles: string[];
   // Add any future properties here
   // [key: string]: any;
 }

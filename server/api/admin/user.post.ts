@@ -1,19 +1,21 @@
 import prisma from "@@/lib/prisma";
 import { BaseEventHandler } from "~/server/utils/handlers/baseEventHandler";
 import { SessionEvent } from "~/types";
-import { number, object, string } from "yup";
+import { array, number, object, string } from "yup";
+import { Role } from "~/generated/prisma/enums";
 
 let handlerFunc = async (event: SessionEvent) => {
-  const { id, name, email, role, cookingGroupId, username } = event.data;
+  const { id, name, email, roles, cookingGroupId, username } = event.data;
 
   const admins = await prisma.user.findMany({
     where: {
-      role: "ADMIN",
+      roles: {
+        some: { role: "ADMIN" },
+      },
     },
   });
 
-  if (admins.length == 1 && admins[0].id == id && role == "USER") {
-    // If the last admin being demoted from admin is an admin, that cannot happen
+  if (admins.length === 1 && admins[0]!.id === id && !roles.includes("ADMIN")) {
     throw createError({ status: 403, statusMessage: "Last admin cannot become regular user" });
   }
 
@@ -24,7 +26,10 @@ let handlerFunc = async (event: SessionEvent) => {
         name: name,
         username: username,
         email: email,
-        role: role,
+        roles: {
+          deleteMany: {},
+          create: roles.map((role: string) => ({ role })),
+        },
         cookingGroupId: parseInt(cookingGroupId),
         modifiedAt: new Date(),
       },
@@ -45,14 +50,18 @@ export default defineEventHandler(async (event) => {
       id: number().required("User ID is required"),
       name: string().required("Name is required"),
       email: string().email("Invalid email address").required("Email is required"),
-      role: string().oneOf(["ADMIN", "USER"], "Invalid role").required("Role is required"),
+      roles: array()
+        .of(string().oneOf(Object.values(Role), "Invalid role").required())
+        .min(1, "At least one role is required")
+        .test("uniqueRoles", "Roles must be unique", (roles) => !roles || new Set(roles).size === roles.length)
+        .required("Roles are required"),
       username: string(),
       cookingGroupId: string().nullable(),
     })
   ).handle({
     route: "/api/admin/editUser",
     method: "POST",
-    allowType: "AUTHENTICATED",
+    allowType: "ROLE",
     role: ["ADMIN"],
   });
 });

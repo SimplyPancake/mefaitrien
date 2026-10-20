@@ -9,6 +9,7 @@ let handlerFunc = async (event: H3Event) => {
   const users = await prisma.user.findMany({
     include: {
       cookingGroup: true,
+      roles: true,
     },
   });
 
@@ -19,7 +20,7 @@ let handlerFunc = async (event: H3Event) => {
     name: user.name,
     username: user.username,
     email: user.email,
-    role: user.role,
+    roles: user.roles.map(({ role }) => role),
     cookingGroup: user.cookingGroup
       ? {
           id: user.cookingGroup.id,

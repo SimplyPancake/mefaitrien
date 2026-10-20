@@ -1,4 +1,5 @@
 import prisma from "@@/lib/prisma";
+import { Role } from "@@/generated/prisma/client";
 import { hashPassword } from "~/server/utils/auth";
 import { BaseEventHandler } from "~/server/utils/handlers/baseEventHandler";
 import type { SessionEvent } from "~/types";
@@ -34,13 +35,18 @@ const handler = async (event: SessionEvent) => {
 				email,
 				passwordHash: await hashPassword(password),
 				cookingGroupId,
+				roles: {
+					create: [{ role: Role.USER }],
+				},
 			},
 			select: {
 				id: true,
 				name: true,
 				username: true,
 				email: true,
-				role: true,
+				roles: {
+					select: { role: true },
+				},
 			},
 		});
 	} catch (error) {
