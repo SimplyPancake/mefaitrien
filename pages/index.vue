@@ -1,42 +1,42 @@
 <template>
-	<div class="grid grid-cols-3 grid-rows-3 gap-4">
-		<UiCard class="w-100" title="Vandaag">
+	<div class="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+		<UiCard class="w-full min-w-0 xl:col-span-2" title="Vandaag">
 			<template #content>
-				<UiList class="max-w-m">
-					<UiListItem v-for="assignment in dashboard?.todayAssignments ?? []" :key="assignment.id" class="px-6">
-						<Icon name="lucide:chef-hat" class="size-10 text-primary" />
+				<UiList class="w-full min-w-0">
+					<UiListItem v-for="assignment in dashboard?.todayAssignments ?? []" :key="assignment.id" class="min-w-0 px-3 sm:px-6">
+						<Icon name="lucide:chef-hat" class="size-8 shrink-0 text-primary sm:size-10" />
 						<UiListContent>
-							<UiListTitle :title="`${assignment.user.name} kookt voor ${assignment.cookingGroup.name}`" />
+							<UiListTitle class="break-words" :title="`${assignment.user.name} kookt voor ${assignment.cookingGroup.name}`" />
 						</UiListContent>
 					</UiListItem>
-					<UiListItem v-if="dashboard && !dashboard.todayAssignments.length" class="px-6">
-						<Icon name="lucide:chef-hat" class="size-10 text-muted-foreground" />
+					<UiListItem v-if="dashboard && !dashboard.todayAssignments.length" class="min-w-0 px-3 sm:px-6">
+						<Icon name="lucide:chef-hat" class="size-8 shrink-0 text-muted-foreground sm:size-10" />
 						<UiListContent>
 							<UiListTitle title="Er zijn vandaag geen koks ingedeeld" />
 						</UiListContent>
 					</UiListItem>
-					<UiListItem class="px-6">
-						<Icon name="lucide:toilet" class="size-10 text-primary" />
+					<!-- <UiListItem class="min-w-0 px-3 sm:px-6">
+						<Icon name="lucide:toilet" class="size-8 shrink-0 text-primary sm:size-10" />
 						<UiListContent>
 							<UiListTitle title="De WC's worden schoongemaakt" />
 							<UiListSubtitle class="line-clamp-2" subtitle="Vandaag maken Berg en Justin schoon" />
 						</UiListContent>
-					</UiListItem>
+					</UiListItem> -->
 				</UiList>
 			</template>
 		</UiCard>
-		<UiCard class="w-100" title="Statistieken">
+		<UiCard class="w-full min-w-0 xl:col-span-2" title="Statistieken">
 			<template #content>
-				<UiList class="max-w-m">
-					<UiListItem class="px-6">
-						<Icon name="lucide:trending-up" class="size-10 text-primary" />
+				<UiList class="w-full min-w-0">
+					<UiListItem class="min-w-0 px-3 sm:px-6">
+						<Icon name="lucide:trending-up" class="size-8 shrink-0 text-primary sm:size-10" />
 						<UiListContent>
 							<UiListTitle :title="`Je hebt ${dashboard?.cookingPoints ?? '—'} kookpunten`" />
 						</UiListContent>
 					</UiListItem>
 					<!-- Schoonmaak -->
-					<UiListItem class="px-6">
-						<Icon name="lucide:cooking-pot" class="size-8 text-primary" />
+					<UiListItem class="min-w-0 px-3 sm:px-6">
+						<Icon name="lucide:cooking-pot" class="size-8 shrink-0 text-primary" />
 						<UiListContent>
 							<UiListTitle title="Jouw kookdagen deze week" />
 							<UiListSubtitle
@@ -45,24 +45,24 @@
 							/>
 						</UiListContent>
 					</UiListItem>
-					<UiListItem class="px-6">
-						<Icon name="lucide:brush-cleaning" class="size-10 text-primary" />
+					<!-- <UiListItem class="min-w-0 px-3 sm:px-6">
+						<Icon name="lucide:brush-cleaning" class="size-8 shrink-0 text-primary sm:size-10" />
 						<UiListContent>
 							<UiListTitle title="Volgende keer dat je schoon moet maken" />
 							<UiListSubtitle class="line-clamp-2"
 								subtitle="Jij moet als volgende de woonkamer schoonmaken met als extra taak de kastjes" />
 						</UiListContent>
-					</UiListItem>
+					</UiListItem> -->
 				</UiList>
 			</template>
 		</UiCard>
-		<BaseAuthenticatedHomeUserOverview class="row-span-3" />
-		<div class="col-span-2">
-			<!-- Show the schema of this cooking group the user is in. If the user isn't in one them don't show -->
-			<UiCard class="mt-8" title="Schema van deze week (K1)" :description="weekRange">
+		<BaseAuthenticatedHomeUserOverview class="w-full min-w-0 md:col-span-2 xl:col-span-1" />
+		<!-- <div class="min-w-0 md:col-span-2 xl:col-span-3">
+			<UiCard class="w-full min-w-0" title="Schema van deze week (K1)" :description="weekRange">
 				<template #content>
-					<UiCardContent>
-						<UiTimeline :model-value="3" orientation="horizontal">
+					<UiCardContent class="min-w-0 !px-3 sm:!px-6">
+						<div class="max-w-full overflow-x-auto">
+						<UiTimeline :model-value="3" orientation="horizontal" class="min-w-[42rem] sm:min-w-0">
 							<UiTimelineItem v-for="item in timelineItems" :key="item.id" :step="item.id">
 								<UiTimelineHeader>
 									<UiTimelineSeparator />
@@ -73,10 +73,11 @@
 								<UiTimelineContent>{{ item.description }}</UiTimelineContent>
 							</UiTimelineItem>
 						</UiTimeline>
+						</div>
 					</UiCardContent>
 				</template>
 			</UiCard>
-		</div>
+		</div> -->
 	</div>
 
 	<!-- Weekly Schedule Timeline Overview -->

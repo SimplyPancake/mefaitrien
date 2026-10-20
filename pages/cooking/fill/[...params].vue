@@ -1,35 +1,40 @@
 <template>
-	<div class="grid grid-cols-4 grid-rows-5 gap-4">
-		<div class="col-span-3 row-span-5">
-			<UiCard class="w-100" title="Vul je beschikbaarheid in">
+	<div class="-mx-3 grid min-w-0 grid-cols-1 gap-4 sm:mx-0 lg:grid-cols-4">
+		<div class="order-3 min-w-0 lg:order-1 lg:col-span-3 lg:row-span-2">
+			<UiCard class="w-full min-w-0" title="Vul je beschikbaarheid in">
 				<template #content>
-					<UiCardContent>
+					<UiCardContent class="min-w-0 !px-2 sm:!px-6">
 						<UiAlert v-if="!canfillmonth" icon="lucide:circle-alert" variant="destructive"
 							icon-class="mt-0.5" description="Je kan deze maand niet invullen!" class="animate-fadeIn" />
 						<!-- <UiLoader v-if="fillmontshstatus == 'pending'" class="size-10"
 							icon="svg-spinners:blocks-wave" /> -->
-						<KeepAlive>
+						<div class="mb-3 flex items-center justify-end gap-2">
+							<UiLabel for="show-fill-weekends" class="text-sm">Toon weekenddagen</UiLabel>
+							<UiSwitch id="show-fill-weekends" v-model:checked="showWeekends" />
+						</div>
+						<div class="availability-calendar min-w-0 max-w-full overflow-x-auto">
 							<FullCalendar ref="calendarRef" :options="calendarOptions" />
-						</KeepAlive>
+						</div>
 					</UiCardContent>
 				</template>
 			</UiCard>
 		</div>
-		<div class="col-start-4">
-			<UiCard class="w-100" title="Hoe gebruik je dit?">
+		<div class="order-1 min-w-0 lg:order-2 lg:col-start-4">
+			<UiCard class="w-full min-w-0" title="Hoe gebruik je dit?">
 				<template #content>
 					<UiCardContent>
-						Klik en sleep om een range aan data te selecteren. <br />
-						Gebruik daarna de knoppen rechts om je data aan te passen, of druk op <UiKbd>Z</UiKbd>, <UiKbd>X
-						</UiKbd>, <UiKbd>C</UiKbd> of <UiKbd>V</UiKbd>
+						Klik en sleep om een reeks dagen te selecteren.
+						Gebruik daarna de knoppen bij de acties om je beschikbaarheid aan te passen, of druk op
+						<UiKbd>Z</UiKbd>, <UiKbd>X</UiKbd>,
+						<UiKbd>C</UiKbd> of <UiKbd>V</UiKbd>.
 					</UiCardContent>
 				</template>
 			</UiCard>
 		</div>
-		<div>
-			<UiCard class="w-100" title="Selectie acties">
+		<div class="order-2 min-w-0 lg:order-3 lg:col-start-4">
+			<UiCard class="w-full min-w-0" title="Selectie acties">
 				<template #content>
-					<UiCardContent>
+					<UiCardContent class="!px-3 sm:!px-6">
 						<div class="grid grid-cols-4 gap-2 pb-4">
 							<!-- Kan niet -->
 							<UiButton class="w-full" variant="destructive"
@@ -56,7 +61,7 @@
 								<Icon class="size-4" name="lucide:plus" />
 							</UiButton>
 						</div>
-						<div class="flex justify-between gap-2 pt-2 border-t">
+						<div class="flex flex-col justify-between gap-2 border-t pt-2 sm:flex-row">
 							<UiButton variant="outline" class="w-full" @click="resetAvailability"
 								:disabled="!canfillmonth && !hasmadechangestothismonth">Annuleren</UiButton>
 							<UiButton variant="default" class="w-full" @click="submitMonthData"
@@ -120,6 +125,11 @@ watchEffect(() => {
 
 const calendarRef = ref<InstanceType<typeof FullCalendar> | null>(null);
 const selecteddates = ref<Date[]>([]);
+const showWeekends = ref(false);
+
+watch(showWeekends, (show) => {
+	calendarRef.value?.getApi().setOption("hiddenDays", show ? [] : [0, 5, 6]);
+});
 
 const selectedmonth = ref(new Date().getMonth())
 const selectedyear = ref(new Date().getFullYear())
@@ -314,8 +324,8 @@ const calendarOptions = ref<CalendarOptions>({
 	locale: "nl",
 	plugins: [dayGridPlugin, interactionPlugin],
 	initialView: "dayGridMonth",
-	// weekends: false,
 	firstDay: 1,
+	hiddenDays: [0, 6],
 	stickyHeaderDates: true,
 	editable: false,
 	headerToolbar: {
@@ -400,3 +410,27 @@ async function submitMonthData() {
 }
 
 </script>
+
+<style scoped>
+@media (max-width: 639px) {
+	.availability-calendar :deep(.fc .fc-daygrid-day-frame) {
+		min-height: 4.5rem;
+	}
+
+	.availability-calendar :deep(.fc .fc-toolbar-title) {
+		font-size: 1.125rem;
+	}
+
+	.availability-calendar :deep(.fc .fc-button) {
+		height: 2rem;
+		padding-inline: 0.5rem;
+		font-size: 0.75rem;
+	}
+
+	.availability-calendar :deep(.fc .fc-col-header-cell-cushion),
+	.availability-calendar :deep(.fc .fc-daygrid-day-number) {
+		font-size: 0.75rem;
+		line-height: 1rem;
+	}
+}
+</style>

@@ -1,7 +1,7 @@
 <template>
-  <UiCard class="w-100" title="Wie zit er allemaal in het huis?">
+  <UiCard class="w-full min-w-0" title="Wie zit er allemaal in het huis?">
     <template #content>
-      <UiCardContent>
+      <UiCardContent class="min-w-0">
         <UiListbox :highlight-on-hover="false">
           <UiListboxFilter v-model="search" placeholder="Zoeken..." />
           <UiListboxContent>

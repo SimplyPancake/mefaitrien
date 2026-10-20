@@ -39,8 +39,8 @@
 			</div>
 		</div>
 
-		<div class="flex flex-col items-start gap-4 md:flex-row">
-		<section class="min-w-0 basis-1/2 overflow-hidden rounded-xl border bg-card shadow-sm">
+		<div class="flex flex-col items-stretch gap-4 md:flex-row md:items-start">
+		<section class="w-full min-w-0 overflow-hidden rounded-xl border bg-card shadow-sm md:basis-1/2">
 			<div class="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-4">
 				<div>
 					<h2 class="font-semibold">Kookpunten</h2>
@@ -63,7 +63,7 @@
 				<div
 					v-for="user in data.users"
 					:key="user.id"
-					class="grid min-h-20 gap-3 px-5 py-3 transition-colors hover:bg-muted/30 sm:grid-cols-[minmax(0,1fr)_auto_auto_auto_2.5rem] sm:items-center sm:gap-4"
+					class="grid min-h-16 grid-cols-[minmax(0,1fr)_auto_auto_auto_2.5rem] items-center gap-2 px-3 py-2 transition-colors hover:bg-muted/30 sm:min-h-20 sm:grid-cols-[minmax(0,1fr)_auto_auto_auto_2.5rem] sm:gap-4 sm:px-5 sm:py-3"
 				>
 					<div class="flex min-w-0 items-center gap-3">
 						<span class="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-semibold text-muted-foreground">
@@ -81,17 +81,26 @@
 							<p class="truncate text-xs text-muted-foreground">{{ user.cookingGroupName ?? "Geen kookgroep" }}</p>
 						</div>
 					</div>
-					<span class="text-right text-sm tabular-nums">{{ user.computedPoints }}</span>
-					<div class="flex items-center justify-end gap-2">
-						<input
-							v-model.number="selectedBasePoints[user.id]"
-							type="number"
-							step="1"
-							:aria-label="`Basispunten voor ${user.name}`"
-							class="h-10 w-20 rounded-lg border border-input bg-background px-3 text-sm shadow-sm outline-none transition focus-visible:ring-2 focus-visible:ring-ring"
-						/>
+					<div class="contents">
+						<div class="flex min-w-0 flex-col items-center sm:items-end">
+							<span class="text-[10px] leading-tight text-muted-foreground sm:hidden">Berekend</span>
+							<span class="text-sm tabular-nums">{{ user.computedPoints }}</span>
+						</div>
+						<div class="flex min-w-0 flex-col items-center sm:items-end">
+							<span class="text-[10px] leading-tight text-muted-foreground sm:hidden">Basis</span>
+							<input
+								v-model.number="selectedBasePoints[user.id]"
+								type="number"
+								step="1"
+								:aria-label="`Basispunten voor ${user.name}`"
+								class="h-8 w-16 rounded-lg border border-input bg-background px-2 text-center text-sm shadow-sm outline-none transition focus-visible:ring-2 focus-visible:ring-ring sm:h-10 sm:w-20 sm:px-3"
+							/>
+						</div>
+						<div class="flex min-w-0 flex-col items-center sm:items-end">
+							<span class="text-[10px] leading-tight text-muted-foreground sm:hidden">Totaal</span>
+							<span class="text-sm font-semibold tabular-nums">{{ user.cookingpoints }}</span>
+						</div>
 					</div>
-					<span class="text-right text-sm font-semibold tabular-nums">{{ user.cookingpoints }}</span>
 					<div class="flex justify-end">
 						<UiButton
 							size="sm"
@@ -112,7 +121,7 @@
 			</div>
 		</section>
 
-		<section class="min-w-0 basis-1/2 overflow-hidden rounded-xl border bg-card shadow-sm">
+		<section class="w-full min-w-0 overflow-hidden rounded-xl border bg-card shadow-sm md:basis-1/2">
 			<div class="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-4">
 				<div>
 					<h2 class="font-semibold">Kookgroepen</h2>
@@ -131,7 +140,7 @@
 				<div
 					v-for="user in data.users"
 					:key="user.id"
-					class="grid min-h-20 gap-3 px-5 py-3 transition-colors hover:bg-muted/30 sm:grid-cols-[minmax(0,1fr)_auto_2.5rem] sm:items-center sm:gap-4"
+					class="grid min-h-16 grid-cols-[minmax(0,1fr)_minmax(0,8rem)_2.5rem] items-center gap-2 px-3 py-2 transition-colors hover:bg-muted/30 sm:min-h-20 sm:grid-cols-[minmax(0,1fr)_auto_2.5rem] sm:gap-4 sm:px-5 sm:py-3"
 				>
 					<div class="flex min-w-0 items-center gap-3">
 						<span class="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-semibold text-muted-foreground">
@@ -142,9 +151,9 @@
 							<p class="truncate text-xs text-muted-foreground">{{ user.cookingGroupName ?? "Nog niet ingedeeld" }}</p>
 						</div>
 					</div>
-					<div class="flex justify-end">
+					<div class="min-w-0">
 						<UiSelect v-model="selectedGroupIds[user.id]">
-							<UiSelectTrigger class="h-10 w-40 rounded-lg" placeholder="Kies een kookgroep" />
+							<UiSelectTrigger class="h-9 w-full min-w-0 rounded-lg sm:h-10 sm:w-40" placeholder="Kies een kookgroep" />
 							<UiSelectContent>
 								<UiSelectItem value="none" text="Geen kookgroep" />
 								<UiSelectItem

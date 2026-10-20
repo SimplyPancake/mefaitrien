@@ -1,9 +1,10 @@
 <template>
-	<div>
+	<div class="w-full min-w-0">
 		<UiCalendar
 			:key="`${props.year}-${props.month}`"
 			:initial-page="{ year: props.year, month: props.month }"
 			:attributes="attributes"
+			class="w-full max-w-full"
 			borderless
 			expanded
 			:first-day-of-week="2"
@@ -45,22 +46,22 @@ const attributes = computed(() => {
 
 	const availabilityGroups = {
 		AVAILABLE: {
-			bar: "green",
+			bar: { style: { backgroundColor: "var(--col-avail)" } },
 			popover: { label: "Beschikbaar" },
 			dates: [] as Date[],
 		},
 		UNAVAILABLE: {
-			bar: "red",
+			bar: { style: { backgroundColor: "var(--col-unavail)" } },
 			popover: { label: "Niet beschikbaar" },
 			dates: [] as Date[],
 		},
 		POSITIVE: {
-			bar: "indigo",
+			bar: { style: { backgroundColor: "var(--col-positive)" } },
 			popover: { label: "Graag" },
 			dates: [] as Date[],
 		},
 		NEGATIVE: {
-			bar: "yellow",
+			bar: { style: { backgroundColor: "var(--col-negative)" } },
 			popover: { label: "Liever niet" },
 			dates: [] as Date[],
 		},
