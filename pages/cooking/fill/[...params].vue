@@ -13,7 +13,7 @@
 							<UiSwitch id="show-fill-weekends" v-model:checked="showWeekends" />
 						</div>
 						<div class="availability-calendar min-w-0 max-w-full overflow-x-auto">
-							<FullCalendar ref="calendarRef" :options="calendarOptions" />
+							<BaseFullCalendar ref="calendarRef" :options="calendarOptions" />
 						</div>
 					</UiCardContent>
 				</template>
@@ -78,7 +78,7 @@
 <script setup lang="ts">
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import FullCalendar from "@fullcalendar/vue3";
+import BaseFullCalendar from "~/components/base/FullCalendar.vue";
 import dayjs from "dayjs";
 import { computed, onMounted, ref, watch } from 'vue';
 import type { CalendarOptions } from "@fullcalendar/core";
@@ -123,12 +123,12 @@ watchEffect(() => {
 	}
 })
 
-const calendarRef = ref<InstanceType<typeof FullCalendar> | null>(null);
+const calendarRef = ref<InstanceType<typeof BaseFullCalendar> | null>(null);
 const selecteddates = ref<Date[]>([]);
 const showWeekends = ref(false);
 
 watch(showWeekends, (show) => {
-	calendarRef.value?.getApi().setOption("hiddenDays", show ? [] : [0, 5, 6]);
+	calendarRef.value?.getApi()?.setOption("hiddenDays", show ? [] : [0, 5, 6]);
 });
 
 const selectedmonth = ref(new Date().getMonth())
@@ -200,7 +200,7 @@ const initialiseMonth = () => {
 	}
 
 	// set calendar selectable
-	calendarRef.value?.getApi().setOption("selectable", canfillmonth.value)
+	calendarRef.value?.getApi()?.setOption("selectable", canfillmonth.value)
 
 	// Backup current state
 	olddates = dates.value.map(d => ({ ...d }));
@@ -219,7 +219,7 @@ onMounted(async () => {
 
 		selectedyear.value = !isNaN(year) ? year : now.getFullYear()
 		selectedmonth.value = !isNaN(month) ? month - 1 : now.getMonth()
-		calendarRef.value?.getApi().gotoDate(startOfMonth.value.toDate());
+		calendarRef.value?.getApi()?.gotoDate(startOfMonth.value.toDate());
 	}
 
 	await getmonthdata();
@@ -251,7 +251,7 @@ const updateSelectedDatesAvailability = (availability: AvailabilityType) => {
 
 	// Clear selection after updating
 	selecteddates.value = [];
-	calendarRef.value?.getApi().unselect();
+	calendarRef.value?.getApi()?.unselect();
 };
 
 // Get month range
@@ -350,7 +350,7 @@ const calendarOptions = ref<CalendarOptions>({
 					selectedyear.value = selectedyear.value - 1;
 				}
 
-				calendarRef.value?.getApi().prev();
+				calendarRef.value?.getApi()?.prev();
 			}
 		},
 		gotonext: {
@@ -363,7 +363,7 @@ const calendarOptions = ref<CalendarOptions>({
 					selectedyear.value = selectedyear.value + 1;
 				}
 
-				calendarRef.value?.getApi().next();
+				calendarRef.value?.getApi()?.next();
 			}
 		}
 	},

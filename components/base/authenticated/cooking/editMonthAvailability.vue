@@ -14,9 +14,7 @@
 					<!-- If selectedGroup is empty; display empty calendar with selected month -->
 
 					<!-- Else, display calendar with month data of that group -->
-					<KeepAlive>
-						<FullCalendar ref="calendarRef" :options="calendarOptions" class="animate-fadeIn" />
-					</KeepAlive>
+					<BaseFullCalendar ref="calendarRef" :options="calendarOptions" class="animate-fadeIn" />
 				</UiCardContent>
 			</template>
 		</UiCard>
@@ -58,7 +56,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin, { type DateClickArg } from "@fullcalendar/interaction";
 import type { AssignedUsersDto, groupAssign, GroupUsersDto, ManageMonthDto } from '~/types/dto';
 import { BaseAuthenticatedCookingPlannercontrols, BaseAuthenticatedCookingUserShower, BaseAuthenticatedCookingPersonDayBrowser } from '#components';
-import { AvailabilityType } from "@/generated/prisma/browser"; import FullCalendar from "@fullcalendar/vue3";
+import { AvailabilityType } from "@/generated/prisma/browser"; import BaseFullCalendar from "~/components/base/FullCalendar.vue";
 import { availabilityTranslations } from "~/i18n/enumTranslations";
 import dayjs from "dayjs";
 import type { EventClickArg } from "@fullcalendar/core/index.js";
@@ -77,7 +75,7 @@ type ModeType = "FullOverview" | "CookingGroupSelect" | "PersonSelect"
 
 // REFS
 const cookingChooserRef = useTemplateRef<CookingChooserType>('cookingChooser')
-const calendarRef = ref<InstanceType<typeof FullCalendar> | null>(null);
+const calendarRef = ref<InstanceType<typeof BaseFullCalendar> | null>(null);
 const userShowerRef = useTemplateRef<UserShowerType>('userShowerRef')
 const dayBrowser = useTemplateRef<DayBrowserType>('dayBrowserRef')
 const oldMode = ref<ModeType>("FullOverview")
@@ -109,7 +107,7 @@ watch(() => props.month.id, loadAssignedUsers, { immediate: true });
 watch(
 	() => [props.month.year, props.month.month],
 	([year, month]) => {
-		calendarRef.value?.getApi().gotoDate(`${year}-${String(month).padStart(2, "0")}-01`);
+		calendarRef.value?.getApi()?.gotoDate(`${year}-${String(month).padStart(2, "0")}-01`);
 	},
 	{ flush: "post" }
 );

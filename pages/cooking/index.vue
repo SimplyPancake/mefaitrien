@@ -9,7 +9,7 @@
 							<UiSwitch id="show-roster-weekends" v-model:checked="showWeekends" />
 						</div>
 						<div class="cooking-roster-calendar min-w-0 max-w-full overflow-x-auto">
-							<FullCalendar :options="calendarOptions" />
+							<BaseFullCalendar :options="calendarOptions" />
 						</div>
 						<p v-if="currentMonthRoster && !currentMonthRoster.assignedDays.length"
 							class="mt-3 text-center text-sm text-muted-foreground">
@@ -43,7 +43,7 @@
 <script setup lang="ts">
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import FullCalendar from "@fullcalendar/vue3";
+import BaseFullCalendar from "~/components/base/FullCalendar.vue";
 import type { CalendarOptions } from "@fullcalendar/core";
 import { usePageInfoStore } from '~/composables/usePageInfoStore';
 import { ref } from 'vue';
