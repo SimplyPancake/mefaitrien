@@ -31,7 +31,7 @@ export default defineNuxtConfig({
     },
     public: {
       fileStorage: {
-        mount: process.env.NUXT_PUBLIC_FILE_STORAGE_MOUNT ?? process.env.NUXT_MOUNT ?? "",
+        mount: "/media/storage",
       },
     },
   },
@@ -50,7 +50,7 @@ export default defineNuxtConfig({
   ],
 
   fileStorage: {
-    mount: process.env.NUXT_PUBLIC_FILE_STORAGE_MOUNT
+    mount: "/media/storage"
   },
 
   colorMode: {

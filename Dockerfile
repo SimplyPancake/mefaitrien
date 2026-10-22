@@ -28,7 +28,9 @@ COPY --from=prisma-runtime --chown=node:node /opt/prisma /opt/prisma
 
 # Copy entrypoint and set permissions before switching user
 COPY --chown=node:node docker-entrypoint.sh ./docker-entrypoint.sh
-RUN chmod +x ./docker-entrypoint.sh
+RUN chmod +x ./docker-entrypoint.sh \
+    && mkdir -p /media/storage/profile-images \
+    && chown -R node:node /media/storage
 
 USER node
 EXPOSE 3000
