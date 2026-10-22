@@ -1094,7 +1094,7 @@
     std-env "^3.9.0"
     tinyglobby "^0.2.14"
 
-"@nuxt/kit@4.6.2", "@nuxt/kit@^4.5.2", "@nuxt/kit@^4.6.0", "@nuxt/kit@^4.6.1":
+"@nuxt/kit@4.6.2", "@nuxt/kit@^4.3.0", "@nuxt/kit@^4.5.2", "@nuxt/kit@^4.6.0", "@nuxt/kit@^4.6.1":
   version "4.6.2"
   resolved "https://registry.yarnpkg.com/@nuxt/kit/-/kit-4.6.2.tgz#e43baa999dcbb2f415e7ba1ed9e4bed0392d1e4d"
   integrity sha512-Vn9DJobc30WdR1vrlRcEAFSFy7NV5CWq3o6gxsfrdGb2FmCh0fuDyvbZC30rm2enyiPaOUPafKctFE/ToBjybw==
@@ -5488,6 +5488,14 @@ npmlog@^5.0.1:
     console-control-strings "^1.1.0"
     gauge "^3.0.0"
     set-blocking "^2.0.0"
+
+nuxt-file-storage@^0.3.3:
+  version "0.3.3"
+  resolved "https://registry.yarnpkg.com/nuxt-file-storage/-/nuxt-file-storage-0.3.3.tgz#3bd374d728989796f009295903599023c781d634"
+  integrity sha512-peTNstz7V85/mR+XADnbPEATo2h3Q02VUU1Pr1wBH2igJGnaSPSaT50+tD2pSW3ERhW9JBw2LdlH9Bz1QLL5qw==
+  dependencies:
+    "@nuxt/kit" "^4.3.0"
+    defu "^6.1.4"
 
 nuxt@^4.6.2:
   version "4.6.2"

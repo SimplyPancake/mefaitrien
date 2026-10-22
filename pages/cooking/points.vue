@@ -66,9 +66,7 @@
 					class="grid min-h-16 grid-cols-[minmax(0,1fr)_auto_auto_auto_2.5rem] items-center gap-2 px-3 py-2 transition-colors hover:bg-muted/30 sm:min-h-20 sm:grid-cols-[minmax(0,1fr)_auto_auto_auto_2.5rem] sm:gap-4 sm:px-5 sm:py-3"
 				>
 					<div class="flex min-w-0 items-center gap-3">
-						<span class="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-semibold text-muted-foreground">
-							{{ user.name.slice(0, 1).toUpperCase() }}
-						</span>
+						<UserProfilePicture :user-id="user.id" :name="user.name" :size="36" />
 						<div class="min-w-0">
 							<div class="flex min-w-0 items-center gap-2">
 								<p class="truncate font-medium">{{ user.name }}</p>
@@ -143,9 +141,7 @@
 					class="grid min-h-16 grid-cols-[minmax(0,1fr)_minmax(0,8rem)_2.5rem] items-center gap-2 px-3 py-2 transition-colors hover:bg-muted/30 sm:min-h-20 sm:grid-cols-[minmax(0,1fr)_auto_2.5rem] sm:gap-4 sm:px-5 sm:py-3"
 				>
 					<div class="flex min-w-0 items-center gap-3">
-						<span class="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-semibold text-muted-foreground">
-							{{ user.name.slice(0, 1).toUpperCase() }}
-						</span>
+						<UserProfilePicture :user-id="user.id" :name="user.name" :size="36" />
 						<div class="min-w-0">
 							<p class="truncate font-medium">{{ user.name }}</p>
 							<p class="truncate text-xs text-muted-foreground">{{ user.cookingGroupName ?? "Nog niet ingedeeld" }}</p>

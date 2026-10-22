@@ -10,16 +10,17 @@ datasource db {
 }
 
 model User {
-  id            Int     @id @default(autoincrement())
-  username      String  @unique
-  passwordHash  String
-  refreshToken  String?
-  calendarToken String? @unique
-  name          String
-  email         String  @unique
-  roles         UserRole[]
-  cookingpointsBase Int @default(0)
-  isActive      Boolean @default(true)
+  id                Int        @id @default(autoincrement())
+  username          String     @unique
+  passwordHash      String
+  refreshToken      String?
+  calendarToken     String?    @unique
+  profileImage      String?
+  name              String
+  email             String     @unique
+  roles             UserRole[]
+  cookingpointsBase Int        @default(0)
+  isActive          Boolean    @default(true)
 
   cookingGroup   CookingGroup?  @relation(fields: [cookingGroupId], references: [id])
   cookingGroupId Int?
@@ -39,13 +40,13 @@ model UserRole {
 }
 
 model CookingGroup {
-  id          Int           @id @default(autoincrement())
-  name        String        @unique
-  User        User[]
+  id           Int           @id @default(autoincrement())
+  name         String        @unique
+  User         User[]
   assignedDays AssignedDay[]
-  color       String        @default("aaaaaa")
-  createdAt   DateTime      @default(now())
-  modifiedAt  DateTime      @updatedAt
+  color        String        @default("aaaaaa")
+  createdAt    DateTime      @default(now())
+  modifiedAt   DateTime      @updatedAt
 }
 
 model Availability {

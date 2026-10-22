@@ -31,9 +31,12 @@
 						:class="{ 'bg-primary/5': place.user.name === sessionStore.sessionData?.name }"
 					>
 						<BaseAuthenticatedCookingPointsMedal :rank="place.rank" />
-						<div class="min-w-0">
-							<p class="truncate text-sm font-medium">{{ place.user.name }}</p>
-							<p class="truncate text-xs text-muted-foreground">{{ place.user.cookingGroupName ?? "Geen kookgroep" }}</p>
+						<div class="flex min-w-0 items-center gap-3">
+							<UserProfilePicture :user-id="place.user.id" :name="place.user.name" :size="32" />
+							<div class="min-w-0">
+								<p class="truncate text-sm font-medium">{{ place.user.name }}</p>
+								<p class="truncate text-xs text-muted-foreground">{{ place.user.cookingGroupName ?? "Geen kookgroep" }}</p>
+							</div>
 						</div>
 						<span class="rounded-full bg-muted px-3 py-1 text-sm font-semibold tabular-nums">
 							{{ place.user.cookingpoints }}

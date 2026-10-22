@@ -162,41 +162,24 @@ const initialiseMonth = () => {
 		canfillmonth.value = currentFillMonth.value?.status === "CANFILLIN"
 	}
 
-	if (currentFillMonth.value && currentFillMonth.value?.availabilities.length != 0) {
-		let m = currentFillMonth.value;
-		// Set dates to include the availabilities
-		currentFillMonth.value.availabilities.forEach(av => {
-			dates.value.push({
-				// TODO: Check index of month and day
-				date: new Date(m.year, m.month - 1, av.day),
-				availability: av.availability
-			})
-		});
+	if (canfillmonth.value && currentFillMonth.value) {
+		const m = currentFillMonth.value;
+		const blockedDays = new Set(m.blockedDates.map(day => day.day));
+		const daysInMonth = new Date(m.year, m.month, 0).getDate();
 
-		// and push blocked days
-		currentFillMonth.value.blockedDates.forEach(av => {
+		for (let day = 1; day <= daysInMonth; day++) {
 			dates.value.push({
-				// TODO: Check index of month and day
-				date: new Date(m.year, m.month - 1, av.day),
-				availability: "BLOCKED"
-			})
-		});
-	} else if (canfillmonth.value) {
-		// If user hasn't filled in any dates yet
-		for (let date = startOfMonth.value; date.isBefore(endOfMonth.value); date = date.add(1, "day")) {
-			// If date is in a date that cannot be selected, set it to gray!
-			if (currentFillMonth.value?.blockedDates.some(x => x.day == date.day() + 1)) {
-				dates.value.push({
-					date: date.toDate(),
-					availability: "BLOCKED"
-				});
-			} else {
-				dates.value.push({
-					date: date.toDate(),
-					availability: "AVAILABLE"
-				});
-			}
+				date: new Date(m.year, m.month - 1, day),
+				availability: blockedDays.has(day) ? "BLOCKED" : AvailabilityType.AVAILABLE
+			});
 		}
+
+		m.availabilities.forEach(av => {
+			const date = dates.value.find(d => d.date.getDate() === av.day);
+			if (date && date.availability !== "BLOCKED") {
+				date.availability = av.availability;
+			}
+		});
 	}
 
 	// set calendar selectable
@@ -244,8 +227,14 @@ const updateSelectedDatesAvailability = (availability: AvailabilityType) => {
 			d => dayjs(d.date).format('YYYY-MM-DD') === dateStr
 		);
 
-		if (existingDateIndex !== -1) {
-			dates.value[existingDateIndex].availability = availability;
+		const existingDate = dates.value[existingDateIndex];
+		if (existingDate) {
+			existingDate.availability = availability;
+		} else {
+			dates.value.push({
+				date: new Date(selected),
+				availability
+			});
 		}
 	});
 
@@ -281,21 +270,24 @@ const getColorForAvailability = (availability?: DateAvailabilityType) => {
 };
 
 const getAvailableEventsForMonth = computed(() => {
+	if (!canfillmonth.value) {
+		return [];
+	}
+
 	const events: any[] = [];
 
 	for (let date = dayjs(startOfMonth.value); date.isBefore(endOfMonth.value); date = date.add(1, "day")) {
 		const dateStr = date.format("YYYY-MM-DD");
 		const existingDate = dates.value.find(d => dayjs(d.date).format("YYYY-MM-DD") === dateStr);
 
-		if (existingDate) {
-			events.push({
-				start: dateStr,
-				display: "background",
-				backgroundColor: getColorForAvailability(existingDate.availability),
-				allDay: true,
-				overlap: existingDate.availability == "BLOCKED"
-			});
-		}
+		const availability = existingDate?.availability ?? AvailabilityType.AVAILABLE;
+		events.push({
+			start: dateStr,
+			display: "background",
+			backgroundColor: getColorForAvailability(availability),
+			allDay: true,
+			overlap: availability === "BLOCKED"
+		});
 	}
 
 	return events;
@@ -325,7 +317,7 @@ const calendarOptions = ref<CalendarOptions>({
 	plugins: [dayGridPlugin, interactionPlugin],
 	initialView: "dayGridMonth",
 	firstDay: 1,
-	hiddenDays: [0, 6],
+	hiddenDays: [0, 5, 6],
 	stickyHeaderDates: true,
 	editable: false,
 	headerToolbar: {

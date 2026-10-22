@@ -20,6 +20,20 @@
 										name="name" placeholder="Voer gebruikersnaam in" />
 									<UiVeeInput v-model="userref.email" label="Email" type="email" name="email"
 										placeholder="Voer email in" />
+									<div class="flex items-center gap-3">
+										<UserProfilePicture :user-id="userref.id" :name="userref.name" :size="48" />
+										<div class="grid gap-2">
+											<UiLabel for="admin-profile-image">Profielfoto (maximaal 1 MB)</UiLabel>
+											<input
+												id="admin-profile-image"
+												type="file"
+												accept="image/jpeg,image/png,image/webp,image/gif"
+												:disabled="avatarSaving"
+												class="block w-full text-sm file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-1.5 file:font-medium file:text-primary-foreground"
+												@change="uploadAvatar"
+											/>
+										</div>
+									</div>
 									<div class="space-y-2">
 										<UiLabel class="block text-sm font-medium text-gray-700">Rollen</UiLabel>
 										<label
@@ -84,6 +98,7 @@ const props = defineProps<{
 
 const userref = ref(cloneDeep(props.user))
 const isOpen = ref(false);
+const avatarSaving = ref(false);
 
 const cookingGroupname = ref(props.user.cookingGroup?.name ?? '');
 const roleOptions: { value: RoleType; label: string }[] = [
@@ -97,6 +112,54 @@ const toggleRole = (role: RoleType, checked: boolean | 'indeterminate') => {
 		userref.value.roles.push(role);
 	} else if (checked === false && userref.value.roles.length > 1) {
 		userref.value.roles = userref.value.roles.filter(currentRole => currentRole !== role);
+	}
+};
+
+const uploadAvatar = async (event: Event) => {
+	const input = event.target as HTMLInputElement;
+	const file = input.files?.[0];
+	if (!file) return;
+	if (file.size > 1024 * 1024) {
+		useSonner.error("De afbeelding mag maximaal 1 MB zijn.");
+		input.value = "";
+		return;
+	}
+
+	avatarSaving.value = true;
+	try {
+		const content = await new Promise<string>((resolve, reject) => {
+			const reader = new FileReader();
+			reader.onload = () => typeof reader.result === "string"
+				? resolve(reader.result)
+				: reject(new Error("Kon de afbeelding niet lezen."));
+			reader.onerror = () => reject(reader.error ?? new Error("Kon de afbeelding niet lezen."));
+			reader.readAsDataURL(file);
+		});
+		const { error } = await useAPI("/api/admin/user-avatar", {
+			method: "POST",
+			body: {
+				userId: userref.value.id,
+				file: {
+					name: file.name,
+					type: file.type,
+					size: String(file.size),
+					lastModified: String(file.lastModified),
+					content,
+				},
+			},
+		});
+		if (error.value) {
+			useSonner.error(error.value.statusMessage ?? "Kon de profielfoto niet bijwerken.");
+			return;
+		}
+
+		window.dispatchEvent(new Event("profile-picture-updated"));
+		useSonner.success("Profielfoto bijgewerkt.");
+	} catch (cause) {
+		useSonner.error(cause instanceof Error ? cause.message : "Kon de profielfoto niet bijwerken.");
+	} finally {
+		avatarSaving.value = false;
+		input.value = "";
 	}
 };
 

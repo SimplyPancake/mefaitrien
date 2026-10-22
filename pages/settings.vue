@@ -6,6 +6,36 @@
 			<p class="text-sm text-muted-foreground">Pas je e-mailadres of wachtwoord aan.</p>
 		</header>
 
+		<UiCard title="Profielfoto">
+			<template #content>
+				<UiCardContent class="grid gap-4">
+					<p class="text-sm text-muted-foreground">
+						Kies een afbeelding van maximaal 1 MB (JPEG, PNG, WebP of GIF).
+					</p>
+					<div class="flex items-center gap-4">
+						<UserProfilePicture
+							:size="64"
+							:src="avatarPreview ?? avatarOverride"
+							:alt="`Profielfoto van ${settings?.email ?? 'mij'}`"
+							:fallback="email.slice(0, 1).toUpperCase() || '?'"
+						/>
+						<div class="grid gap-2">
+							<UiLabel for="profile-image">Profielfoto kiezen</UiLabel>
+							<input
+								id="profile-image"
+								ref="profileImageInput"
+								type="file"
+								accept="image/jpeg,image/png,image/webp,image/gif"
+								:disabled="avatarSaving"
+								class="block w-full text-sm text-foreground file:mr-4 file:rounded-md file:border-0 file:bg-primary file:px-4 file:py-2 file:font-medium file:text-primary-foreground hover:file:cursor-pointer disabled:opacity-50"
+								@change="uploadAvatar"
+							/>
+						</div>
+					</div>
+				</UiCardContent>
+			</template>
+		</UiCard>
+
 		<UiCard title="E-mailadres wijzigen">
 			<template #content>
 				<UiCardContent>
@@ -121,13 +151,21 @@
 usePageInfoStore().setPageInfo({ title: "Instellingen" });
 useSeoMeta({ title: "Instellingen" });
 
-const { data: settings, error: settingsError } = await useAPI<{ id: number; email: string; calendarToken: string | null }>("/api/account/settings");
+const { data: settings, error: settingsError } = await useAPI<{
+	id: number;
+	email: string;
+	calendarToken: string | null;
+	avatarUrl: string | null;
+}>("/api/account/settings");
 if (settingsError.value) {
 	useSonner.error(settingsError.value.statusMessage ?? "Kon je instellingen niet laden.");
 }
 
 const email = ref(settings.value?.email ?? "");
 const calendarToken = ref(settings.value?.calendarToken ?? null);
+const avatarOverride = ref<string | null>(null);
+const avatarPreview = ref<string | null>(null);
+const avatarSaving = ref(false);
 const emailCurrentPassword = ref("");
 const passwordCurrentPassword = ref("");
 const newPassword = ref("");
@@ -139,6 +177,52 @@ const requestUrl = useRequestURL();
 const calendarUrl = computed(() => calendarToken.value
 	? new URL(`/api/calendar/${settings.value?.id}/${calendarToken.value}.ics`, requestUrl.origin).toString()
 	: "");
+const uploadAvatar = async (event: Event) => {
+	const input = event.target as HTMLInputElement;
+	const file = input.files?.[0];
+	if (!file) return;
+
+	if (file.size > 1024 * 1024) {
+		useSonner.error("De afbeelding mag maximaal 1 MB zijn.");
+		input.value = "";
+		return;
+	}
+
+	avatarSaving.value = true;
+	try {
+		const content = await new Promise<string>((resolve, reject) => {
+			const reader = new FileReader();
+			reader.onload = () => typeof reader.result === "string"
+				? resolve(reader.result)
+				: reject(new Error("Kon de afbeelding niet lezen."));
+			reader.onerror = () => reject(reader.error ?? new Error("Kon de afbeelding niet lezen."));
+			reader.readAsDataURL(file);
+		});
+		avatarPreview.value = content;
+		await useNuxtApp().$api("/api/account/avatar", {
+			method: "POST",
+			body: {
+				file: {
+					name: file.name,
+					type: file.type,
+					size: String(file.size),
+					lastModified: String(file.lastModified),
+					content,
+				},
+			},
+		});
+		avatarOverride.value = content;
+		avatarPreview.value = null;
+		window.dispatchEvent(new Event("profile-picture-updated"));
+		useSonner.success("Profielfoto bijgewerkt.");
+	} catch (cause) {
+		avatarPreview.value = null;
+		useSonner.error(getErrorMessage(cause, "Kon de profielfoto niet bijwerken."));
+	} finally {
+		avatarSaving.value = false;
+		input.value = "";
+	}
+};
 
 const getErrorMessage = (cause: unknown, fallback: string) => {
 	const error = cause as { data?: { statusMessage?: string }; statusMessage?: string };

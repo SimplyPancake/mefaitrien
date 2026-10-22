@@ -16,6 +16,22 @@
 				<template #content>
 					<UiCardContent>
 						<UiDescriptionList class="pb-4">
+							<template v-if="selectedMonth">
+								<UiDescriptionListTerm>Maandstatus</UiDescriptionListTerm>
+								<UiDescriptionListDetails>
+									<UiSelect :model-value="selectedMonth.status" @update:model-value="changeMonthStatus"
+										:disabled="savingMonthStatus">
+										<UiSelectTrigger aria-label="Maandstatus" />
+										<UiSelectContent>
+											<UiSelectGroup>
+												<UiSelectItem value="CANFILLIN" text="Inschrijven mogelijk" />
+												<UiSelectItem value="NOFILLIN" text="Inschrijven gesloten" />
+												<UiSelectItem value="ASSIGNED" text="Ingedeeld" />
+											</UiSelectGroup>
+										</UiSelectContent>
+									</UiSelect>
+								</UiDescriptionListDetails>
+							</template>
 							<template v-for="item in items" :key="item.term">
 								<UiDescriptionListTerm>{{ item.term }}</UiDescriptionListTerm>
 								<UiDescriptionListDetails>{{ item.details }}</UiDescriptionListDetails>
@@ -37,7 +53,7 @@
 			</UiCard>
 		</div>
 		<BaseAuthenticatedCookingEditMonthAvailability v-if="selectedMonth" :month="selectedMonth"
-			:group-data="groupsData" />
+			:group-data="groupsData" @assignments-saved="refreshCreatedMonths" />
 	</div>
 </template>
 
@@ -62,7 +78,6 @@ const { data: groupData, error } = await useAPI<GroupUsersDto[]>('/api/cooking/u
 const items = computed(() => {
 	if (selectedMonth.value) {
 		return [
-			{ term: "Maand type", details: selectedMonth.value.status },
 			{ term: "Mensen ingevuld", details: `${selectedMonth.value.filledIn}/${selectedMonth.value.maxAssigned}` },
 			{ term: "Gemiddelde beschikbaarheid", details: `${selectedMonth.value.averageAvailability}%` },
 			{ term: "Dagen zonder beschikbare kok", details: `${selectedMonth.value.daysWithoutCook ?? 'n.v.t.'}` },
@@ -81,7 +96,8 @@ const items = computed(() => {
 	]
 })
 
-const { data: createdmonths, error: createdmonthserror } = await useAPI<ManageMonthDto[]>('/api/cooking/roster/manage');
+const { data: createdmonths, error: createdmonthserror, refresh: refreshCreatedMonths } = await useAPI<ManageMonthDto[]>('/api/cooking/roster/manage');
+const savingMonthStatus = ref(false);
 if (createdmonthserror.value) {
 	console.log(createdmonthserror.value)
 	useSonner.error("Kon oude maanden niet ophalen!")
@@ -90,6 +106,32 @@ if (createdmonthserror.value) {
 const selectedMonth = computed(() => {
 	return createdmonths.value?.find(x => x.year == chooserref.value?.selectedyear && x.month == chooserref.value.selectedmonth)
 })
+
+const changeMonthStatus = async (status: string) => {
+	if (status !== "CANFILLIN" && status !== "NOFILLIN" && status !== "ASSIGNED") {
+		return;
+	}
+
+	if (!selectedMonth.value || savingMonthStatus.value) {
+		return;
+	}
+
+	savingMonthStatus.value = true;
+	try {
+		const api = useNuxtApp().$api as typeof $fetch;
+		await api(
+			`/api/cooking/roster/${selectedMonth.value.year}/${selectedMonth.value.month}/status`,
+			{ method: "POST", body: { status } }
+		);
+		await refreshCreatedMonths();
+		useSonner.success("Maandstatus gewijzigd.");
+	} catch (cause) {
+		const error = cause as { data?: { statusMessage?: string }; statusMessage?: string };
+		useSonner.error(error.data?.statusMessage ?? error.statusMessage ?? "Kon de maandstatus niet wijzigen.");
+	} finally {
+		savingMonthStatus.value = false;
+	}
+};
 
 const groupsData = computed(() => {
 	const groups = groupData.value ?? [];

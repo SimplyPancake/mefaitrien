@@ -17,7 +17,7 @@
 				<UiTableRow :class="{ 'opacity-60': !user.isActive }">
 					<UiTableCell>
 						<div class="flex items-center gap-3">
-							<UiAvatar class="size-10" src="/img/dannyprofielfoto.png" :alt="user.name" />
+							<UserProfilePicture :user-id="user.id" :name="user.name" :size="40" />
 							<div>
 								<div class="font-lg font-bold">{{ user.name }}</div>
 								<span class="mt-0.5 text-xs text-muted-foreground">@{{

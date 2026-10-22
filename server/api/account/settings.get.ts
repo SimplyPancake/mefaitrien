@@ -5,14 +5,19 @@ import type { SessionEvent } from "~/types";
 const handlerFunc = async (event: SessionEvent) => {
   const user = await prisma.user.findUnique({
     where: { id: event.session.id },
-    select: { id: true, email: true, calendarToken: true, isActive: true },
+    select: { id: true, email: true, calendarToken: true, profileImage: true, isActive: true },
   });
 
   if (!user || !user.isActive) {
     throw createError({ statusCode: 401, statusMessage: "Dit account is niet actief." });
   }
 
-  return { id: user.id, email: user.email, calendarToken: user.calendarToken };
+  return {
+    id: user.id,
+    email: user.email,
+    calendarToken: user.calendarToken,
+    avatarUrl: user.profileImage ? "/api/account/avatar" : null,
+  };
 };
 
 export default defineEventHandler(async (event) => {

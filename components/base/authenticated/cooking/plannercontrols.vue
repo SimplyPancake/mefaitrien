@@ -27,12 +27,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 import { type GroupUsersDto } from "~/types/dto";
 
 const props = defineProps<{
 	groupInfo: GroupUsersDto[];
-}>()
+	loadingAuto?: boolean;
+}>();
 
 const selectedGroupName = ref('');
 

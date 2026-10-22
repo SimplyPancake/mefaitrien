@@ -58,7 +58,7 @@
 				<!-- Sidebar footer -->
 				<UiSidebarFooter class="mt-auto px-4 py-4 border-t border-sidebar-border">
 					<div class="flex items-center gap-3">
-						<UiAvatar src="/img/dannyprofielfoto.png" class="size-10" />
+						<UserProfilePicture :size="40" />
 						<div class="flex-1 min-w-0">
 							<div class="text-lg font-medium truncate">{{ sessionStore!.sessionData!.name || '' }}
 							</div>

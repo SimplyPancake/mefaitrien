@@ -40,11 +40,12 @@ let handlerFunc = async (event: SessionEvent) => {
   }
 
   // Filter dates to ensure they belong to the specified month and year
-  const filteredDates = data.dates?.filter(
+  const dates = data.dates ?? [];
+  const filteredDates = dates.filter(
     (x) => x.date.getMonth() == data.month && x.date.getFullYear() == data.year
   );
 
-  if (!filteredDates || filteredDates.length === 0) {
+  if (dates.length > 0 && filteredDates.length === 0) {
     throw createError({
       status: 400,
       statusMessage: "No valid dates provided for the specified month and year",
@@ -76,14 +77,16 @@ let handlerFunc = async (event: SessionEvent) => {
   });
 
   // Create new availabilities
-  const availabilities = await prisma.availability.createMany({
-    data: filteredDates.map((date) => ({
-      userId: event.session.id,
-      monthRosterId: monthRoster.id,
-      day: date.date.getDate(),
-      availability: date.availability as AvailabilityType,
-    })),
-  });
+  const availabilities = filteredDates.length
+    ? await prisma.availability.createMany({
+        data: filteredDates.map((date) => ({
+          userId: event.session.id,
+          monthRosterId: monthRoster.id,
+          day: date.date.getDate(),
+          availability: date.availability as AvailabilityType,
+        })),
+      })
+    : { count: 0 };
 
   return { count: availabilities.count };
 };

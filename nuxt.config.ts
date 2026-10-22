@@ -42,7 +42,12 @@ export default defineNuxtConfig({
     "@morev/vue-transitions/nuxt",
     "@sidebase/nuxt-auth",
     "@pinia/nuxt",
+    "nuxt-file-storage"
   ],
+
+  fileStorage: {
+    mount: process.env.NUXT_MOUNT
+  },
 
   colorMode: {
     preference: "dark",

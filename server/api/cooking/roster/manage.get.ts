@@ -55,15 +55,22 @@ let handlerFunc = async (event: H3Event) => {
 
     const availCount = allAvailabilities.filter((x) => x.availability != "UNAVAILABLE").length;
     const totalAvailCount = allAvailabilities.length;
-    const monthAssignedYet = d.status == "ASSIGNED";
-    const totalFilledIn = Array.from(new Set(allAvailabilities.map((aval) => aval.userId))).length;
+    const blockedDays = new Set(d.blockedDates.map(({ day }) => day));
+    const daysInMonth = new Date(d.year, d.month, 0).getDate();
+    const daysWithoutCook = Array.from({ length: daysInMonth }, (_, index) => index + 1).filter(
+      (day) =>
+        !blockedDays.has(day) &&
+        !allAvailabilities.some(
+          (availability) => availability.day === day && availability.availability !== "UNAVAILABLE"
+        )
+    ).length;
 
     const percentage = Math.round((availCount / totalAvailCount) * 100);
     return {
       ...d,
       availabilities: allAvailabilities,
       averageAvailability: percentage,
-      daysWithoutCook: monthAssignedYet ? -1 : undefined,
+      daysWithoutCook,
       filledIn: usersWithAvailability.size,
       maxAssigned: usersForRoster.length,
     };

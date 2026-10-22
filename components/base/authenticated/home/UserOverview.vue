@@ -12,7 +12,8 @@
                   <template v-for="p in group.people" :key="p.id">
                     <UiListboxItem :value="p">
                       <div class="flex items-center gap-5">
-                        <UiAvatar src="/img/dannyprofielfoto.png" class="size-8" />
+                        <!-- <UiAvatar src="/img/dannyprofielfoto.png" class="size-8" /> -->
+                         <UserProfilePicture :user-id="p.id" :name="p.name" :size="32" />
                         <div class="text-sm">
                           <p class="font-medium">{{ p.name }}</p>
                         </div>

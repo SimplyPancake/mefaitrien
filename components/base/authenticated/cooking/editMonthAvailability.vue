@@ -9,7 +9,8 @@
 				<UiCardContent>
 					<BaseAuthenticatedCookingPlannercontrols v-if="groupData" :group-info="props.groupData"
 						ref="cookingChooser" @automatic-organize="doAutomaticOrganize()"
-						@remove-assigned="removeAssigned()" @submit-assignees="submitAssignees()" />
+						@remove-assigned="removeAssigned()" @submit-assignees="submitAssignees()"
+						:loading-auto="autoLoading"/>
 
 					<!-- If selectedGroup is empty; display empty calendar with selected month -->
 
@@ -66,7 +67,9 @@ const props = defineProps<{
 	month: ManageMonthDto
 	groupData: GroupUsersDto[]
 }>()
-
+const emit = defineEmits<{
+	(e: 'assignmentsSaved'): void
+}>();
 // TYPES
 type CookingChooserType = InstanceType<typeof BaseAuthenticatedCookingPlannercontrols>;
 type UserShowerType = InstanceType<typeof BaseAuthenticatedCookingUserShower>;
@@ -409,9 +412,12 @@ const assignCookingPerson = (selectedPerson: { id: number, name: string }, cooki
 	}
 }
 
+const autoLoading = ref(false);
+
 const doAutomaticOrganize = async () => {
 	// Begin loading
 
+	autoLoading.value = true;
 	let body = {};
 	if (cookingChooserRef.value?.selectedGroup) {
 		body = {
@@ -423,10 +429,14 @@ const doAutomaticOrganize = async () => {
 		body: body
 	});
 
+	autoLoading.value = false;
+
 	if (error.value) {
 		useSonner.error(error.value!.statusMessage!);
 		return;
 	}
+
+	useSonner.success("Automatisch ingedeeld");
 
 	// End loading and assignCookingPerson
 	data.value!.forEach(cookingGroup => {
@@ -509,6 +519,7 @@ const submitAssignees = async () => {
 		}
 
 		useSonner.success("Indeling opgeslagen.");
+		emit('assignmentsSaved');
 	} catch (cause) {
 		const error = cause as { data?: { statusMessage?: string }; statusMessage?: string };
 		useSonner.error(error.data?.statusMessage ?? error.statusMessage ?? "Kon de indeling niet opslaan.");

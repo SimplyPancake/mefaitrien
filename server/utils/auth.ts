@@ -76,6 +76,7 @@ export const getSessionData = async (userId: number): Promise<SessionDataDto> =>
     username: user.username,
     cookingGroup: user.cookingGroup?.name ?? "",
     roles: user.roles.map(({ role }) => role),
+    active: user.isActive,
   };
 };
 
