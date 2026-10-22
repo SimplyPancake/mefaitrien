@@ -128,7 +128,7 @@ function getWeekendDaysCalendar(year: number, month: number) {
 		const dayOfWeek = date.day(); // Sunday = 0, Saturday = 6
 
 		if (dayOfWeek == 0 || dayOfWeek == 6 || dayOfWeek == 5) {
-			weekends.push(date.toString()); // Push the dayjs object directly
+			weekends.push(date.format("YYYY-MM-DD"));
 		}
 	}
 
@@ -222,11 +222,11 @@ const goBack = () => {
 const clickDay = (day: any, event: any) => {
 	if (stepper.value !== 2) return;
 
-	const clickedDate = dayjs(day.date).toISOString();
+	const clickedDate = dayjs(day.date).format("YYYY-MM-DD");
 
 	// Find index of date in attributes
 	const index = attributes.value.findIndex((attr: any) =>
-		dayjs(attr.dates).toISOString() === clickedDate
+		attr.dates === clickedDate
 	);
 
 	if (index !== -1) {

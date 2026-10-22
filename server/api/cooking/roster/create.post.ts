@@ -39,11 +39,11 @@ let handlerFunc = async (event: H3Event) => {
   const month = data.month;
 
   let dateObjects =
-    data.dates?.filter((x) => x.getFullYear() === year && x.getMonth() + 1 === month) || [];
+    data.dates?.filter((x) => x.getUTCFullYear() === year && x.getUTCMonth() + 1 === month) || [];
 
   // Map Date objects to { day: number } for Prisma nested creation
   const blockedDatesInput = dateObjects.map((date) => ({
-    day: date.getDate(),
+    day: date.getUTCDate(),
   }));
 
   console.log(blockedDatesInput);

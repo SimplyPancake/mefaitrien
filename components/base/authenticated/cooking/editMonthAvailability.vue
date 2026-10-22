@@ -209,10 +209,8 @@ const calendarEvents = computed(() => {
 	// Add blocked days!
 	const events: any[] = [];
 	selectedMonth.value.blockedDates.forEach((blockedDay) => {
-		const day = dayjs().set("month", selectedMonth.value.month - 1).set("year", selectedMonth.value.year).set("date", blockedDay.day)
-
 		events.push({
-			start: day.format("YYYY-MM-DD"),
+			start: `${selectedMonth.value.year}-${String(selectedMonth.value.month).padStart(2, "0")}-${String(blockedDay.day).padStart(2, "0")}`,
 			display: "background",
 			backgroundColor: `#e5e7eb`,
 			allDay: true,
@@ -252,15 +250,13 @@ const calendarEvents = computed(() => {
 			}
 		});
 
-		const daysInMonth = new Date(selectedMonth.value.year, selectedMonth.value.month + 1, 0).getDate()
+		const daysInMonth = new Date(selectedMonth.value.year, selectedMonth.value.month, 0).getDate()
 
 		for (let index = 1; index <= daysInMonth; index++) {
 			const count = availabilityCounts.get(index) ?? 0;
 
-			const dayobj = dayjs().set("month", selectedMonth.value.month - 1).set("year", selectedMonth.value.year).set("date", index);
-
 			events.push({
-				start: dayobj.format("YYYY-MM-DD"),
+				start: `${selectedMonth.value.year}-${String(selectedMonth.value.month).padStart(2, "0")}-${String(index).padStart(2, "0")}`,
 				display: "background",
 				backgroundColor: `rgba(110, 231, 183, ${count / selectedMonth.value.maxAssigned})`,
 				allDay: true,
@@ -270,10 +266,8 @@ const calendarEvents = computed(() => {
 		// Show the availability of the selected person
 		// If user did not fill in, they have zero availabilitiues.
 		selectedMonthPerson.value.availabilities.forEach(x => {
-			const dayobj = dayjs().set("month", selectedMonth.value.month - 1).set("year", selectedMonth.value.year).set("date", x.day);
-
 			events.push({
-				start: dayobj.format("YYYY-MM-DD"),
+				start: `${selectedMonth.value.year}-${String(selectedMonth.value.month).padStart(2, "0")}-${String(x.day).padStart(2, "0")}`,
 				display: "background",
 				backgroundColor: getColorForAvailability(x.availability),
 				allDay: true,
@@ -287,7 +281,6 @@ const calendarEvents = computed(() => {
 })
 
 const calendarOptions = computed(() => {
-	const dayobj = dayjs().set("month", selectedMonth.value.month - 1).set("year", selectedMonth.value.year)
 	return {
 		locale: "nl",
 		plugins: [dayGridPlugin, interactionPlugin],
@@ -303,7 +296,7 @@ const calendarOptions = computed(() => {
 		},
 		selectable: false,
 		events: calendarEvents.value,
-		initialDate: dayobj.format('YYYY-MM-DD'), // set selected month
+		initialDate: `${selectedMonth.value.year}-${String(selectedMonth.value.month).padStart(2, "0")}-01`,
 		eventMouseEnter: (info: any) => { // Does not work if day hovered over is empty!
 			hoverDate.value = (info.event.start as Date).toString();
 		},
