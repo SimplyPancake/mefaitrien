@@ -10,7 +10,7 @@
 			:first-day-of-week="2"
 			locale="nl"
 			:masks="{ weekdays: 'WW' }" title-position="right" />
-		<p v-if="avaldata && !currentMonthData?.availabilities.length"
+		<p v-if="currentMonthData && !currentMonthData.availabilities.length"
 			class="mt-2 text-center text-sm text-muted-foreground">
 			Geen beschikbaarheid voor deze maand gevonden.
 		</p>
@@ -30,7 +30,10 @@ type extraStuff = {
 	blockedDates: BlockedDay[]
 }
 // Await data
-const { data: avaldata, error: avalerror } = await useAPI<(MonthRoster & extraStuff)[]>("/api/cooking/availability");
+const { data: avaldata, error: avalerror } = await useAPI<(MonthRoster & extraStuff)[]>(
+	"/api/cooking/availability",
+	{ key: "cooking-availability" }
+);
 if (avalerror.value) {
 	useSonner.error(avalerror.value.statusMessage ?? "Kon geen maand data ophalen");
 }

@@ -3,15 +3,18 @@ import prisma from "@@/lib/prisma";
 import { AvailabilityType } from "../../../generated/prisma/browser";
 import { BaseEventHandler } from "~/server/utils/handlers/baseEventHandler";
 import { H3Event } from "h3";
-import { array, date, number, object, string } from "yup";
+import { array, number, object, string } from "yup";
 import type { SessionEvent } from "~/types";
 
 const availabilityValues = Object.values(AvailabilityType) as readonly string[];
 
 const selectedDateSchema = object({
-  date: date()
-    .transform((value, originalValue) => {
-      return typeof originalValue === "string" ? new Date(originalValue) : originalValue;
+  date: string()
+    .matches(/^\d{4}-\d{2}-\d{2}$/, "Date must use YYYY-MM-DD format")
+    .test("valid-date", "Date is invalid", (value) => {
+      if (!value) return false;
+      const parsed = new Date(`${value}T00:00:00.000Z`);
+      return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
     })
     .required("Date is required"),
 
@@ -24,7 +27,7 @@ const selectedDateArraySchema = array().of(selectedDateSchema).strict();
 
 const schema = object({
   year: number().required().min(0),
-  month: number().required().min(1).max(12),
+  month: number().required().min(0).max(11),
   dates: selectedDateArraySchema,
 });
 
@@ -33,7 +36,7 @@ let handlerFunc = async (event: SessionEvent) => {
   let data;
 
   try {
-    data = await schema.cast(body);
+    data = await schema.validate(body);
   } catch (e: any) {
     console.error(e);
     throw createError({ status: 400, statusMessage: e.message });
@@ -41,9 +44,10 @@ let handlerFunc = async (event: SessionEvent) => {
 
   // Filter dates to ensure they belong to the specified month and year
   const dates = data.dates ?? [];
-  const filteredDates = dates.filter(
-    (x) => x.date.getMonth() == data.month && x.date.getFullYear() == data.year
-  );
+  const filteredDates = dates.filter((x) => {
+    const [year, month] = x.date.split("-").map(Number);
+    return year === data.year && month === data.month + 1;
+  });
 
   if (dates.length > 0 && filteredDates.length === 0) {
     throw createError({
@@ -82,7 +86,7 @@ let handlerFunc = async (event: SessionEvent) => {
         data: filteredDates.map((date) => ({
           userId: event.session.id,
           monthRosterId: monthRoster.id,
-          day: date.date.getDate(),
+          day: Number(date.date.slice(-2)),
           availability: date.availability as AvailabilityType,
         })),
       })

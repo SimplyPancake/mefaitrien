@@ -142,7 +142,15 @@ const dates = ref<SelectedDate[]>([]);
 let olddates: SelectedDate[] = [];
 
 // Get availability of some months
-const { data: tofillinmonths, error: fillmonthserror, status: fillmontshstatus, execute: getmonthdata } = await useAPI<(MonthRoster & extraStuff)[]>("/api/cooking/availability");
+const {
+	data: tofillinmonths,
+	error: fillmonthserror,
+	status: fillmontshstatus,
+	execute: getmonthdata,
+	refresh: refreshAvailabilityData,
+} = await useAPI<(MonthRoster & extraStuff)[]>("/api/cooking/availability", {
+	key: "cooking-availability",
+});
 
 const currentFillMonth = computed(() => {
 	return tofillinmonths.value?.find(x => x.month == selectedmonth.value + 1 && x.year == selectedyear.value)
@@ -385,9 +393,12 @@ async function submitMonthData() {
 			body: {
 				year: selectedyear.value,
 				month: selectedmonth.value,
-				dates: dates.value.filter(x => x.availability != "BLOCKED"),
+				dates: dates.value
+					.filter(x => x.availability != "BLOCKED")
+					.map(x => ({ ...x, date: dayjs(x.date).format("YYYY-MM-DD") })),
 			},
 		});
+		await refreshAvailabilityData();
 
 		useSonner.success("Maand opgeslagen!");
 		olddates = dates.value.map(d => ({ ...d }));
