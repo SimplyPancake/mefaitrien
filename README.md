@@ -3,7 +3,9 @@ https://ui-thing.behonbaker.com/getting-started/setup#theme-source
 ## Database
 
 The app uses MariaDB through Prisma. Copy `.env.example` to `.env` and set
-`DATABASE_URL` to your MariaDB connection string, for example:
+`DATABASE_URL` to your MariaDB connection string, for example, and
+`FILE_STORAGE_MOUNT` to the absolute directory where uploaded profile images
+should be stored (defaults to `/media/storage`):
 
 ```text
 mysql://USER:PASSWORD@HOST:3306/DATABASE

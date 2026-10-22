@@ -1,4 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+const fileStorageMount = process.env.FILE_STORAGE_MOUNT ?? "/media/storage";
+
 export default defineNuxtConfig({
   srcDir: ".",
   compatibilityDate: "2024-11-01",
@@ -31,7 +33,7 @@ export default defineNuxtConfig({
     },
     public: {
       fileStorage: {
-        mount: "/media/storage",
+        mount: fileStorageMount,
       },
     },
   },
@@ -50,7 +52,7 @@ export default defineNuxtConfig({
   ],
 
   fileStorage: {
-    mount: "/media/storage"
+    mount: fileStorageMount
   },
 
   colorMode: {
