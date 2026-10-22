@@ -29,7 +29,11 @@ export default defineNuxtConfig({
         { route: "/api/admin/users", method: "get", allowType: "ROLE", role: ["admin"] },
       ],
     },
-    public: {},
+    public: {
+      fileStorage: {
+        mount: process.env.NUXT_PUBLIC_FILE_STORAGE_MOUNT ?? process.env.NUXT_MOUNT ?? "",
+      },
+    },
   },
 
   modules: [
@@ -46,7 +50,7 @@ export default defineNuxtConfig({
   ],
 
   fileStorage: {
-    mount: process.env.NUXT_MOUNT
+    mount: process.env.NUXT_PUBLIC_FILE_STORAGE_MOUNT
   },
 
   colorMode: {
