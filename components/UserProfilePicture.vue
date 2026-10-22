@@ -36,7 +36,7 @@ const loadImage = async () => {
 	} catch (cause) {
 		const error = cause as { status?: number; statusCode?: number };
 		if (error.status === 404 || error.statusCode === 404) return;
-		useSonner.error(getErrorMessage(cause, "Kon de profielfoto niet laden."));
+		// useSonner.error(getErrorMessage(cause, "Kon de profielfoto niet laden."));
 	}
 };
 
