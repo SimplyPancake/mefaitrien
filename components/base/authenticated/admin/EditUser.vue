@@ -88,7 +88,6 @@ import type { AdminUserDTO } from '~/types/dto';
 import type { CookingGroup } from '@/generated/prisma/browser';
 import { Role } from '@/generated/prisma/browser';
 import type { Role as RoleType } from '@/generated/prisma/browser';
-import { cloneDeep } from 'lodash';
 import { useAPI } from '~/composables/useAPI';
 
 const props = defineProps<{
@@ -96,7 +95,13 @@ const props = defineProps<{
 	cookingGroups: CookingGroup[];
 }>();
 
-const userref = ref(cloneDeep(props.user))
+const cloneUser = (user: AdminUserDTO): AdminUserDTO => ({
+	...user,
+	roles: [...user.roles],
+	cookingGroup: user.cookingGroup ? { ...user.cookingGroup } : undefined,
+});
+
+const userref = ref(cloneUser(props.user))
 const isOpen = ref(false);
 const avatarSaving = ref(false);
 
@@ -192,7 +197,7 @@ const saveChanges = async () => {
 			return;
 		}
 
-		Object.assign(props.user, cloneDeep(userref.value));
+		Object.assign(props.user, cloneUser(userref.value));
 		useSonner.success('Gebruiker succesvol bijgewerkt!');
 		isOpen.value = false;
 	} catch (cause) {
@@ -201,7 +206,7 @@ const saveChanges = async () => {
 };
 
 const discardChanges = () => {
-	userref.value = cloneDeep(props.user);
+	userref.value = cloneUser(props.user);
 	cookingGroupname.value = props.user.cookingGroup?.name ?? '';
 }
 </script>
