@@ -23,9 +23,13 @@ const handlerFunc = async (event: SessionEvent) => {
     select: { profileImage: true, isActive: true },
   });
 
-  const extension = user!.profileImage!.split(".").at(-1);
+  if (!user?.profileImage) {
+    throw createError({ statusCode: 404, statusMessage: "Geen profielfoto gevonden." });
+  }
+
+  const extension = user.profileImage.split(".").at(-1);
   const contentType = extension ? contentTypes[extension] : undefined;
-  if (!contentType || !/^avatar-\d+-[a-f0-9]{24}\.(?:gif|jpeg|png|webp)$/.test(user!.profileImage!)) {
+  if (!contentType || !/^avatar-\d+-[a-f0-9]{24}\.(?:gif|jpeg|png|webp)$/.test(user.profileImage)) {
     throw createError({ statusCode: 500, statusMessage: "De opgeslagen profielfoto is ongeldig." });
   }
 
