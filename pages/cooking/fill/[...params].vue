@@ -276,7 +276,7 @@ const getAvailableEventsForMonth = computed(() => {
 
 	const events: any[] = [];
 
-	for (let date = dayjs(startOfMonth.value); date.isBefore(endOfMonth.value); date = date.add(1, "day")) {
+	for (let date = dayjs(startOfMonth.value); !date.isAfter(endOfMonth.value); date = date.add(1, "day")) {
 		const dateStr = date.format("YYYY-MM-DD");
 		const existingDate = dates.value.find(d => dayjs(d.date).format("YYYY-MM-DD") === dateStr);
 
@@ -294,15 +294,8 @@ const getAvailableEventsForMonth = computed(() => {
 });
 
 // Dynamically update calendar events when availability changes
-watch(getAvailableEventsForMonth, (newEvents) => {
-	calendarOptions.value.events = newEvents;
-
-	// Refresh events in calendar manually
-	const calendarApi = calendarRef.value?.getApi();
-	if (calendarApi) {
-		calendarApi.removeAllEvents();
-		calendarApi.addEventSource(newEvents);
-	}
+watch(getAvailableEventsForMonth, () => {
+	calendarRef.value?.getApi()?.refetchEvents();
 });
 
 watch(selectedmonth, () => {
@@ -369,7 +362,9 @@ const calendarOptions = ref<CalendarOptions>({
 		}
 		return false;
 	},
-	events: () => getAvailableEventsForMonth.value,
+	events: (_fetchInfo, successCallback) => {
+		successCallback(getAvailableEventsForMonth.value);
+	},
 	select(info) {
 		selecteddates.value = [];
 		let startDate = new Date(info.start);
