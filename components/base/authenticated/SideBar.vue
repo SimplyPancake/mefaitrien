@@ -74,7 +74,7 @@
 				</UiSidebarFooter>
 			</UiSidebarContent>
 		</UiSidebar>
-		<UiSidebarInset>
+		<UiSidebarInset class="min-w-0">
 			<UiNavbar sticky class="h-20 px-6 bg-card text-sidebar-primary shadow-md">
 				<div class="flex items-center gap-4 h-full">
 					<UiSidebarTrigger class="text-primary p-2 shrink-0 w-10 h-10" />
@@ -88,7 +88,7 @@
 					</div>
 				</div>
 			</UiNavbar>
-			<div class="p-4 text-foreground max-w-full overflow-x-hidden">
+			<div class="w-full min-w-0 p-4 text-foreground max-w-full overflow-x-hidden">
 				<slot />
 			</div>
 		</UiSidebarInset>

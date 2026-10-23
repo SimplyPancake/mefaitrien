@@ -24,56 +24,63 @@ export const getWashingPointTotals = async (
     return new Map();
   }
 
-  const userIds = users.map(({ id }) => id);
-  const groupIds = [
-    ...new Set(
-      users.flatMap(({ cookingGroupId }) =>
-        cookingGroupId === null ? [] : [cookingGroupId]
-      )
-    ),
-  ];
-  const [registrations, groupMemberCounts, penalties] = await Promise.all([
-    prisma.washingRegistration.findMany({
-      where: {
-        OR: [
-          { cookingGroupId: { in: groupIds } },
-          { washUserOneId: { in: userIds } },
-          { washUserTwoId: { in: userIds } },
-          { washingRegistrationEatUsers: { some: { userId: { in: userIds } } } },
-        ],
-      },
-      select: {
-        cookingGroupId: true,
-        washUserOneId: true,
-        washUserTwoId: true,
-        washingRegistrationEatUsers: {
-          select: { userId: true, amountEat: true },
+  const userIds = users.map(u => u.id);
+
+  const allActiveUsers = await prisma.user.findMany({
+    where: {
+      isActive: true
+    },
+    select: {
+      id: true,
+      isActive: true,
+      washingpointsBase: true,
+      washingPenalties: true,
+    }
+  })
+
+  const penaltyPointsByUser = new Map<number, number>(allActiveUsers.map(user => {
+    return [user.id, user.washingPenalties.reduce((total, penalty) => total + penalty.amount, 0)];
+  }));
+
+  // Needed: Relevant registrations, cooking group ids & count
+  const relevantRegistrations = await prisma.washingRegistration.findMany({
+    select: {
+      washUserOneId: true,
+      washUserTwoId: true,
+      cookingGroupId: true,
+      washingRegistrationEatUsers: {
+        select: {
+          userId: true,
+          amountEat: true,
+          user: {
+            select: {
+              isActive: true,
+            },
+          },
         },
       },
-    }),
-    groupIds.length > 0
-      ? prisma.user.groupBy({
-          by: ["cookingGroupId"],
-          where: { cookingGroupId: { in: groupIds } },
-          _count: { _all: true },
-        })
-      : Promise.resolve([]),
-    prisma.washingPenalty.groupBy({
-      by: ["userId"],
-      where: { userId: { in: userIds } },
-      _sum: { amount: true },
-    }),
-  ]);
-  const groupMemberCountById = new Map(
-    groupMemberCounts.map(({ cookingGroupId, _count }) => [
-      cookingGroupId,
-      _count._all,
-    ])
-  );
-  const penaltyPointsByUser = new Map(
-    penalties.map(({ userId, _sum }) => [userId, _sum.amount ?? 0])
-  );
-  const computedPointsByUser = new Map(userIds.map((id) => [id, 0]));
+    },
+    where: {
+      OR: [
+        {
+          washingRegistrationEatUsers: {
+            some: {
+              userId: { in: userIds },
+            },
+          },
+        },
+        {
+          washUserOneId: { in: userIds },
+        },
+        {
+          washUserTwoId: { in: userIds },
+        },
+      ],
+    },
+  });
+
+  const computedPointsByUser = new Map<number, number>();
+
   const addPoints = (userId: number, points: number) => {
     computedPointsByUser.set(
       userId,
@@ -81,35 +88,36 @@ export const getWashingPointTotals = async (
     );
   };
 
-  for (const registration of registrations) {
-    const totalEaters = registration.washingRegistrationEatUsers.reduce(
-      (total, eater) => total + eater.amountEat,
-      0
-    );
-    const washerIds = [
-      registration.washUserOneId,
-      registration.washUserTwoId,
-    ];
-    for (const userId of washerIds) {
-      addPoints(userId, 2);
-    }
-    for (const userId of new Set(washerIds)) {
-      addPoints(userId, 2 * totalEaters);
-    }
-    for (const eater of registration.washingRegistrationEatUsers) {
-      addPoints(eater.userId, -2 * eater.amountEat);
-    }
+  relevantRegistrations.forEach(registration => {
+    // TODO: Check if washUserOneId and washUserTwoId are sane
+    const amountEatByUser = new Map(registration.washingRegistrationEatUsers.map(
+      u => [u.userId, u.amountEat]
+    ))
+    // Reduce get total eat from that registration
+    const totalEats = amountEatByUser.values().reduce((a, c) => a + c)
 
-    const memberCount =
-      groupMemberCountById.get(registration.cookingGroupId) ?? 0;
-    if (memberCount > 0) {
-      for (const user of users) {
-        if (user.cookingGroupId === registration.cookingGroupId) {
-          addPoints(user.id, -4 / memberCount);
-        }
-      }
-    }
-  }
+    // Each person washing gets 2 points base
+    // plus 2x every eater
+    addPoints(registration.washUserOneId, 2 + 2 * totalEats)
+    addPoints(registration.washUserTwoId, 2 + 2 * totalEats)
+
+    // Every person eating gets 2 points removed per eater
+    registration.washingRegistrationEatUsers.forEach(eatUser => {
+      addPoints(eatUser.userId, -2 * eatUser.amountEat)
+    })
+  });
+
+  // Then to average this out, we had n registrations where we added 4 points,
+  // to a system of m users,
+  // So, we remove from all n * (4/m)
+  const activeUserCount = allActiveUsers.length;
+  const activeUserModifierAverager = - 4 / activeUserCount
+
+  const amountOfRegistrations = relevantRegistrations.length;
+  allActiveUsers.forEach(activeUser => {
+    addPoints(activeUser.id, amountOfRegistrations * activeUserModifierAverager)
+  })
+
 
   return new Map(
     users.map(({ id, washingpointsBase }) => {

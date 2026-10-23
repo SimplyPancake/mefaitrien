@@ -1,13 +1,13 @@
 <template>
-  <div class="mx-auto flex w-full max-w-7xl flex-col gap-5">
-    <header class="flex flex-wrap items-center justify-between gap-4 rounded-xl border bg-card px-5 py-5 shadow-sm">
-      <div class="flex items-start gap-3">
+  <div class="mx-auto flex w-full min-w-0 max-w-full flex-col gap-5 overflow-x-hidden xl:max-w-7xl">
+    <header class="flex min-w-0 flex-wrap items-center justify-between gap-4 rounded-xl border bg-card px-4 py-4 shadow-sm sm:px-5 sm:py-5">
+      <div class="flex min-w-0 items-start gap-3">
         <div class="rounded-lg bg-primary/10 p-2.5 text-primary">
           <Icon name="lucide:chart-no-axes-combined" class="size-5" />
         </div>
-        <div>
+        <div class="min-w-0">
           <h1 class="text-xl font-semibold tracking-tight">Afwaspunten</h1>
-          <p class="mt-1 text-sm text-muted-foreground">Een overzicht van de punten per kookgroep en huisgenoot.</p>
+          <p class="mt-1 break-words text-sm text-muted-foreground">Een overzicht van de punten per kookgroep en huisgenoot.</p>
         </div>
       </div>
       <div class="rounded-lg bg-muted/60 px-4 py-2">
@@ -16,23 +16,23 @@
       </div>
     </header>
 
-    <div v-if="error" class="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
+    <div v-if="error" class="min-w-0 break-words rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
       {{ error.statusMessage ?? "Het afwaspuntenoverzicht kon niet worden opgehaald." }}
     </div>
 
     <template v-if="data">
-      <section class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <article v-for="stat in summary" :key="stat.label" class="rounded-xl border bg-card p-4 shadow-sm">
-          <div class="flex items-center gap-2 text-sm text-muted-foreground">
+      <section class="grid min-w-0 grid-cols-1 gap-2 min-[360px]:grid-cols-2 sm:gap-3 xl:grid-cols-4">
+        <article v-for="stat in summary" :key="stat.label" class="min-w-0 rounded-xl border bg-card p-3 shadow-sm sm:p-4">
+          <div class="flex min-w-0 items-center gap-2 text-xs leading-tight text-muted-foreground sm:text-sm">
             <Icon :name="stat.icon" class="size-4 text-primary" />
-            {{ stat.label }}
+            <span class="break-words">{{ stat.label }}</span>
           </div>
-          <p class="mt-2 text-2xl font-semibold tabular-nums">{{ typeof stat.value === "number" && stat.label !== "Huisgenoten" && stat.label !== "Kookgroepen" ? formatPoints(stat.value) : stat.value }}</p>
+          <p class="mt-2 text-xl font-semibold tabular-nums sm:text-2xl">{{ stat.value }}</p>
         </article>
       </section>
 
-      <div class="grid items-start gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(20rem,0.85fr)]">
-        <section class="overflow-hidden rounded-xl border bg-card shadow-sm">
+      <div class="grid min-w-0 grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(20rem,0.85fr)]">
+        <section class="min-w-0 overflow-hidden rounded-xl border bg-card shadow-sm">
           <div class="flex items-center justify-between border-b px-4 py-3">
             <div class="flex items-center gap-2">
               <Icon name="lucide:trophy" class="size-4 text-amber-500" />
@@ -41,39 +41,39 @@
             <span class="text-xs text-muted-foreground">{{ standings.length }} actief</span>
           </div>
           <div v-if="standings.length" class="divide-y">
-            <div v-for="(user, index) in standings" :key="user.id"
-              class="grid grid-cols-[2rem_minmax(0,1fr)_auto_auto_auto] items-center gap-3 px-4 py-3">
-              <span class="text-center text-sm font-semibold text-muted-foreground">{{ index + 1 }}</span>
-              <div class="flex min-w-0 items-center gap-3">
-                <UserProfilePicture :user-id="user.id" :name="user.name" :size="34" />
-                <div class="min-w-0">
-                  <p class="truncate text-sm font-medium">{{ user.name }}</p>
-                  <p class="truncate text-xs text-muted-foreground">{{ user.cookingGroupName ?? "Geen kookgroep" }}</p>
+              <div v-for="(user, index) in standings" :key="user.id"
+                class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2 gap-y-2 px-3 py-3 sm:grid-cols-[2rem_minmax(0,1fr)_auto_auto_auto] sm:gap-3 sm:px-4">
+                <span class="hidden text-center text-sm font-semibold text-muted-foreground sm:block">{{ index + 1 }}</span>
+                <div class="col-start-1 row-start-1 flex min-w-0 items-center gap-3 sm:col-auto sm:row-auto">
+                  <UserProfilePicture :user-id="user.id" :name="user.name" :size="34" />
+                  <div class="min-w-0">
+                    <p class="truncate text-sm font-medium">{{ user.name }}</p>
+                    <p class="truncate text-xs text-muted-foreground">{{ user.cookingGroupName ?? "Geen kookgroep" }}</p>
+                  </div>
                 </div>
+                <div v-if="isAdmin" class="col-start-1 row-start-2 flex min-w-0 items-center gap-1 sm:col-auto sm:row-auto sm:gap-1.5">
+                  <span class="text-xs text-muted-foreground">Basis</span>
+                  <UiInput v-model.number="basePoints[user.id]" type="number" step="1"
+                    class="h-8 w-16 px-2 text-right text-xs sm:w-20" :aria-label="`Basispunten voor ${user.name}`" />
+                  <UiButton type="button" size="icon" class="size-8"
+                    :disabled="basePoints[user.id] === user.basePoints || savingBasePointsUserId === user.id"
+                    :aria-label="`Sla basispunten op voor ${user.name}`" @click="saveBasePoints(user.id)">
+                    <Icon :name="savingBasePointsUserId === user.id ? 'svg-spinners:180-ring' : 'lucide:save'"
+                      class="size-4" />
+                  </UiButton>
+                </div>
+                <span v-else class="col-start-1 row-start-2 text-xs tabular-nums text-muted-foreground sm:col-auto sm:row-auto sm:text-right"
+                  title="Basis">Basis {{ formatPoints(user.basePoints) }}</span>
+                <span class="col-start-2 row-start-2 text-right text-xs tabular-nums text-muted-foreground sm:col-auto sm:row-auto"
+                  title="Afwasregistraties">Afwas {{ signed(user.computedPoints) }}</span>
+                <span class="col-start-2 row-start-1 shrink-0 rounded-full bg-muted px-3 py-1 text-sm font-semibold tabular-nums sm:col-auto sm:row-auto">{{ formatPoints(user.washingpoints) }}</span>
               </div>
-              <div v-if="isAdmin" class="flex items-center gap-1.5">
-                <span class="hidden text-xs text-muted-foreground sm:inline">Basis</span>
-                <UiInput v-model.number="basePoints[user.id]" type="number" step="1"
-                  class="h-8 w-20 px-2 text-right text-xs" :aria-label="`Basispunten voor ${user.name}`" />
-                <UiButton type="button" size="icon" class="size-8"
-                  :disabled="basePoints[user.id] === user.basePoints || savingBasePointsUserId === user.id"
-                  :aria-label="`Sla basispunten op voor ${user.name}`" @click="saveBasePoints(user.id)">
-                  <Icon :name="savingBasePointsUserId === user.id ? 'svg-spinners:180-ring' : 'lucide:save'"
-                    class="size-4" />
-                </UiButton>
-              </div>
-              <span v-else class="hidden text-right text-xs tabular-nums text-muted-foreground sm:block"
-                title="Basis">Basis {{ formatPoints(user.basePoints) }}</span>
-              <span class="hidden text-right text-xs tabular-nums text-muted-foreground md:block"
-                title="Afwasregistraties">Afwas {{ signed(user.computedPoints) }}</span>
-              <span class="rounded-full bg-muted px-3 py-1 text-sm font-semibold tabular-nums">{{ formatPoints(user.washingpoints) }}</span>
-            </div>
           </div>
           <p v-else class="px-4 py-8 text-center text-sm text-muted-foreground">Er zijn geen actieve gebruikers om te
             tonen.</p>
         </section>
 
-        <section class="overflow-hidden rounded-xl border bg-card shadow-sm">
+        <section class="min-w-0 overflow-hidden rounded-xl border bg-card shadow-sm">
           <div class="flex items-center gap-2 border-b px-4 py-3">
             <Icon name="lucide:users-round" class="size-4 text-primary" />
             <h2 class="font-semibold">Per kookgroep</h2>
@@ -108,11 +108,11 @@
       <p class="text-xs text-muted-foreground">Basis + afwasregistraties − penaltypunten. Afwas kan ook fracties
         bevatten door de groepsverdeling.</p>
 
-      <section v-if="isAdmin" class="overflow-hidden rounded-xl border bg-card shadow-sm">
-        <div class="flex items-center justify-between border-b px-4 py-3">
-          <div>
+      <section v-if="isAdmin" class="min-w-0 overflow-hidden rounded-xl border bg-card shadow-sm">
+        <div class="flex min-w-0 flex-wrap items-center justify-between gap-2 border-b px-4 py-3">
+          <div class="min-w-0">
             <h2 class="font-semibold">Afwasregistraties beheren</h2>
-            <p class="mt-1 text-xs text-muted-foreground">Verwijder een volledige dagregistratie als admin.</p>
+            <p class="mt-1 break-words text-xs text-muted-foreground">Verwijder een volledige dagregistratie als admin.</p>
           </div>
           <span class="rounded-full bg-muted px-3 py-1 text-xs tabular-nums">{{ registrations.length }}</span>
         </div>
@@ -171,7 +171,7 @@ const totalPoints = computed(() => activeUsers.value.reduce((sum, user) => sum +
 const summary = computed(() => [
   { label: "Huisgenoten", value: activeUsers.value.length, icon: "lucide:users-round" },
   { label: "Kookgroepen", value: data.value?.cookingGroups.length ?? 0, icon: "lucide:house" },
-  { label: "Afwasregistraties", value: data.value?.registrations, icon: "lucide:bubbles" },
+  { label: "Afwasregistraties", value: Math.round(data.value?.registrations ?? 0), icon: "lucide:bubbles" },
   { label: "Penaltypunten", value: activeUsers.value.reduce((sum, user) => sum + user.penaltyPoints, 0), icon: "lucide:triangle-alert" },
 ]);
 const groupSummaries = computed(() =>

@@ -1,28 +1,28 @@
 <template>
-  <div class="mx-auto flex w-full max-w-6xl flex-col gap-5">
-    <header class="rounded-xl border bg-card px-5 py-5 shadow-sm">
-      <div class="flex items-start gap-3">
+  <div class="mx-auto flex w-full min-w-0 max-w-full flex-col gap-5 overflow-x-hidden xl:max-w-6xl">
+    <header class="min-w-0 rounded-xl border bg-card px-4 py-4 shadow-sm sm:px-5 sm:py-5">
+      <div class="flex min-w-0 items-start gap-3">
         <div class="rounded-lg bg-primary/10 p-2.5 text-primary">
           <Icon name="lucide:bubbles" class="size-5" />
         </div>
-        <div>
+        <div class="min-w-0">
           <h1 class="text-xl font-semibold tracking-tight">Afwas invullen</h1>
-          <p class="mt-1 text-sm text-muted-foreground">
+          <p class="mt-1 break-words text-sm text-muted-foreground">
             Registreer afwassers en mee-eters per kookdag<span v-if="data?.group"> voor {{ data.group.name }}</span>.
           </p>
         </div>
       </div>
     </header>
 
-    <div v-if="error" class="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
+    <div v-if="error" class="min-w-0 break-words rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
       {{ error.statusMessage ?? "De kookdagen konden niet worden opgehaald." }}
     </div>
 
-    <section v-if="data && !data.groups.length" class="rounded-xl border bg-card p-8 text-center shadow-sm">
+    <section v-if="data && !data.groups.length" class="min-w-0 rounded-xl border bg-card p-8 text-center shadow-sm">
       <p class="text-sm text-muted-foreground">Er zijn geen kookgroepen beschikbaar.</p>
     </section>
 
-    <section v-if="data?.groups.length" class="rounded-xl border bg-card p-4 shadow-sm">
+    <section v-if="data?.groups.length" class="min-w-0 rounded-xl border bg-card p-4 shadow-sm">
       <UiLabel for="washing-cooking-group">Kookgroep</UiLabel>
       <UiSelect
         :model-value="String(selectedGroupId ?? data.group?.id ?? '')"
@@ -37,9 +37,9 @@
 
     <div
       v-if="data?.group && (selectedGroupId === undefined || data.group.id === selectedGroupId)"
-      class="flex flex-col gap-5"
+      class="flex min-w-0 flex-col gap-5"
     >
-      <section class="rounded-xl border bg-card p-4 shadow-sm">
+      <section class="min-w-0 rounded-xl border bg-card p-4 shadow-sm">
         <div class="mb-3 flex items-center justify-between gap-2">
           <div>
             <h2 class="text-sm font-semibold">Stand van de kookgroep</h2>
@@ -47,15 +47,15 @@
           </div>
           <Icon name="lucide:arrow-down-wide-narrow" class="size-4 shrink-0 text-muted-foreground" />
         </div>
-        <div class="flex gap-2 overflow-x-auto pb-1">
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 flex-cols-4 min-w-0 flex-wrap gap-2">
           <div
             v-for="(member, index) in standings"
             :key="member.id"
-            class="flex min-w-32 shrink-0 items-center justify-between gap-3 rounded-lg border px-3 py-2"
-            :class="index === 0 ? 'border-rose-200 bg-rose-50/80 dark:border-rose-900 dark:bg-rose-950/30' : 'bg-background'"
+            class="flex min-w-0 flex-[1_1_9rem] items-center justify-between gap-2 rounded-lg border px-3 py-2"
+            :class="getBgForPos(index)"
           >
             <span class="truncate text-sm font-medium">{{ member.name }}</span>
-            <span class="shrink-0 text-sm font-semibold tabular-nums" :class="index === 0 ? 'text-rose-700 dark:text-rose-300' : ''">
+            <span class="shrink-0 text-sm font-semibold tabular-nums" :class="getColorForPos(index)">
               {{ formatPoints(member.washingpoints) }}
             </span>
           </div>
@@ -63,13 +63,13 @@
         </div>
       </section>
 
-      <div class="grid items-start gap-5 lg:grid-cols-[minmax(15rem,0.7fr)_minmax(0,1.3fr)]">
-      <section class="overflow-hidden rounded-xl border bg-card shadow-sm">
+      <div class="grid min-w-0 grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(15rem,0.7fr)_minmax(0,1.3fr)]">
+      <section class="min-w-0 overflow-hidden rounded-xl border bg-card shadow-sm">
         <div class="border-b px-4 py-3">
           <h2 class="font-semibold">Kookdagen</h2>
           <p class="mt-0.5 text-xs text-muted-foreground">{{ data.days.length }} dagen in {{ data.group.name }}</p>
         </div>
-        <div v-if="data.days.length" class="max-h-[38rem] divide-y overflow-y-auto"
+        <div v-if="data.days.length" class="max-h-[18rem] divide-y overflow-y-auto lg:max-h-[38rem]"
           @scroll.passive="loadWhenNearBottom">
           <button v-for="day in data.days" :key="day.id" type="button"
             class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/40"
@@ -103,7 +103,7 @@
         </div>
       </section>
 
-      <section v-if="selectedDay" class="rounded-xl border bg-card shadow-sm">
+      <section v-if="selectedDay" class="min-w-0 rounded-xl border bg-card shadow-sm">
         <div class="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-4">
           <div>
             <h2 class="font-semibold">{{ formatDate(selectedDay.year, selectedDay.month, selectedDay.day) }}</h2>
@@ -112,7 +112,7 @@
           <span class="rounded-full bg-muted px-3 py-1 text-xs font-medium">{{ data.group.name }}</span>
         </div>
 
-        <form class="space-y-6 p-5" @submit.prevent="saveRegistration">
+        <form class="space-y-6 p-4 sm:p-5" @submit.prevent="saveRegistration">
           <div class="space-y-3">
             <div>
               <h3 class="text-sm font-semibold">Afwassers</h3>
@@ -172,7 +172,7 @@
 
           <div class="flex flex-wrap items-center justify-between gap-3 border-t pt-4">
             <p class="text-xs text-muted-foreground">Iedereen kan dit voor deze kookgroep invullen.</p>
-            <UiButton type="submit" :disabled="saving || data.members.length === 0">
+            <UiButton type="submit" class="w-full sm:w-auto" :disabled="saving || data.members.length === 0">
               <Icon :name="saving ? 'svg-spinners:180-ring' : 'lucide:save'" class="mr-2 size-4" />
               {{ saving ? "Opslaan..." : "Afwas opslaan" }}
             </UiButton>
@@ -180,7 +180,7 @@
         </form>
       </section>
 
-      <section v-else class="rounded-xl border bg-card p-8 text-center text-sm text-muted-foreground shadow-sm">
+      <section v-else class="min-w-0 rounded-xl border bg-card p-8 text-center text-sm text-muted-foreground shadow-sm">
         Selecteer links een kookdag om de afwas in te vullen.
       </section>
       </div>
@@ -324,4 +324,31 @@ const saveRegistration = async () => {
     saving.value = false;
   }
 };
+
+const getColorForPos = (position: number) => {
+  switch (position) {
+    case 0:
+      return 'text-rose-700 dark:text-rose-300'
+  
+    case 1:
+      return 'text-orange-700 dark:text-orange-300'
+
+    default:
+      return ''
+  }
+}
+
+
+const getBgForPos = (position: number) => {
+  switch (position) {
+    case 0:
+      return 'border-rose-200 bg-rose-50/80 dark:border-rose-900 dark:bg-rose-950/30'
+  
+    case 1:
+      return 'border-orange-200 bg-orange-50/80 dark:border-orange-900 dark:bg-orange-950/30'
+
+    default:
+      return 'bg-background'
+  }
+}
 </script>
