@@ -26,112 +26,113 @@ export const getWashingPointTotals = async (
 
   const userIds = users.map(u => u.id);
 
-  const allActiveUsers = await prisma.user.findMany({
-    where: {
-      isActive: true
-    },
-    select: {
-      id: true,
-      isActive: true,
-      washingpointsBase: true,
-      washingPenalties: true,
-    }
-  })
-
-  const penaltyPointsByUser = new Map<number, number>(allActiveUsers.map(user => {
-    return [user.id, user.washingPenalties.reduce((total, penalty) => total + penalty.amount, 0)];
-  }));
-
-  // Needed: Relevant registrations, cooking group ids & count
-  const relevantRegistrations = await prisma.washingRegistration.findMany({
-    select: {
-      washUserOneId: true,
-      washUserTwoId: true,
-      cookingGroupId: true,
-      washingRegistrationEatUsers: {
-        select: {
-          userId: true,
-          amountEat: true,
-          user: {
-            select: {
-              isActive: true,
+  const [allActiveUsers, relevantRegistrations, allRegistrations] = await Promise.all([
+    prisma.user.findMany({
+      where: {
+        isActive: true
+      },
+      select: {
+        id: true,
+        isActive: true,
+        washingpointsBase: true,
+        washingPenalties: true,
+      }
+    }),
+    prisma.washingRegistration.findMany({
+      select: {
+        washUserOneId: true,
+        washUserTwoId: true,
+        cookingGroupId: true,
+        washingRegistrationEatUsers: {
+          select: {
+            userId: true,
+            amountEat: true,
+            user: {
+              select: {
+                isActive: true,
+              },
             },
           },
         },
       },
-    },
-    where: {
-      OR: [
-        {
-          washingRegistrationEatUsers: {
-            some: {
-              userId: { in: userIds },
+      where: {
+        OR: [
+          {
+            washingRegistrationEatUsers: {
+              some: {
+                userId: { in: userIds },
+              },
             },
           },
-        },
-        {
-          washUserOneId: { in: userIds },
-        },
-        {
-          washUserTwoId: { in: userIds },
-        },
-      ],
-    },
-  });
-
-  const computedPointsByUser = new Map<number, number>();
-
-  const addPoints = (userId: number, points: number) => {
-    computedPointsByUser.set(
-      userId,
-      (computedPointsByUser.get(userId) ?? 0) + points
-    );
-  };
-
-  relevantRegistrations.forEach(registration => {
-    // TODO: Check if washUserOneId and washUserTwoId are sane
-    const amountEatByUser = new Map(registration.washingRegistrationEatUsers.map(
-      u => [u.userId, u.amountEat]
-    ))
-    // Reduce get total eat from that registration
-    const totalEats = amountEatByUser.values().reduce((a, c) => a + c)
-
-    // Each person washing gets 2 points base
-    // plus 2x every eater
-    addPoints(registration.washUserOneId, 2 + 2 * totalEats)
-    addPoints(registration.washUserTwoId, 2 + 2 * totalEats)
-
-    // Every person eating gets 2 points removed per eater
-    registration.washingRegistrationEatUsers.forEach(eatUser => {
-      addPoints(eatUser.userId, -2 * eatUser.amountEat)
-    })
-  });
-
-  // Then to average this out, we had n registrations where we added 4 points,
-  // to a system of m users,
-  // So, we remove from all n * (4/m)
-  const activeUserCount = allActiveUsers.length;
-  const activeUserModifierAverager = - 4 / activeUserCount
-
-  const amountOfRegistrations = relevantRegistrations.length;
-  allActiveUsers.forEach(activeUser => {
-    addPoints(activeUser.id, amountOfRegistrations * activeUserModifierAverager)
-  })
+          {
+            washUserOneId: { in: userIds },
+          },
+          {
+            washUserTwoId: { in: userIds },
+          },
+        ],
+      },
+    }),
+    prisma.washingRegistration.count()
+  ])
 
 
-  return new Map(
-    users.map(({ id, washingpointsBase }) => {
-      const computedPoints = computedPointsByUser.get(id) ?? 0;
-      const penaltyPoints = penaltyPointsByUser.get(id) ?? 0;
-      return [
-        id,
-        {
-          basePoints: washingpointsBase,
-          computedPoints: roundPoints(computedPoints),
-          penaltyPoints,
-          totalPoints: roundPoints(washingpointsBase + computedPoints - penaltyPoints),
-        },
-      ];
-    })
+const penaltyPointsByUser = new Map<number, number>(allActiveUsers.map(user => {
+  return [user.id, user.washingPenalties.reduce((total, penalty) => total + penalty.amount, 0)];
+}));
+
+const computedPointsByUser = new Map<number, number>();
+
+const addPoints = (userId: number, points: number) => {
+  computedPointsByUser.set(
+    userId,
+    (computedPointsByUser.get(userId) ?? 0) + points
   );
+};
+
+relevantRegistrations.forEach(registration => {
+  // TODO: Check if washUserOneId and washUserTwoId are sane
+  const amountEatByUser = new Map(registration.washingRegistrationEatUsers.map(
+    u => [u.userId, u.amountEat]
+  ))
+  // Reduce get total eat from that registration
+  const totalEats = amountEatByUser.values().reduce((a, c) => a + c)
+
+  // Each person washing gets 2 points base
+  // plus 2x every eater
+  addPoints(registration.washUserOneId, 2 + 2 * totalEats)
+  addPoints(registration.washUserTwoId, 2 + 2 * totalEats)
+
+  // Every person eating gets 2 points removed per eater
+  registration.washingRegistrationEatUsers.forEach(eatUser => {
+    addPoints(eatUser.userId, -2 * eatUser.amountEat)
+  })
+});
+
+// Then to average this out, we had n registrations where we added 4 points,
+// to a system of m users,
+// So, we remove from all n * (4/m)
+const activeUserCount = allActiveUsers.length;
+const activeUserModifierAverager = - 4 / activeUserCount
+
+allActiveUsers.forEach(activeUser => {
+  addPoints(activeUser.id, allRegistrations * activeUserModifierAverager)
+})
+
+
+return new Map(
+  users.map(({ id, washingpointsBase }) => {
+    const computedPoints = computedPointsByUser.get(id) ?? 0;
+    const penaltyPoints = penaltyPointsByUser.get(id) ?? 0;
+    return [
+      id,
+      {
+        basePoints: washingpointsBase,
+        computedPoints: roundPoints(computedPoints),
+        penaltyPoints,
+        totalPoints: roundPoints(washingpointsBase + computedPoints - penaltyPoints),
+      },
+    ];
+  })
+);
 };
