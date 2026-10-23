@@ -13,13 +13,27 @@ const handlerFunc = async (event: SessionEvent): Promise<WashingFillDto> => {
     throw createError({ statusCode: 400, statusMessage: "Ongeldige kookdagcursor." });
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: event.session.id },
-    select: { cookingGroupId: true },
-  });
+  const [user, groups] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: event.session.id },
+      select: { cookingGroupId: true },
+    }),
+    prisma.cookingGroup.findMany({
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    }),
+  ]);
+  const requestedGroupId = query.groupId === undefined ? null : Number(query.groupId);
+  if (requestedGroupId !== null && (!Number.isInteger(requestedGroupId) || requestedGroupId < 1)) {
+    throw createError({ statusCode: 400, statusMessage: "Ongeldige kookgroep." });
+  }
+  const cookingGroupId = requestedGroupId ?? user?.cookingGroupId ?? groups[0]?.id ?? null;
 
-  if (!user?.cookingGroupId) {
-    return { group: null, members: [], washers: [], days: [], hasMore: false, nextCursor: null };
+  if (cookingGroupId === null) {
+    return { group: null, groups, members: [], washers: [], days: [], hasMore: false, nextCursor: null };
+  }
+  if (!groups.some(({ id }) => id === cookingGroupId)) {
+    throw createError({ statusCode: 404, statusMessage: "Kookgroep niet gevonden." });
   }
 
   const today = new Date();
@@ -43,7 +57,7 @@ const handlerFunc = async (event: SessionEvent): Promise<WashingFillDto> => {
   };
   if (cursor !== null) {
     const cursorDay = await prisma.assignedDay.findFirst({
-      where: { id: cursor, cookingGroupId: user.cookingGroupId, ...dateFilter },
+      where: { id: cursor, cookingGroupId, ...dateFilter },
       select: { id: true },
     });
     if (!cursorDay) {
@@ -53,11 +67,11 @@ const handlerFunc = async (event: SessionEvent): Promise<WashingFillDto> => {
 
   const [group, members, washers, assignedDays] = await Promise.all([
     prisma.cookingGroup.findUnique({
-      where: { id: user.cookingGroupId },
+      where: { id: cookingGroupId },
       select: { id: true, name: true },
     }),
     prisma.user.findMany({
-      where: { cookingGroupId: user.cookingGroupId, isActive: true },
+      where: { cookingGroupId, isActive: true },
       select: { id: true, name: true, washingpointsBase: true, cookingGroupId: true },
       orderBy: { name: "asc" },
     }),
@@ -67,7 +81,7 @@ const handlerFunc = async (event: SessionEvent): Promise<WashingFillDto> => {
       orderBy: { name: "asc" },
     }),
     prisma.assignedDay.findMany({
-      where: { cookingGroupId: user.cookingGroupId, ...dateFilter },
+      where: { cookingGroupId, ...dateFilter },
       select: {
         id: true,
         day: true,
@@ -99,6 +113,7 @@ const handlerFunc = async (event: SessionEvent): Promise<WashingFillDto> => {
   const page = assignedDays.slice(0, pageSize);
   return {
     group,
+    groups,
     members: members.map((member) => ({
       id: member.id,
       name: member.name,

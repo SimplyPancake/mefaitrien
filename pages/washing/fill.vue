@@ -18,14 +18,27 @@
       {{ error.statusMessage ?? "De kookdagen konden niet worden opgehaald." }}
     </div>
 
-    <section v-if="data && !data.group" class="rounded-xl border bg-card p-8 text-center shadow-sm">
-      <Icon name="lucide:users-round" class="mx-auto size-8 text-muted-foreground" />
-      <h2 class="mt-3 font-semibold">Je bent nog niet gekoppeld aan een kookgroep</h2>
-      <p class="mt-1 text-sm text-muted-foreground">Je kunt afwas invullen zodra je aan een kookgroep bent toegevoegd.
-      </p>
+    <section v-if="data && !data.groups.length" class="rounded-xl border bg-card p-8 text-center shadow-sm">
+      <p class="text-sm text-muted-foreground">Er zijn geen kookgroepen beschikbaar.</p>
     </section>
 
-    <div v-else-if="data?.group" class="flex flex-col gap-5">
+    <section v-if="data?.groups.length" class="rounded-xl border bg-card p-4 shadow-sm">
+      <UiLabel for="washing-cooking-group">Kookgroep</UiLabel>
+      <UiSelect
+        :model-value="String(selectedGroupId ?? data.group?.id ?? '')"
+        @update:model-value="selectedGroupId = Number($event)"
+      >
+        <UiSelectTrigger id="washing-cooking-group" placeholder="Kies een kookgroep" />
+        <UiSelectContent>
+          <UiSelectItem v-for="group in data.groups" :key="group.id" :value="String(group.id)" :text="group.name" />
+        </UiSelectContent>
+      </UiSelect>
+    </section>
+
+    <div
+      v-if="data?.group && (selectedGroupId === undefined || data.group.id === selectedGroupId)"
+      class="flex flex-col gap-5"
+    >
       <section class="rounded-xl border bg-card p-4 shadow-sm">
         <div class="mb-3 flex items-center justify-between gap-2">
           <div>
@@ -158,7 +171,7 @@
           </div>
 
           <div class="flex flex-wrap items-center justify-between gap-3 border-t pt-4">
-            <p class="text-xs text-muted-foreground">Iedereen uit je kookgroep kan dit namens jou invullen.</p>
+            <p class="text-xs text-muted-foreground">Iedereen kan dit voor deze kookgroep invullen.</p>
             <UiButton type="submit" :disabled="saving || data.members.length === 0">
               <Icon :name="saving ? 'svg-spinners:180-ring' : 'lucide:save'" class="mr-2 size-4" />
               {{ saving ? "Opslaan..." : "Afwas opslaan" }}
@@ -182,7 +195,10 @@ import type { WashingFillDto } from "~/types/dto";
 usePageInfoStore().setPageInfo({ title: "Afwas invullen" });
 useSeoMeta({ title: "Afwas invullen" });
 
-const { data, error, refresh } = await useAPI<WashingFillDto>("/api/washing/fill");
+const selectedGroupId = ref<number>();
+const { data, error, refresh } = await useAPI<WashingFillDto>(() =>
+  selectedGroupId.value === undefined ? "/api/washing/fill" : `/api/washing/fill?groupId=${selectedGroupId.value}`
+);
 const selectedDayId = ref<number | null>(null);
 const washUserOneId = ref<number | undefined>();
 const washUserTwoId = ref<number | undefined>();
@@ -210,6 +226,10 @@ const formatDate = (year: number, month: number, day: number) => {
   const capitalised = formatted.charAt(0).toUpperCase() + formatted.slice(1);
   return capitalised.replace(/\s(\d{2})$/, " '$1");
 }
+
+watch(selectedGroupId, () => {
+  selectedDayId.value = null;
+});
 
 watch(
   data,
@@ -246,7 +266,7 @@ const loadMoreDays = async () => {
   try {
     const { $api } = useNuxtApp();
     const nextPage = await $api<WashingFillDto>(
-      `/api/washing/fill?after=${data.value.nextCursor}`
+      `/api/washing/fill?after=${data.value.nextCursor}&groupId=${selectedGroupId.value ?? data.value.group?.id}`
     );
     data.value.days.push(...nextPage.days);
     data.value.hasMore = nextPage.hasMore;

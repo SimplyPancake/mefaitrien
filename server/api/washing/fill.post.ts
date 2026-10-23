@@ -33,14 +33,6 @@ const handlerFunc = async (event: SessionEvent) => {
     throw createError({ statusCode: 404, statusMessage: "Kookdag niet gevonden." });
   }
 
-  const caller = await prisma.user.findUnique({
-    where: { id: event.session.id },
-    select: { cookingGroupId: true },
-  });
-  if (caller?.cookingGroupId !== assignedDay.cookingGroupId) {
-    throw createError({ statusCode: 403, statusMessage: "Je kunt alleen afwas invullen voor je eigen kookgroep." });
-  }
-
   const washerIds = [...new Set([washUserOneId, washUserTwoId])];
   const eaterIds = (eaters ?? []).map(({ userId }: { userId: number }) => userId);
   const participants = await prisma.user.findMany({
