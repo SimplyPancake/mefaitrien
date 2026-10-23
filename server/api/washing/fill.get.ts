@@ -19,7 +19,7 @@ const handlerFunc = async (event: SessionEvent): Promise<WashingFillDto> => {
   });
 
   if (!user?.cookingGroupId) {
-    return { group: null, members: [], days: [], hasMore: false, nextCursor: null };
+    return { group: null, members: [], washers: [], days: [], hasMore: false, nextCursor: null };
   }
 
   const today = new Date();
@@ -51,7 +51,7 @@ const handlerFunc = async (event: SessionEvent): Promise<WashingFillDto> => {
     }
   }
 
-  const [group, members, assignedDays] = await Promise.all([
+  const [group, members, washers, assignedDays] = await Promise.all([
     prisma.cookingGroup.findUnique({
       where: { id: user.cookingGroupId },
       select: { id: true, name: true },
@@ -59,6 +59,11 @@ const handlerFunc = async (event: SessionEvent): Promise<WashingFillDto> => {
     prisma.user.findMany({
       where: { cookingGroupId: user.cookingGroupId, isActive: true },
       select: { id: true, name: true, washingpointsBase: true, cookingGroupId: true },
+      orderBy: { name: "asc" },
+    }),
+    prisma.user.findMany({
+      where: { isActive: true },
+      select: { id: true, name: true },
       orderBy: { name: "asc" },
     }),
     prisma.assignedDay.findMany({
@@ -99,6 +104,7 @@ const handlerFunc = async (event: SessionEvent): Promise<WashingFillDto> => {
       name: member.name,
       washingpoints: pointTotals.get(member.id)!.totalPoints,
     })),
+    washers,
     hasMore,
     nextCursor: hasMore ? page.at(-1)!.id : null,
     days: page.map(({ monthRoster, washingRegistration, ...day }) => ({

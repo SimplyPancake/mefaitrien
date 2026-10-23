@@ -116,8 +116,8 @@
                   @update:model-value="washUserOneId = Number($event)">
                   <UiSelectTrigger placeholder="Kies een afwasser" />
                   <UiSelectContent>
-                    <UiSelectItem v-for="member in data.members" :key="member.id" :value="String(member.id)"
-                      :text="member.name" />
+                    <UiSelectItem v-for="washer in data.washers" :key="washer.id" :value="String(washer.id)"
+                      :text="washer.name" />
                   </UiSelectContent>
                 </UiSelect>
               </div>
@@ -127,8 +127,8 @@
                   @update:model-value="washUserTwoId = Number($event)">
                   <UiSelectTrigger placeholder="Kies een afwasser" />
                   <UiSelectContent>
-                    <UiSelectItem v-for="member in data.members" :key="member.id" :value="String(member.id)"
-                      :text="member.name" />
+                    <UiSelectItem v-for="washer in data.washers" :key="washer.id" :value="String(washer.id)"
+                      :text="washer.name" />
                   </UiSelectContent>
                 </UiSelect>
               </div>

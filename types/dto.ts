@@ -75,6 +75,7 @@ export interface WashingRegistrationAdminDto {
 export interface WashingFillDto {
   group: Pick<CookingGroup, "id" | "name"> | null;
   members: Array<Pick<User, "id" | "name"> & { washingpoints: number }>;
+  washers: Array<Pick<User, "id" | "name">>;
   hasMore: boolean;
   nextCursor: number | null;
   days: Array<{

@@ -41,22 +41,26 @@ const handlerFunc = async (event: SessionEvent) => {
     throw createError({ statusCode: 403, statusMessage: "Je kunt alleen afwas invullen voor je eigen kookgroep." });
   }
 
-  const participantIds = [
-    washUserOneId,
-    washUserTwoId,
-    ...(eaters ?? []).map(({ userId }: { userId: number }) => userId),
-  ];
-  const members = await prisma.user.findMany({
+  const washerIds = [...new Set([washUserOneId, washUserTwoId])];
+  const eaterIds = (eaters ?? []).map(({ userId }: { userId: number }) => userId);
+  const participants = await prisma.user.findMany({
     where: {
-      id: { in: [...new Set(participantIds)] },
-      cookingGroupId: assignedDay.cookingGroupId,
+      isActive: true,
+      OR: [
+        { id: { in: washerIds } },
+        { id: { in: eaterIds }, cookingGroupId: assignedDay.cookingGroupId },
+      ],
     },
     select: { id: true },
   });
-  if (members.length !== new Set(participantIds).size) {
+  const participantIds = new Set(participants.map(({ id }) => id));
+  if (
+    washerIds.some((id) => !participantIds.has(id)) ||
+    eaterIds.some((id) => !participantIds.has(id))
+  ) {
     throw createError({
       statusCode: 400,
-      statusMessage: "Alle afwassers en mee-eters moeten bij de kookgroep horen.",
+      statusMessage: "Afwassers moeten actief zijn en mee-eters moeten bij de kookgroep horen.",
     });
   }
 
