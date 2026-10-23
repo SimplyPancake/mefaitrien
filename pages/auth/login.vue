@@ -59,8 +59,8 @@ const { handleSubmit, isSubmitting } = useForm<InferType<typeof LoginSchema>>({
 const submit = handleSubmit(async (values) => {
 	useSonner.promise(signIn(values, { callbackUrl: '/' }), {
 		loading: "Inloggen...",
-		success: "ingelogd!",
-		error: (d: Error) => d.message
+		success: "Ingelogd!",
+		error: () => "Gebruikersnaam of wachtwoord is onjuist."
 	})
 });
 

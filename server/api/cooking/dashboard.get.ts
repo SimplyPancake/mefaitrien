@@ -2,6 +2,7 @@ import prisma from "@@/lib/prisma";
 import { AllowType, type SessionEvent } from "~/types";
 import { BaseEventHandler } from "~/server/utils/handlers/baseEventHandler";
 import { getCookingPointTotals } from "~/server/utils/cookingPoints";
+import { getWashingPointTotals } from "~/server/utils/washingPoints";
 import type { HomeDashboardDto } from "~/types/dto";
 
 const handlerFunc = async (event: SessionEvent): Promise<HomeDashboardDto> => {
@@ -45,7 +46,12 @@ const handlerFunc = async (event: SessionEvent): Promise<HomeDashboardDto> => {
     }),
     prisma.user.findUnique({
       where: { id: event.session.id },
-      select: { id: true, cookingpointsBase: true },
+      select: {
+        id: true,
+        cookingpointsBase: true,
+        washingpointsBase: true,
+        cookingGroupId: true,
+      },
     }),
   ]);
 
@@ -53,7 +59,10 @@ const handlerFunc = async (event: SessionEvent): Promise<HomeDashboardDto> => {
     throw createError({ statusCode: 404, statusMessage: "Gebruiker niet gevonden." });
   }
 
-  const pointTotals = await getCookingPointTotals([user]);
+  const [cookingPointTotals, washingPointTotals] = await Promise.all([
+    getCookingPointTotals([user]),
+    getWashingPointTotals([user]),
+  ]);
   const todayKey = `${today.getFullYear()}-${today.getMonth() + 1}`;
   const todayAssignments =
     rosters
@@ -75,7 +84,8 @@ const handlerFunc = async (event: SessionEvent): Promise<HomeDashboardDto> => {
 
   return {
     todayAssignments,
-    cookingPoints: pointTotals.get(user.id)!.totalPoints,
+    cookingPoints: cookingPointTotals.get(user.id)!.totalPoints,
+    washingPoints: washingPointTotals.get(user.id)!.totalPoints,
     cookingDaysThisWeek,
   };
 };

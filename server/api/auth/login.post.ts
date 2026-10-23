@@ -13,7 +13,10 @@ export default defineEventHandler(async (event) => {
   });
 
   if (!user) {
-    throw createError({ statusCode: 404, statusMessage: "Die gebruiker bestaat niet" });
+    throw createError({
+      statusCode: 401,
+      statusMessage: "Gebruikersnaam of wachtwoord is onjuist.",
+    });
   }
 
   if (!user.isActive) {
@@ -24,7 +27,10 @@ export default defineEventHandler(async (event) => {
   const validPassword = await verifyPassword(password, user.passwordHash);
 
   if (!validPassword) {
-    return new Response("Invalid password", { status: 400 });
+    throw createError({
+      statusCode: 401,
+      statusMessage: "Gebruikersnaam of wachtwoord is onjuist.",
+    });
   }
 
   // Create a JWT token

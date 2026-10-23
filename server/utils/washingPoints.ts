@@ -13,6 +13,10 @@ export type WashingPointTotals = {
   totalPoints: number;
 };
 
+const roundPoints = (points: number) => Math.round((points + Number.EPSILON) * 10) / 10;
+
+// TODO: What if a person changes cooking group?
+// The old records should then persist but their computed points may need to be change
 export const getWashingPointTotals = async (
   users: readonly UserWashingPointsBase[]
 ): Promise<Map<number, WashingPointTotals>> => {
@@ -57,7 +61,7 @@ export const getWashingPointTotals = async (
     prisma.washingPenalty.groupBy({
       by: ["userId"],
       where: { userId: { in: userIds } },
-      _count: { _all: true },
+      _sum: { amount: true },
     }),
   ]);
   const groupMemberCountById = new Map(
@@ -67,7 +71,7 @@ export const getWashingPointTotals = async (
     ])
   );
   const penaltyPointsByUser = new Map(
-    penalties.map(({ userId, _count }) => [userId, _count._all])
+    penalties.map(({ userId, _sum }) => [userId, _sum.amount ?? 0])
   );
   const computedPointsByUser = new Map(userIds.map((id) => [id, 0]));
   const addPoints = (userId: number, points: number) => {
@@ -82,14 +86,15 @@ export const getWashingPointTotals = async (
       (total, eater) => total + eater.amountEat,
       0
     );
-    const washerPoints = 2 + 2 * totalEaters;
-
-    // Apply each slot separately so one user in both slots gets both awards.
-    for (const userId of [
+    const washerIds = [
       registration.washUserOneId,
       registration.washUserTwoId,
-    ]) {
-      addPoints(userId, washerPoints);
+    ];
+    for (const userId of washerIds) {
+      addPoints(userId, 2);
+    }
+    for (const userId of new Set(washerIds)) {
+      addPoints(userId, 2 * totalEaters);
     }
     for (const eater of registration.washingRegistrationEatUsers) {
       addPoints(eater.userId, -2 * eater.amountEat);
@@ -114,9 +119,9 @@ export const getWashingPointTotals = async (
         id,
         {
           basePoints: washingpointsBase,
-          computedPoints,
+          computedPoints: roundPoints(computedPoints),
           penaltyPoints,
-          totalPoints: washingpointsBase + computedPoints - penaltyPoints,
+          totalPoints: roundPoints(washingpointsBase + computedPoints - penaltyPoints),
         },
       ];
     })

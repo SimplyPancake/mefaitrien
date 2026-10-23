@@ -39,6 +39,7 @@ model User {
 
 model WashingPenalty {
   id     Int    @id @default(autoincrement())
+  amount Int    @default(1)
   reason String
 
   userId Int
@@ -51,7 +52,7 @@ model WashingRegistration {
   cookingGroup   CookingGroup @relation(fields: [cookingGroupId], references: [id])
   cookingGroupId Int
 
-  assignedDayId Int
+  assignedDayId Int         @unique
   assignedDay   AssignedDay @relation(fields: [assignedDayId], references: [id])
 
   washUserOneId Int
@@ -126,7 +127,7 @@ model AssignedDay {
 
   monthRoster          MonthRoster           @relation(fields: [monthRosterId], references: [id])
   monthRosterId        Int
-  washingRegistrations WashingRegistration[]
+  washingRegistration WashingRegistration?
 }
 
 model MonthRoster {
