@@ -36,8 +36,22 @@ export interface CookingPointsUserDto {
   isActive: boolean;
 }
 
+export interface WashingPointsUserDto {
+  id: number;
+  name: string;
+  washingpoints: number;
+  cookingGroupId: number | null;
+  cookingGroupName: string | null;
+  isActive: boolean;
+}
+
 export interface CookingPointsOverviewDto {
   users: CookingPointsUserDto[];
+  cookingGroups: Array<Pick<CookingGroup, "id" | "name">>;
+}
+
+export interface WashingPointsOverviewDto {
+  users: WashingPointsUserDto[];
   cookingGroups: Array<Pick<CookingGroup, "id" | "name">>;
 }
 

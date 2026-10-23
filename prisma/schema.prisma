@@ -10,25 +10,69 @@ datasource db {
 }
 
 model User {
-  id                Int        @id @default(autoincrement())
-  username          String     @unique
-  passwordHash      String
-  refreshToken      String?
-  calendarToken     String?    @unique
-  profileImage      String?
-  name              String
-  email             String     @unique
-  roles             UserRole[]
-  cookingpointsBase Int        @default(0)
-  isActive          Boolean    @default(true)
+  id            Int        @id @default(autoincrement())
+  username      String     @unique
+  passwordHash  String
+  refreshToken  String?
+  calendarToken String?    @unique
+  profileImage  String?
+  name          String
+  email         String     @unique
+  roles         UserRole[]
+  isActive      Boolean    @default(true)
+
+  cookingpointsBase Int @default(0)
+  washingpointsBase Int @default(0)
 
   cookingGroup   CookingGroup?  @relation(fields: [cookingGroupId], references: [id])
   cookingGroupId Int?
   Availability   Availability[]
   AssignedDay    AssignedDay[]
 
-  createdAt  DateTime @default(now())
-  modifiedAt DateTime @updatedAt
+  createdAt                DateTime                  @default(now())
+  modifiedAt               DateTime                  @updatedAt
+  washingRegistrationsAsWashUserOne WashingRegistration[] @relation("washingUserOne")
+  washingRegistrationsAsWashUserTwo WashingRegistration[] @relation("washingUserTwo")
+  washingRegistrationEatUsers        WashingRegistrationEatUser[]
+  washingPenalties                   WashingPenalty[]
+}
+
+model WashingPenalty {
+  id     Int    @id @default(autoincrement())
+  reason String
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model WashingRegistration {
+  id Int @id @default(autoincrement())
+
+  cookingGroup   CookingGroup @relation(fields: [cookingGroupId], references: [id])
+  cookingGroupId Int
+
+  assignedDayId Int
+  assignedDay   AssignedDay @relation(fields: [assignedDayId], references: [id])
+
+  washUserOneId Int
+  washUserOne   User @relation("washingUserOne", fields: [washUserOneId], references: [id], onDelete: Cascade)
+
+  washUserTwoId Int
+  washUserTwo   User @relation("washingUserTwo", fields: [washUserTwoId], references: [id], onDelete: Cascade)
+
+  washingRegistrationEatUsers WashingRegistrationEatUser[]
+}
+
+model WashingRegistrationEatUser {
+  amountEat Int @default(1)
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  washingRegistrationId Int
+  washingRegistration   WashingRegistration @relation(fields: [washingRegistrationId], references: [id])
+
+  @@id([userId, washingRegistrationId])
 }
 
 model UserRole {
@@ -40,13 +84,14 @@ model UserRole {
 }
 
 model CookingGroup {
-  id           Int           @id @default(autoincrement())
-  name         String        @unique
-  User         User[]
-  assignedDays AssignedDay[]
-  color        String        @default("aaaaaa")
-  createdAt    DateTime      @default(now())
-  modifiedAt   DateTime      @updatedAt
+  id                   Int                   @id @default(autoincrement())
+  name                 String                @unique
+  User                 User[]
+  assignedDays         AssignedDay[]
+  color                String                @default("aaaaaa")
+  createdAt            DateTime              @default(now())
+  modifiedAt           DateTime              @updatedAt
+  washingRegistrations WashingRegistration[]
 }
 
 model Availability {
@@ -79,8 +124,9 @@ model AssignedDay {
   userId       Int
   cookingGroup CookingGroup @relation(fields: [cookingGroupId], references: [id], onDelete: Restrict)
 
-  monthRoster   MonthRoster @relation(fields: [monthRosterId], references: [id])
-  monthRosterId Int
+  monthRoster          MonthRoster           @relation(fields: [monthRosterId], references: [id])
+  monthRosterId        Int
+  washingRegistrations WashingRegistration[]
 }
 
 model MonthRoster {

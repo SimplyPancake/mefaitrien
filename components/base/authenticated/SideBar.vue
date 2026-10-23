@@ -154,14 +154,14 @@ const sidebarSections: SidebarSection[] = [
 			{ sort: SidebarItemType.Link, title: "Indelen", url: "/cooking/manage-month", icon: "lucide:calendar-range", role: Role.COOKING }
 		]
 	},
-	// {
-	// 	label: "Afwaspunten",
-	// 	items: [
-	// 		{ sort: SidebarItemType.Link, title: "Invullen", url: "/cooking/manage-month", icon: "lucide:bubbles" },
-	// 		{ sort: SidebarItemType.Link, title: "Overzicht", url: "/cooking/manage-month", icon: "lucide:sheet" },
-	// 		{ sort: SidebarItemType.Link, title: "Penalty", url: "/cooking/manage-month", icon: "lucide:diff" }
-	// 	]
-	// },
+	{
+		label: "Afwassen",
+		items: [
+			{ sort: SidebarItemType.Link, title: "Invullen", url: "/washing/fill", icon: "lucide:bubbles" },
+			{ sort: SidebarItemType.Link, title: "Overzicht", url: "/washing", icon: "lucide:sheet" },
+			{ sort: SidebarItemType.Link, title: "Penalty", url: "/washing/penalty", icon: "lucide:diff" }
+		]
+	},
 	{
 		label: "Ik",
 		items: [
