@@ -1,18 +1,5 @@
 <template>
-  <div class="mx-auto flex w-full min-w-0 max-w-full flex-col gap-5 overflow-x-hidden xl:max-w-6xl">
-    <header class="min-w-0 rounded-xl border bg-card px-4 py-4 shadow-sm sm:px-5 sm:py-5">
-      <div class="flex min-w-0 items-start gap-3">
-        <div class="rounded-lg bg-primary/10 p-2.5 text-primary">
-          <Icon name="lucide:bubbles" class="size-5" />
-        </div>
-        <div class="min-w-0">
-          <h1 class="text-xl font-semibold tracking-tight">Afwas invullen</h1>
-          <p class="mt-1 break-words text-sm text-muted-foreground">
-            Registreer afwassers en mee-eters per kookdag<span v-if="data?.group"> voor {{ data.group.name }}</span>.
-          </p>
-        </div>
-      </div>
-    </header>
+  <div class="flex w-full min-w-0 max-w-full flex-col gap-5 overflow-x-hidden xl:max-w-7xl">
 
     <div v-if="error" class="min-w-0 break-words rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
       {{ error.statusMessage ?? "De kookdagen konden niet worden opgehaald." }}
@@ -43,7 +30,6 @@
         <div class="mb-3 flex items-center justify-between gap-2">
           <div>
             <h2 class="text-sm font-semibold">Stand van de kookgroep</h2>
-            <p class="text-xs text-muted-foreground">Van laagste naar hoogste afwaspunten</p>
           </div>
           <Icon name="lucide:arrow-down-wide-narrow" class="size-4 shrink-0 text-muted-foreground" />
         </div>

@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto flex w-full min-w-0 max-w-full flex-col gap-5 overflow-x-hidden xl:max-w-7xl">
+  <div class="flex w-full min-w-0 max-w-full flex-col gap-5 overflow-x-hidden xl:max-w-7xl">
     <header class="flex min-w-0 flex-wrap items-center justify-between gap-4 rounded-xl border bg-card px-4 py-4 shadow-sm sm:px-5 sm:py-5">
       <div class="flex min-w-0 items-start gap-3">
         <div class="rounded-lg bg-primary/10 p-2.5 text-primary">
@@ -105,9 +105,6 @@
           <p v-else class="px-4 py-8 text-center text-sm text-muted-foreground">Er zijn nog geen kookgroepen.</p>
         </section>
       </div>
-      <p class="text-xs text-muted-foreground">Basis + afwasregistraties − penaltypunten. Afwas kan ook fracties
-        bevatten door de groepsverdeling.</p>
-
       <section v-if="isAdmin" class="min-w-0 overflow-hidden rounded-xl border bg-card shadow-sm">
         <div class="flex min-w-0 flex-wrap items-center justify-between gap-2 border-b px-4 py-3">
           <div class="min-w-0">

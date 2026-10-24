@@ -1,23 +1,11 @@
 <template>
-  <div class="mx-auto flex w-full max-w-5xl flex-col gap-5">
-    <header class="rounded-xl border bg-card px-5 py-5 shadow-sm">
-      <div class="flex items-start gap-3">
-        <div class="rounded-lg bg-amber-500/10 p-2.5 text-amber-600">
-          <Icon name="lucide:scale" class="size-5" />
-        </div>
-        <div>
-          <h1 class="text-xl font-semibold tracking-tight">Afwaspenalty</h1>
-          <p class="mt-1 text-sm text-muted-foreground">Voeg punten toe of trek ze af met een korte toelichting.</p>
-        </div>
-      </div>
-    </header>
-
+  <div class="flex w-full min-w-0 max-w-full flex-col gap-5 overflow-x-hidden xl:max-w-7xl">
     <div v-if="error" class="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
       {{ error.statusMessage ?? "De gebruikers konden niet worden opgehaald." }}
     </div>
 
     <div class="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.9fr)]">
-      <section class="rounded-xl border bg-card p-5 shadow-sm">
+      <section class="min-w-0 rounded-xl border bg-card p-4 shadow-sm sm:p-5">
         <h2 class="font-semibold">Penalty registreren</h2>
         <p class="mt-1 text-sm text-muted-foreground">Een positief getal trekt punten af. Een negatief getal herstelt punten.</p>
         <form class="mt-5 space-y-4" @submit.prevent="savePenalty">
@@ -51,7 +39,7 @@
         </form>
       </section>
 
-      <section class="overflow-hidden rounded-xl border bg-card shadow-sm">
+      <section class="min-w-0 overflow-hidden rounded-xl border bg-card shadow-sm">
         <div class="border-b px-4 py-3">
           <h2 class="font-semibold">Huidige penaltypunten</h2>
           <p class="mt-1 text-xs text-muted-foreground">Negatieve penaltypunten herstellen het puntentotaal.</p>

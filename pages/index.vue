@@ -31,13 +31,13 @@
 					<UiListItem class="min-w-0 px-3 sm:px-6">
 						<Icon name="lucide:trending-up" class="size-8 shrink-0 text-primary sm:size-10" />
 						<UiListContent>
-							<UiListTitle :title="`Je hebt ${dashboard?.cookingPoints ?? '—'} kookpunten`" />
+							<UiListTitle :title="`Je hebt ${formatQuantifier(dashboard?.cookingPoints, 'kookpunt', 'kookpunten', 'geen')}`" />
 						</UiListContent>
 					</UiListItem>
 					<UiListItem class="min-w-0 px-3 sm:px-6">
 						<Icon name="lucide:bubbles" class="size-8 shrink-0 text-primary sm:size-10" />
 						<UiListContent>
-							<UiListTitle :title="`Je hebt ${dashboard?.washingPoints.toFixed(1) ?? '—'} afwaspunten`" />
+							<UiListTitle :title="`Je hebt ${formatQuantifier(dashboard?.washingPoints, 'afwaspunt', 'afwaspunten', 'geen')}`" />
 						</UiListContent>
 					</UiListItem>
 					<!-- Schoonmaak -->
