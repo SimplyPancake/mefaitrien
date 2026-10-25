@@ -8,6 +8,12 @@ export default defineNuxtConfig({
     enabled: true,
   },
 
+  nitro :{
+    experimental: {
+      websocket: true
+    }
+  },
+
   postcss: {
     plugins: {
       "tailwindcss/nesting": false,
@@ -16,6 +22,10 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
+    // Sound device settings
+    deviceId: process.env.NUXT_DEVICE_ID ?? "", 
+    devicePubkey: process.env.NUXT_DEVICE_PUBKEY ?? "",
+
     baseUrl: process.env.BASE_URL,
     jwtSecret: process.env.NUXT_JWT_SECRET ?? process.env.JWT_SECRET,
     authMiddleware: {

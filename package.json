@@ -5,6 +5,7 @@
   "scripts": {
     "build": "prisma generate && nuxt build",
     "dev": "prisma generate && nuxt dev",
+    "devhost": "prisma generate && nuxt dev --host 0.0.0.0",
     "generate": "prisma generate && nuxt generate",
     "prisma:studio": "prisma studio",
     "preview": "nuxt preview",

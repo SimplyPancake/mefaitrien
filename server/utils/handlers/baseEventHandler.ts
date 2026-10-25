@@ -4,10 +4,10 @@ import { AnySchema } from "yup";
 
 import { checkAccess, checkAccessConfig } from "../../utils/auth";
 
-export class BaseEventHandler {
+export class BaseEventHandler<T> {
   protected event: H3Event;
   protected schema?: AnySchema;
-  protected handlerFunc: (event: SessionEvent) => Promise<Response>;
+  protected handlerFunc: (event: SessionEvent) => Promise<T>;
 
   public constructor(
     event: H3Event,
@@ -20,7 +20,7 @@ export class BaseEventHandler {
     this.schema = schema;
   }
 
-  public async handle(config?: ServerAuthConfig): Promise<Response> {
+  public async handle(config?: ServerAuthConfig): Promise<T> {
     let authenticated: any;
 
     if (config) {
@@ -30,7 +30,10 @@ export class BaseEventHandler {
     }
 
     if (!authenticated.granted) {
-      return new Response("Unauthorized", { status: 401 });
+      throw createError({
+        statusCode: 401,
+        statusMessage: "Unauthorized"
+      })
     }
 
     if (!authenticated.sessionData) {
