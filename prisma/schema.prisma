@@ -29,12 +29,14 @@ model User {
   Availability   Availability[]
   AssignedDay    AssignedDay[]
 
-  createdAt                DateTime                  @default(now())
-  modifiedAt               DateTime                  @updatedAt
-  washingRegistrationsAsWashUserOne WashingRegistration[] @relation("washingUserOne")
-  washingRegistrationsAsWashUserTwo WashingRegistration[] @relation("washingUserTwo")
-  washingRegistrationEatUsers        WashingRegistrationEatUser[]
-  washingPenalties                   WashingPenalty[]
+  createdAt                         DateTime                     @default(now())
+  modifiedAt                        DateTime                     @updatedAt
+  washingRegistrationsAsWashUserOne WashingRegistration[]        @relation("washingUserOne")
+  washingRegistrationsAsWashUserTwo WashingRegistration[]        @relation("washingUserTwo")
+  washingRegistrationEatUsers       WashingRegistrationEatUser[]
+  washingPenalties                  WashingPenalty[]
+
+  absences Absence[]
 }
 
 model WashingPenalty {
@@ -77,11 +79,12 @@ model WashingRegistrationEatUser {
 }
 
 model UserRole {
+  id Int @id @default(autoincrement())
   userId Int
   role   Role
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@id([userId, role])
+  @@unique([userId, role])
 }
 
 model CookingGroup {
@@ -125,8 +128,8 @@ model AssignedDay {
   userId       Int
   cookingGroup CookingGroup @relation(fields: [cookingGroupId], references: [id], onDelete: Restrict)
 
-  monthRoster          MonthRoster           @relation(fields: [monthRosterId], references: [id])
-  monthRosterId        Int
+  monthRoster         MonthRoster          @relation(fields: [monthRosterId], references: [id])
+  monthRosterId       Int
   washingRegistration WashingRegistration?
 }
 
@@ -146,10 +149,22 @@ model MonthRoster {
   @@unique([year, month], name: "year_month")
 }
 
+model Absence {
+  id Int @id @default(autoincrement())
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+
+  start DateTime
+  end   DateTime?
+}
+
 enum Role {
   USER
   COOKING
   ADMIN
+  FEUT
+  SOUND
 }
 
 // Maybe not use AVAILABLE since no data means available

@@ -109,6 +109,7 @@ relevantRegistrations.forEach(registration => {
   })
 });
 
+// Actief ga weg return date lijst
 // Then to average this out, we had n registrations where we added 4 points,
 // to a system of m users,
 // So, we remove from all n * (4/m)

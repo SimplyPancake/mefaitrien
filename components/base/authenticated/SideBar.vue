@@ -174,6 +174,7 @@ const sidebarSections: SidebarSection[] = [
 		label: "Tools",
 		items: [
 			{ sort: SidebarItemType.Link, title: "Admin", url: "/admin", icon: "lucide:shield-ellipsis", role: Role.ADMIN },
+			{ sort: SidebarItemType.Link, title: "Saaien", url: "/admin/absences", icon: "lucide:parasol", role: Role.ADMIN },
 		]
 	}
 ];
