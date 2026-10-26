@@ -100,8 +100,8 @@ relevantRegistrations.forEach(registration => {
 
   // Each person washing gets 2 points base
   // plus 2x every eater
-  addPoints(registration.washUserOneId, 2 + 2 * totalEats)
-  addPoints(registration.washUserTwoId, 2 + 2 * totalEats)
+  addPoints(registration.washUserOneId, 2 + totalEats)
+  addPoints(registration.washUserTwoId, 2 + totalEats)
 
   // Every person eating gets 2 points removed per eater
   registration.washingRegistrationEatUsers.forEach(eatUser => {

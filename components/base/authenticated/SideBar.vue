@@ -140,6 +140,7 @@ const sidebarSections: SidebarSection[] = [
 		label: 'Algemeen', // Main navigation
 		items: [
 			{ sort: SidebarItemType.Link, title: "Dashboard", url: "/", icon: "lucide:home" },
+			{ sort: SidebarItemType.Link, title: "Geluid", url: "/device", icon: "lucide:speaker"}
 		]
 	},
 	{
