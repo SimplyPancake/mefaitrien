@@ -26,7 +26,7 @@ export const getWashingPointTotals = async (
 
   const userIds = users.map(u => u.id);
 
-  const [allActiveUsers, relevantRegistrations, allRegistrations] = await Promise.all([
+  const [allActiveUsers, relevantRegistrations, registrationDays, absences] = await Promise.all([
     prisma.user.findMany({
       where: {
         isActive: true
@@ -73,7 +73,25 @@ export const getWashingPointTotals = async (
         ],
       },
     }),
-    prisma.washingRegistration.count()
+    prisma.washingRegistration.findMany({
+      select: {
+        assignedDay: {
+          select: {
+            day: true,
+            monthRoster: {
+              select: { year: true, month: true },
+            },
+          },
+        },
+      },
+    }),
+    prisma.absence.findMany({
+      select: {
+        userId: true,
+        start: true,
+        end: true,
+      },
+    }),
   ])
 
 
@@ -114,12 +132,37 @@ relevantRegistrations.forEach(registration => {
 // to a system of m users,
 // So, we remove from all n * (4/m)
 const activeUserCount = allActiveUsers.length;
-const activeUserModifierAverager = - 4 / activeUserCount
+const activeUserModifierAverager = activeUserCount > 0 ? -4 / activeUserCount : 0;
 
 allActiveUsers.forEach(activeUser => {
-  addPoints(activeUser.id, allRegistrations * activeUserModifierAverager)
-})
+  addPoints(activeUser.id, registrationDays.length * activeUserModifierAverager)
+});
 
+const registrationDateKeys = registrationDays.map(({ assignedDay }) =>
+  `${assignedDay.monthRoster.year}-${String(assignedDay.monthRoster.month).padStart(2, "0")}-${String(assignedDay.day).padStart(2, "0")}`
+);
+const absenceDateRangesByUser = new Map<number, Array<{ start: string; end: string | null }>>();
+absences.forEach((absence) => {
+  const dateRanges = absenceDateRangesByUser.get(absence.userId) ?? [];
+  dateRanges.push({
+    start: absence.start.toISOString().slice(0, 10),
+    end: absence.end?.toISOString().slice(0, 10) ?? null,
+  });
+  absenceDateRangesByUser.set(absence.userId, dateRanges);
+});
+
+allActiveUsers.forEach((activeUser) => {
+  const absenceDateRanges = absenceDateRangesByUser.get(activeUser.id);
+  if (!absenceDateRanges?.length) return;
+
+  const coveredRegistrationDays = registrationDateKeys.filter((registrationDate) =>
+    absenceDateRanges.some(
+      ({ start, end }) => registrationDate >= start && (!end || registrationDate <= end)
+    )
+  ).length;
+
+  addPoints(activeUser.id, coveredRegistrationDays * -activeUserModifierAverager);
+});
 
 return new Map(
   users.map(({ id, washingpointsBase }) => {
