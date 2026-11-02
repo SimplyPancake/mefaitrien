@@ -8,7 +8,7 @@ export async function executeCommand(cmd: Command): Promise<CommandResult> {
   pushEvent("server", "info", `command: ${cmd.type}`);
 
   // preset switches and restarts restart CamillaDSP, which can take a while
-  const slow = cmd.type === "set_preset" || cmd.type === "restart_camilladsp";
+  const slow = cmd.type === "set_preset" || cmd.type === "restart_camilladsp" || cmd.type === "update_config";
   const res = await sendCommand(cmd, slow ? 30_000 : 10_000);
 
   if (!res.ok) pushEvent("server", "error", `${cmd.type} failed: ${res.error}`);

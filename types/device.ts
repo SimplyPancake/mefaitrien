@@ -9,6 +9,8 @@ export interface DeviceState {
 
 export type LogUnit = 'camilladsp' | 'dsp-agent' | 'kernel'
 export type ConfigFile = 'active' | 'base' | 'presets'
+export type EditableConfigFile = Exclude<ConfigFile, 'active'>
+export const MAX_CONFIG_BYTES = 64_000
 
 // page -> server -> device (the server adds `id`)
 export type Command =
@@ -20,6 +22,7 @@ export type Command =
   | { type: 'get_logs'; unit: LogUnit; lines: number }
   | { type: 'restart_camilladsp' }
   | { type: 'set_preset'; preset: string }
+  | { type: 'update_config'; file: EditableConfigFile; content: string }
 
 // device -> server
 export interface Reply {
@@ -87,6 +90,14 @@ export function parseCommand(x: unknown): Command | null {
     }
     case 'set_preset':
       return typeof c.preset === 'string' ? { type: 'set_preset', preset: c.preset } : null
+    case 'update_config':
+      return (
+        (c.file === 'base' || c.file === 'presets') &&
+        typeof c.content === 'string' &&
+        new TextEncoder().encode(c.content).length <= MAX_CONFIG_BYTES
+      )
+        ? { type: 'update_config', file: c.file, content: c.content }
+        : null
     default:
       return null
   }

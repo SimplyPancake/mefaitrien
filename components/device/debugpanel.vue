@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type {
-  Command, CommandResult, ConfigFile, DebugEvent, DeviceState, LogUnit,
+  Command, CommandResult, ConfigFile, DebugEvent, DeviceState, EditableConfigFile, LogUnit,
 } from '~~/types/device'
 
 const props = defineProps<{ online: boolean; state: DeviceState | null }>()
@@ -15,21 +15,54 @@ onBeforeUnmount(() => clearInterval(timer))
 const unit = ref<LogUnit>('camilladsp')
 const lines = ref(100)
 const file = ref<ConfigFile>('active')
+const editableFile = ref<EditableConfigFile>('base')
+const configText = ref('')
+const savedConfigText = ref('')
+const configError = ref<string | null>(null)
 const busy = ref(false)
 const last = ref<{ cmd: string; res: CommandResult } | null>(null)
+const configDirty = computed(() => configText.value !== savedConfigText.value)
 
-async function run(cmd: Command) {
-  if (!props.online) return
+async function run(cmd: Command): Promise<CommandResult | null> {
+  if (!props.online) return null
   busy.value = true
   try {
     const res = await $api<CommandResult>('/api/device/command', { method: 'POST', body: cmd })
     last.value = { cmd: cmd.type, res }
+    return res
   } catch (e) {
-    last.value = { cmd: cmd.type, res: { ok: false, error: String(e), roundTripMs: 0 } }
+    const res = { ok: false, error: String(e), roundTripMs: 0 }
+    last.value = { cmd: cmd.type, res }
+    return res
   } finally {
     busy.value = false
     refreshEvents()
   }
+}
+
+async function loadEditableConfig() {
+  configError.value = null
+  const res = await run({ type: 'get_config', file: editableFile.value })
+  if (!res?.ok || typeof res.data !== 'string') {
+    configError.value = res?.error ?? 'Device returned invalid configuration data'
+    return
+  }
+  configText.value = res.data
+  savedConfigText.value = res.data
+}
+
+async function saveEditableConfig() {
+  configError.value = null
+  const res = await run({
+    type: 'update_config',
+    file: editableFile.value,
+    content: configText.value,
+  })
+  if (!res?.ok) {
+    configError.value = res?.error ?? 'Could not save configuration'
+    return
+  }
+  savedConfigText.value = configText.value
 }
 
 function fmt(d: unknown): string {
@@ -190,6 +223,57 @@ const levelClass = (l: DebugEvent['level']) =>
           </span>
         </div>
         <pre class="max-h-96 overflow-auto rounded-lg border bg-muted/40 p-3 font-mono text-xs leading-relaxed">{{ output }}</pre>
+      </div>
+    </section>
+
+    <section class="overflow-hidden rounded-xl border bg-card shadow-sm">
+      <header class="flex flex-wrap items-center justify-between gap-3 border-b px-4 py-4 sm:px-5">
+        <div>
+          <h2 class="font-semibold tracking-tight">CamillaDSP configuration</h2>
+          <p class="mt-1 text-xs text-muted-foreground">
+            Edit base.yml or presets.yml. Saving validates the YAML and reapplies the current preset.
+          </p>
+        </div>
+        <span v-if="configDirty" class="rounded-full bg-yellow-500/10 px-2.5 py-1 text-xs font-medium text-yellow-600">
+          Unsaved changes
+        </span>
+      </header>
+      <div class="space-y-3 p-4 sm:p-5">
+        <div class="flex flex-wrap items-end gap-2">
+          <label class="min-w-36 flex-1 space-y-1">
+            <span class="text-xs font-medium text-muted-foreground">Editable file</span>
+            <select v-model="editableFile" :disabled="busy || !props.online || configDirty"
+              class="h-10 w-full rounded-md border bg-background px-3 text-sm disabled:cursor-not-allowed disabled:opacity-50">
+              <option value="base">base.yml</option>
+              <option value="presets">presets.yml</option>
+            </select>
+          </label>
+          <button type="button"
+            class="inline-flex h-10 items-center justify-center gap-2 rounded-lg border bg-background px-3 text-sm font-medium transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+            :disabled="busy || !props.online || configDirty"
+            @click="loadEditableConfig">
+            <Icon name="lucide:download" class="size-4" /> Load from device
+          </button>
+          <button v-if="configDirty" type="button"
+            class="inline-flex h-10 items-center justify-center rounded-lg border px-3 text-sm font-medium transition hover:bg-muted"
+            @click="configText = savedConfigText">
+            Discard changes
+          </button>
+          <button type="button"
+            class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+            :disabled="busy || !props.online || !configDirty"
+            @click="saveEditableConfig">
+            <Icon name="lucide:save" class="size-4" /> Save and apply
+          </button>
+        </div>
+        <textarea v-model="configText" spellcheck="false" :disabled="!props.online"
+          aria-label="CamillaDSP YAML configuration"
+          placeholder="Load a configuration from the device to edit it"
+          class="min-h-80 w-full resize-y rounded-lg border bg-background p-3 font-mono text-xs leading-relaxed disabled:cursor-not-allowed disabled:opacity-50" />
+        <p v-if="configError" role="alert" class="text-sm text-destructive">{{ configError }}</p>
+        <p class="text-xs text-muted-foreground">
+          Admin-only. Files are limited to 64 KB; invalid YAML or preset definitions are rejected without replacing the existing file.
+        </p>
       </div>
     </section>
 
