@@ -4,8 +4,7 @@ import { Role } from '~/generated/prisma/enums'
 import type { DeviceStatus } from '~~/types/device'
 
 const { $api } = useNuxtApp()
-const sessionStore = useSessionStore() // however you already get your session store
-// Role: import it the same way you do elsewhere
+const sessionStore = useSessionStore()
 const isAdmin = computed(() => sessionStore!.sessionData!.roles.includes(Role.ADMIN))
 
 const { data, refresh } = await useAPI<DeviceStatus>('/api/device/state')
@@ -37,54 +36,43 @@ async function setPreset(preset: string) {
 const time = (ts: number) => new Date(ts).toLocaleTimeString()
 
 const INPUT_A = 'PC'
-const INPUT_B = 'BT'
+const INPUT_B = 'Bluetooth'
 const OUTPUT_A = 'Woonkamer'
 const OUTPUT_B = 'Keuken'
 
-type Chan = 'A' | 'B'
-type Connection = { input: Chan; output: Chan }
-const PRESETS: {
+type Input = 'A' | 'B'
+
+interface RouteOption {
   id: string
-  title: string
-  description: string
-  connections: Connection[]
-}[] = [
-    {
-      id: 'straight',
-      title: 'Straight',
-      description: `${INPUT_A} -> ${OUTPUT_A}, ${INPUT_B} -> ${OUTPUT_B}`,
-      connections: [{ input: 'A', output: 'A' }, { input: 'B', output: 'B' }],
-    },
-    {
-      id: 'b-to-both',
-      title: `${INPUT_B} naar beiden`,
-      description: `${INPUT_B} -> ${OUTPUT_A} + ${OUTPUT_B}`,
-      connections: [{ input: 'B', output: 'A' }, { input: 'B', output: 'B' }],
-    },
-    {
-      id: 'a-to-both',
-      title: `${INPUT_A} naar beiden`,
-      description: `${INPUT_A} -> ${OUTPUT_A} + ${OUTPUT_B}`,
-      connections: [{ input: 'A', output: 'A' }, { input: 'A', output: 'B' }],
-    },
-    {
-      id: 'swapped',
-      title: 'Geswapt',
-      description: `${INPUT_A} -> ${OUTPUT_B}, ${INPUT_B} -> ${OUTPUT_A}`,
-      connections: [{ input: 'A', output: 'B' }, { input: 'B', output: 'A' }],
-    },
-    {
-      id: 'mix-to-both',
-      title: 'Mix naar beiden',
-      description: `${INPUT_A} + ${INPUT_B} -> Beiden`,
-      connections: [
-        { input: 'A', output: 'A' }, { input: 'B', output: 'A' },
-        { input: 'A', output: 'B' }, { input: 'B', output: 'B' },
-      ],
-    },
-  ]
-const lineColor: Record<Chan, string> = { A: '#0ea5e9', B: '#f59e0b' }
+  woonkamer: Input
+  keuken: Input
+}
+
+const ROUTES: RouteOption[] = [
+  { id: 'straight', woonkamer: 'A', keuken: 'B' },
+  { id: 'a-to-both', woonkamer: 'A', keuken: 'A' },
+  { id: 'b-to-both', woonkamer: 'B', keuken: 'B' },
+  { id: 'swapped', woonkamer: 'B', keuken: 'A' },
+]
+
+const inputIcon: Record<Input, string> = { A: 'lucide:monitor', B: 'lucide:bluetooth' }
+const inputLabel: Record<Input, string> = { A: INPUT_A, B: INPUT_B }
+const inputColor: Record<Input, string> = { A: '#6b7280', B: '#0ea5e9' }
 const availablePresets = computed(() => new Set(data.value?.state?.presets ?? []))
+
+function getRouteDescription(route: RouteOption): string {
+  const a = inputLabel[route.woonkamer]
+  const b = inputLabel[route.keuken]
+  return `${a} → ${OUTPUT_A}, ${b} → ${OUTPUT_B}`
+}
+
+function getRouteTitle(route: RouteOption): string {
+  if (route.woonkamer === 'A' && route.keuken === 'B') return 'Standaard'
+  if (route.woonkamer === 'A' && route.keuken === 'A') return `${INPUT_A} overal`
+  if (route.woonkamer === 'B' && route.keuken === 'B') return `${INPUT_B} overal`
+  if (route.woonkamer === 'B' && route.keuken === 'A') return 'Omgewisseld'
+  return getRouteDescription(route)
+}
 </script>
 
 <template>
@@ -128,33 +116,38 @@ const availablePresets = computed(() => new Set(data.value?.state?.presets ?? []
         Het apparaat is offline; de routing kan niet worden aangepast.
       </div>
 
-      <div v-else class="grid gap-3 p-4 sm:grid-cols-2 sm:p-5 xl:grid-cols-3">
-        <button v-for="preset in PRESETS" :key="preset.id" type="button"
-          class="min-w-0 rounded-xl border bg-card p-3 text-left transition hover:border-primary/50 hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-          :class="data?.state?.preset === preset.id && 'border-primary bg-primary/5 ring-1 ring-primary'"
-          :disabled="busy || !availablePresets.has(preset.id) || data?.state?.preset === preset.id"
-          :aria-pressed="data?.state?.preset === preset.id" @click="setPreset(preset.id)">
-          <div class="flex items-start justify-between gap-2">
-            <div class="min-w-0">
-              <span class="block font-semibold">{{ preset.title }}</span>
-              <span class="mt-0.5 block text-xs text-muted-foreground">{{ preset.description }}</span>
+      <div v-else class="p-4 sm:p-5">
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <button v-for="route in ROUTES" :key="route.id" type="button"
+            class="group flex min-h-24 flex-col justify-between rounded-lg border bg-card p-3 text-left transition hover:border-primary/50 hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+            :class="data?.state?.preset === route.id && 'border-primary bg-primary/5 ring-1 ring-primary'"
+            :disabled="busy || !availablePresets.has(route.id) || data?.state?.preset === route.id"
+            @click="setPreset(route.id)">
+            <div>
+              <div class="flex items-start justify-between gap-2">
+                <div class="flex-1">
+                  <span class="block font-semibold">{{ getRouteTitle(route) }}</span>
+                  <span class="mt-1 block text-xs text-muted-foreground">{{ getRouteDescription(route) }}</span>
+                </div>
+                <Icon v-if="data?.state?.preset === route.id" name="lucide:check" class="size-4 shrink-0 text-primary" />
+              </div>
             </div>
-            <Icon v-if="data?.state?.preset === preset.id" name="lucide:check" class="size-4 shrink-0 text-primary" />
-          </div>
-          <svg viewBox="0 0 200 52" class="mt-3 h-12 w-full" aria-hidden="true">
-            <text x="0" y="17" class="fill-muted-foreground" font-size="9">{{ INPUT_A }}</text>
-            <text x="0" y="45" class="fill-muted-foreground" font-size="9">{{ INPUT_B }}</text>
-            <text x="200" y="17" text-anchor="end" class="fill-muted-foreground" font-size="9">{{ OUTPUT_A }}</text>
-            <text x="200" y="45" text-anchor="end" class="fill-muted-foreground" font-size="9">{{ OUTPUT_B }}</text>
-            <line v-for="(connection, index) in preset.connections" :key="index" x1="35" x2="140"
-              :y1="connection.input === 'A' ? 14 : 42" :y2="connection.output === 'A' ? 14 : 42"
-              :stroke="lineColor[connection.input]" stroke-width="2.5" stroke-linecap="round" />
-            <circle cx="35" cy="14" r="3" fill="#0ea5e9" />
-            <circle cx="35" cy="42" r="3" fill="#f59e0b" />
-            <circle cx="140" cy="14" r="3" class="fill-foreground" />
-            <circle cx="140" cy="42" r="3" class="fill-foreground" />
-          </svg>
-        </button>
+            
+            <!-- Visual routing diagram -->
+            <div class="mt-3 flex items-center justify-between gap-2 text-xs">
+              <div class="flex flex-col gap-1">
+                <div class="flex items-center gap-1.5">
+                  <Icon :name="inputIcon[route.woonkamer]" class="size-3.5" :style="{ color: inputColor[route.woonkamer] }" />
+                  <span class="font-medium">{{ OUTPUT_A }}</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <Icon :name="inputIcon[route.keuken]" class="size-3.5" :style="{ color: inputColor[route.keuken] }" />
+                  <span class="font-medium">{{ OUTPUT_B }}</span>
+                </div>
+              </div>
+            </div>
+          </button>
+        </div>
       </div>
     </section>
 
