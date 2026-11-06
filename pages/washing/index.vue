@@ -32,7 +32,7 @@
       </section>
 
       <div class="grid min-w-0 grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(20rem,0.85fr)]">
-        <section class="min-w-0 overflow-hidden rounded-xl border bg-card shadow-sm">
+        <section class="order-2 min-w-0 overflow-hidden rounded-xl border bg-card shadow-sm xl:order-1">
           <div class="flex items-center justify-between border-b px-4 py-3">
             <div class="flex items-center gap-2">
               <Icon name="lucide:trophy" class="size-4 text-amber-500" />
@@ -73,34 +73,29 @@
             tonen.</p>
         </section>
 
-        <section class="min-w-0 overflow-hidden rounded-xl border bg-card shadow-sm">
+        <section class="order-1 min-w-0 overflow-hidden rounded-xl border bg-card shadow-sm xl:order-2">
           <div class="flex items-center gap-2 border-b px-4 py-3">
             <Icon name="lucide:users-round" class="size-4 text-primary" />
-            <h2 class="font-semibold">Per kookgroep</h2>
+            <h2 class="font-semibold">Stand van de kookgroepen</h2>
           </div>
-          <div v-if="groupSummaries.length" class="divide-y">
-            <details v-for="group in groupSummaries" :key="group.id" class="group">
-              <summary
-                class="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 hover:bg-muted/30">
-                <span class="min-w-0">
-                  <span class="block truncate text-sm font-semibold">{{ group.name }}</span>
-                  <span class="text-xs text-muted-foreground">{{ group.users.length }} huisgenoten · gemiddeld {{
-                    group.average }} punten</span>
-                </span>
-                <span class="flex shrink-0 items-center gap-2">
-                  <span class="rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold tabular-nums text-primary">{{
-                    formatPoints(group.total) }}</span>
-                  <Icon name="lucide:chevron-down"
-                    class="size-4 text-muted-foreground transition-transform group-open:rotate-180" />
-                </span>
-              </summary>
-              <div class="divide-y bg-muted/20 px-4">
-                <div v-for="user in group.users" :key="user.id" class="flex items-center justify-between gap-3 py-2">
-                  <span class="truncate text-sm">{{ user.name }}</span>
-                  <span class="text-sm font-semibold tabular-nums">{{ formatPoints(user.washingpoints) }}</span>
+          <div v-if="groupStandings.length" class="divide-y">
+            <section v-for="group in groupStandings" :key="group.id" class="p-4">
+              <h3 class="mb-3 text-sm font-semibold">{{ group.name }}</h3>
+              <div class="grid min-w-0 grid-cols-2 flex-wrap gap-2 md:grid-cols-3">
+                <div
+                  v-for="(user, index) in group.users"
+                  :key="user.id"
+                  class="flex min-w-0 items-center justify-between gap-2 rounded-lg border px-3 py-2"
+                  :class="getBgForPos(index)"
+                >
+                  <span class="truncate text-sm font-medium">{{ user.name }}</span>
+                  <span class="shrink-0 text-sm font-semibold tabular-nums" :class="getColorForPos(index)">
+                    {{ formatPoints(user.washingpoints) }}
+                  </span>
                 </div>
+                <p v-if="!group.users.length" class="text-sm text-muted-foreground">Geen actieve groepsleden.</p>
               </div>
-            </details>
+            </section>
           </div>
           <p v-else class="px-4 py-8 text-center text-sm text-muted-foreground">Er zijn nog geen kookgroepen.</p>
         </section>
@@ -171,18 +166,27 @@ const summary = computed(() => [
   { label: "Afwasregistraties", value: Math.round(data.value?.registrations ?? 0), icon: "lucide:bubbles" },
   { label: "Penaltypunten", value: activeUsers.value.reduce((sum, user) => sum + user.penaltyPoints, 0), icon: "lucide:triangle-alert" },
 ]);
-const groupSummaries = computed(() =>
+const groupStandings = computed(() =>
   (data.value?.cookingGroups ?? [])
-    .map((group) => {
-      const users = standings.value.filter((user) => user.cookingGroupId === group.id);
-      const total = users.reduce((sum, user) => sum + user.washingpoints, 0);
-      return { ...group, users, total, average: users.length ? (total / users.length).toFixed(1) : "0.0" };
-    })
-    .filter((group) => group.users.length)
-    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((group) => ({
+      ...group,
+      users: [...activeUsers.value]
+        .filter((user) => user.cookingGroupId === group.id)
+        .sort((a, b) => a.washingpoints - b.washingpoints || a.name.localeCompare(b.name)),
+    }))
 );
 const formatPoints = (points: number) => points.toFixed(1);
 const signed = (points: number) => `${points > 0 ? "+" : ""}${formatPoints(points)}`;
+const getColorForPos = (position: number) => {
+  if (position === 0) return "text-rose-700 dark:text-rose-300";
+  if (position === 1) return "text-orange-700 dark:text-orange-300";
+  return "";
+};
+const getBgForPos = (position: number) => {
+  if (position === 0) return "border-rose-200 bg-rose-50/80 dark:border-rose-900 dark:bg-rose-950/30";
+  if (position === 1) return "border-orange-200 bg-orange-50/80 dark:border-orange-900 dark:bg-orange-950/30";
+  return "bg-background";
+};
 
 watch(
   activeUsers,

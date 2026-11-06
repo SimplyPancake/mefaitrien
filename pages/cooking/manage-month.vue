@@ -47,6 +47,17 @@
 								</UiButton>
 							</NuxtLink>
 						</template>
+						<div class="flex justify-end">
+							<UiButton
+								v-if="selectedMonth?.status === 'CANFILLIN'"
+								type="button"
+								variant="outline"
+								@click="shareAvailabilityLink"
+							>
+								<Icon name="lucide:share" class="mr-2 size-4" />
+								Deel invullink
+							</UiButton>
+						</div>
 
 					</UiCardContent>
 				</template>
@@ -169,6 +180,31 @@ const groupsData = computed(() => {
 const emptyMonth = computed(() => {
 	return !selectedMonth.value
 })
+
+const shareAvailabilityLink = async () => {
+	if (!selectedMonth.value) return;
+
+	const { year, month } = selectedMonth.value;
+	const url = new URL(`/cooking/fill/${year}/${month}`, window.location.origin);
+	const monthName = new Intl.DateTimeFormat("nl-NL", { month: "long", year: "numeric" })
+		.format(new Date(year, month - 1));
+
+	try {
+		if (navigator.share) {
+			await navigator.share({
+				title: "Beschikbaarheid invullen",
+				text: `Vul je beschikbaarheid voor ${monthName} in.`,
+				url: url.toString(),
+			});
+		} else {
+			await navigator.clipboard.writeText(url.toString());
+			useSonner.success("Invullink gekopieerd.");
+		}
+	} catch (cause) {
+		if (cause instanceof DOMException && cause.name === "AbortError") return;
+		useSonner.error(cause instanceof Error ? cause.message : "De invullink kon niet worden gedeeld.");
+	}
+};
 
 </script>
 

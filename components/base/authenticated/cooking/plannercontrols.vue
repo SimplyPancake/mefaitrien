@@ -1,7 +1,7 @@
 <template>
-	<div class="flex flex-col md:flex-row gap-4 mb-4">
-		<UiSelect v-model="selectedGroupName" class="">
-			<UiSelectTrigger placeholder="Kies kookgroep" />
+	<div class="mb-4 flex flex-col gap-4 lg:flex-row lg:items-start">
+		<UiSelect v-model="selectedGroupName">
+			<UiSelectTrigger class="lg:w-44 lg:shrink-0" placeholder="Kies kookgroep" />
 			<UiSelectContent>
 				<UiSelectGroup>
 					<UiSelectItem v-for="group in props.groupInfo" :key="group.id" :value="group.name"
@@ -12,16 +12,16 @@
 				</UiSelectGroup>
 			</UiSelectContent>
 		</UiSelect>
-		<div class="flex flex-wrap items-center gap-4 md:flex-1">
-			<UiButton v-if="selectedGroupName != ''" variant="outline" @click="emit('automaticOrganize')">{{
+		<div class="grid gap-2 lg:min-w-0 lg:flex-1 lg:grid-cols-3">
+			<UiButton v-if="selectedGroupName != ''" class="w-full whitespace-normal" variant="outline" @click="emit('automaticOrganize')">{{
 				selectedGroupName }} automatisch indelen</UiButton>
-			<UiButton v-else variant="outline" @click="emit('automaticOrganize')">Alles automatisch indelen</UiButton>
+			<UiButton v-else class="w-full whitespace-normal" variant="outline" @click="emit('automaticOrganize')">Alles automatisch indelen</UiButton>
 
-			<UiButton v-if="selectedGroupName != ''" variant="outline" @click="emit('removeAssigned')">{{
+			<UiButton v-if="selectedGroupName != ''" class="w-full whitespace-normal" variant="outline" @click="emit('removeAssigned')">{{
 				selectedGroupName }} indeling verwijderen</UiButton>
-			<UiButton v-else variant="outline" @click="emit('removeAssigned')">Volledige indeling verwijderen</UiButton>
+			<UiButton v-else class="w-full whitespace-normal" variant="outline" @click="emit('removeAssigned')">Volledige indeling verwijderen</UiButton>
 
-			<UiButton class="ml-auto" @click="emit('submitAssignees')">Indeling opslaan</UiButton>
+			<UiButton class="w-full whitespace-normal" @click="emit('submitAssignees')">Indeling opslaan</UiButton>
 		</div>
 	</div>
 </template>
