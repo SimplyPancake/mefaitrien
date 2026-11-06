@@ -14,6 +14,10 @@
 										<div class="text-sm">
 											<div class="flex items-center gap-2">
 												<p class="font-medium">{{ p.name }}</p>
+												<span v-if="points" class="text-xs text-muted-foreground tabular-nums">
+													{{ points[p.id] ?? 0 }}
+													<span v-if="added?.[p.id]" class="font-semibold text-green-600">+{{ added[p.id] }}</span>
+												</span>
 												<span
 													v-if="!p.isActive"
 													class="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground"
@@ -45,6 +49,8 @@ const selected = ref();
 
 const props = defineProps<{
 	groupInfo: GroupUsersDto[];
+	points?: Record<number, number>;
+	added?: Record<number, number>;
 }>()
 
 defineExpose({

@@ -1,5 +1,5 @@
 <template>
-	<div class="flex flex-row gap-4 w-5/5">
+	<div class="flex flex-col md:flex-row gap-4 mb-4">
 		<UiSelect v-model="selectedGroupName" class="">
 			<UiSelectTrigger placeholder="Kies kookgroep" />
 			<UiSelectContent>
@@ -12,7 +12,7 @@
 				</UiSelectGroup>
 			</UiSelectContent>
 		</UiSelect>
-		<div class="flex items-center space-x-4">
+		<div class="flex flex-wrap items-center gap-4 md:flex-1">
 			<UiButton v-if="selectedGroupName != ''" variant="outline" @click="emit('automaticOrganize')">{{
 				selectedGroupName }} automatisch indelen</UiButton>
 			<UiButton v-else variant="outline" @click="emit('automaticOrganize')">Alles automatisch indelen</UiButton>

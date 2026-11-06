@@ -1,8 +1,8 @@
 <template>
 	<!-- Manage cooking rosters (CRUD per year) -->
 	<!-- View users who haven't filled in for this and/or upcoming month -->
-	<div class="grid grid-cols-3 grid-rows-6 gap-4">
-		<div class="row-span-2">
+	<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+		<div>
 			<UiCard title="Kies een maand">
 				<template #content>
 					<UiCardContent>
@@ -11,7 +11,7 @@
 				</template>
 			</UiCard>
 		</div>
-		<div class="col-span-2 row-span-2">
+		<div class="lg:col-span-2">
 			<UiCard title="Maand informatie">
 				<template #content>
 					<UiCardContent>
@@ -53,14 +53,14 @@
 			</UiCard>
 		</div>
 		<BaseAuthenticatedCookingEditMonthAvailability v-if="selectedMonth" :month="selectedMonth"
-			:group-data="groupsData" @assignments-saved="refreshCreatedMonths" />
+			:group-data="groupsData" :points="pointsByUser" @assignments-saved="onAssignmentsSaved" />
 	</div>
 </template>
 
 <script lang="ts" setup>
 import { useTemplateRef, ref } from 'vue';
 import { UiMonthChooser } from '#components';
-import type { GroupUsersDto, ManageMonthDto } from '~/types/dto';
+import type { CookingPointsOverviewDto, GroupUsersDto, ManageMonthDto } from '~/types/dto';
 
 usePageInfoStore().setPageInfo({
 	title: 'Kookmaand beheren',
@@ -97,6 +97,18 @@ const items = computed(() => {
 })
 
 const { data: createdmonths, error: createdmonthserror, refresh: refreshCreatedMonths } = await useAPI<ManageMonthDto[]>('/api/cooking/roster/manage');
+const { data: pointsData, refresh: refreshPoints } = await useAPI<CookingPointsOverviewDto>('/api/cooking/points');
+// Points before the selected month: total minus assignments in the selected and all later months
+const pointsByUser = computed(() => {
+	const result: Record<number, number> = Object.fromEntries((pointsData.value?.users ?? []).map(u => [u.id, u.cookingpoints]));
+	const sel = selectedMonth.value;
+	if (!sel) return result;
+	createdmonths.value
+		?.filter(m => m.year > sel.year || (m.year === sel.year && m.month >= sel.month))
+		.forEach(m => m.assignedDays.forEach(a => { result[a.userId] = (result[a.userId] ?? 0) - 1 }));
+	return result;
+});
+const onAssignmentsSaved = () => Promise.all([refreshCreatedMonths(), refreshPoints()]);
 const savingMonthStatus = ref(false);
 if (createdmonthserror.value) {
 	console.log(createdmonthserror.value)

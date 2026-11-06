@@ -3,7 +3,7 @@
 	<BaseAuthenticatedCookingPersonDayBrowser ref="dayBrowserRef" :selected-date-string="hoverDate"
 		:group-info="sidebarGroups" @savePerson="saveCookingPerson">
 	</BaseAuthenticatedCookingPersonDayBrowser>
-	<div class="col-span-2 row-span-5 row-start-3 animate-fadeIn">
+	<div class="lg:col-span-2 min-w-0 animate-fadeIn">
 		<UiCard title="Creeer of wijzig maand">
 			<template #content>
 				<UiCardContent>
@@ -20,12 +20,13 @@
 			</template>
 		</UiCard>
 	</div>
-	<div class="row-span-5 col-start-3 row-start-3 animate-fadeIn">
+	<div class="min-w-0 animate-fadeIn">
 		<UiCard title="Kookleden" class="mb-4">
 			<template #content>
 				<UiCardContent>
 					<p class="mb-2">Druk op een persoon en bekijk de beschikbaarheid van alleen dat persoon.</p>
 					<BaseAuthenticatedCookingUserShower v-if="sidebarGroups" :group-info="sidebarGroups"
+						:points="props.points" :added="addedPoints"
 						ref="userShowerRef" />
 				</UiCardContent>
 			</template>
@@ -34,13 +35,13 @@
 			<template #content>
 				<UiCardContent>
 					<!-- TODO: Maak dit mooi ofzo -->
-					<div class="flex flex-auto gap-4 pb-4">
+					<div class="flex flex-wrap gap-4 pb-4">
 						<div class="bg-av-avail rounded-md ring-offset-background px-4 py-2">{{
 							availabilityTranslations.AVAILABLE }}</div>
 						<div class="bg-av-unavail rounded-md ring-offset-background px-4 py-2">{{
 							availabilityTranslations.UNAVAILABLE }}</div>
 					</div>
-					<div class="flex flex-auto gap-4">
+					<div class="flex flex-wrap gap-4">
 						<div class="bg-av-posi rounded-md ring-offset-background px-4 py-2">
 							{{ availabilityTranslations.POSITIVE }}</div>
 						<div class="bg-av-nega rounded-md ring-offset-background px-4 py-2">{{
@@ -66,6 +67,7 @@ import type { EventClickArg } from "@fullcalendar/core/index.js";
 const props = defineProps<{
 	month: ManageMonthDto
 	groupData: GroupUsersDto[]
+	points?: Record<number, number>
 }>()
 const emit = defineEmits<{
 	(e: 'assignmentsSaved'): void
@@ -116,6 +118,13 @@ watch(
 );
 
 // COMPUTED
+// Planned (possibly unsaved) assignments of this month per user; each is +1 point
+const addedPoints = computed(() => {
+	const counts: Record<number, number> = {};
+	assignedUsers.value.forEach(group => group.people.forEach(p => { counts[p.id] = (counts[p.id] ?? 0) + 1 }));
+	return counts;
+});
+
 const selectedMonth = computed(() => {
 	// Set calendar to selected month
 	if (!cookingChooserRef.value?.selectedGroupName) {
