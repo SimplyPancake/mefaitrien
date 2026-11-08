@@ -12,13 +12,6 @@ export default defineNuxtConfig({
     experimental: {
       websocket: true
     },
-    storage: {
-      redis: {
-        driver: 'redis',
-        port: 6379,
-        host: process.env.NUXT_REDIS_URI ?? '127.0.0.1'
-      }
-    }
   },
 
   postcss: {
@@ -29,6 +22,8 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
+    // Overridable at runtime through NUXT_REDIS_URI (see server/plugins/redis.ts)
+    redisUri: "127.0.0.1",
     // Sound device settings
     deviceId: process.env.NUXT_DEVICE_ID ?? "", 
     devicePubkey: process.env.NUXT_DEVICE_PUBKEY ?? "",
