@@ -3,6 +3,7 @@ import { BaseEventHandler } from "~/server/utils/handlers/baseEventHandler";
 import type { SessionEvent } from "~/types";
 import { array, boolean, number, object, string } from "yup";
 import { Role } from "~/generated/prisma/enums";
+import { invalidateWashingPoints } from "~/server/utils/washingPoints";
 
 let handlerFunc = async (event: SessionEvent) => {
   const { id, name, email, roles, cookingGroupId, username, isActive } = event.data;
@@ -16,7 +17,7 @@ let handlerFunc = async (event: SessionEvent) => {
   }
 
   try {
-    return await prisma.$transaction(async (transaction) => {
+    const updatedUser = await prisma.$transaction(async (transaction) => {
       const wasActiveAdmin = user.isActive && user.roles.some(({ role }) => role === Role.ADMIN);
       const remainsActiveAdmin = isActive && roles.includes(Role.ADMIN);
 
@@ -88,6 +89,9 @@ let handlerFunc = async (event: SessionEvent) => {
         },
       });
     });
+    // Active user count feeds the washing points averaging
+    if (user.isActive !== isActive) await invalidateWashingPoints();
+    return updatedUser;
   } catch (error) {
     if (typeof error === "object" && error !== null && "statusCode" in error) {
       throw error;

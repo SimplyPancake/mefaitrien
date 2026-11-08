@@ -1,6 +1,7 @@
 import prisma from "@@/lib/prisma";
 import { BaseEventHandler } from "~/server/utils/handlers/baseEventHandler";
 import type { SessionEvent } from "~/types";
+import { invalidateWashingPoints } from "~/server/utils/washingPoints";
 import { array, number, object } from "yup";
 
 const schema = object({
@@ -76,6 +77,7 @@ const handlerFunc = async (event: SessionEvent) => {
       },
     },
   });
+  await invalidateWashingPoints();
 
   return { success: true };
 };

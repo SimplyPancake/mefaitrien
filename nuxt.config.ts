@@ -11,6 +11,13 @@ export default defineNuxtConfig({
   nitro :{
     experimental: {
       websocket: true
+    },
+    storage: {
+      redis: {
+        driver: 'redis',
+        port: 6379,
+        host: process.env.NUXT_REDIS_URI ?? '127.0.0.1'
+      }
     }
   },
 

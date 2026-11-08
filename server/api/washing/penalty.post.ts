@@ -1,6 +1,7 @@
 import prisma from "@@/lib/prisma";
 import { BaseEventHandler } from "~/server/utils/handlers/baseEventHandler";
 import type { SessionEvent } from "~/types";
+import { invalidateWashingPoints } from "~/server/utils/washingPoints";
 import { number, object, string } from "yup";
 
 const schema = object({
@@ -20,6 +21,7 @@ const handlerFunc = async (event: SessionEvent) => {
   }
 
   await prisma.washingPenalty.create({ data: { userId, amount, reason } });
+  await invalidateWashingPoints();
   return { success: true };
 };
 

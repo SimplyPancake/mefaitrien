@@ -1,4 +1,5 @@
 import prisma from "@@/lib/prisma";
+import { REDIS_COOKINGPOINTS } from "../consts/redisKeys";
 
 type UserCookingPointsBase = {
   id: number;
@@ -11,6 +12,27 @@ export type CookingPointTotals = {
   totalPoints: number;
 };
 
+// userId -> number of assigned days
+type ComputedCookingPoints = Record<number, number>;
+
+const refreshCookingPoints = async (): Promise<ComputedCookingPoints> => {
+  const assignmentCounts = await prisma.assignedDay.groupBy({
+    by: ["userId"],
+    _count: { _all: true },
+  });
+  const computed: ComputedCookingPoints = Object.fromEntries(
+    assignmentCounts.map(({ userId, _count }) => [userId, _count._all])
+  );
+  await useStorage("redis").setItem(REDIS_COOKINGPOINTS, computed);
+  return computed;
+};
+
+// Call after any assignedDay change
+export const invalidateCookingPoints = async () => {
+  await useStorage("redis").removeItem(REDIS_COOKINGPOINTS);
+  await refreshCookingPoints();
+};
+
 export const getCookingPointTotals = async (
   users: readonly UserCookingPointsBase[]
 ): Promise<Map<number, CookingPointTotals>> => {
@@ -18,18 +40,13 @@ export const getCookingPointTotals = async (
     return new Map();
   }
 
-  const assignmentCounts = await prisma.assignedDay.groupBy({
-    by: ["userId"],
-    where: { userId: { in: users.map(({ id }) => id) } },
-    _count: { _all: true },
-  });
-  const computedPointsByUser = new Map(
-    assignmentCounts.map(({ userId, _count }) => [userId, _count._all])
-  );
+  const computedPointsByUser =
+    (await useStorage("redis").getItem<ComputedCookingPoints>(REDIS_COOKINGPOINTS)) ??
+    (await refreshCookingPoints());
 
   return new Map(
     users.map(({ id, cookingpointsBase }) => {
-      const computedPoints = computedPointsByUser.get(id) ?? 0;
+      const computedPoints = computedPointsByUser[id] ?? 0;
       return [
         id,
         {

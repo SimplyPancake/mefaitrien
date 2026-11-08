@@ -1,6 +1,7 @@
 import prisma from "@@/lib/prisma";
 import { AllowType, type SessionEvent } from "~/types";
 import { BaseEventHandler } from "~/server/utils/handlers/baseEventHandler";
+import { invalidateCookingPoints } from "~/server/utils/cookingPoints";
 import { array, number, object } from "yup";
 
 const assignmentSchema = object({
@@ -128,6 +129,7 @@ const handlerFunc = async (event: SessionEvent) => {
 			data: { status: "ASSIGNED" },
 		});
 	});
+	await invalidateCookingPoints();
 
 	return { success: true };
 };

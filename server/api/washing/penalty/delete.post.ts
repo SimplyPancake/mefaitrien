@@ -3,6 +3,7 @@ import { BaseEventHandler } from "~/server/utils/handlers/baseEventHandler";
 import { AllowType } from "~/types";
 import type { SessionEvent } from "~/types";
 import { Role } from "~/generated/prisma/enums";
+import { invalidateWashingPoints } from "~/server/utils/washingPoints";
 import { number, object } from "yup";
 
 const schema = object({
@@ -20,6 +21,7 @@ const handlerFunc = async (event: SessionEvent) => {
   }
 
   await prisma.washingPenalty.delete({ where: { id: penaltyId } });
+  await invalidateWashingPoints();
   return { success: true };
 };
 
