@@ -1,3 +1,3 @@
-export const REDIS_COOKINGPOINTS = 'cookingpoints';
-export const REDIS_WASHINGPOUINTS = 'washingpoints';
-export const REDIS_LONGESTEATER = 'longesteater';
+export const REDIS_COOKINGPOINTS = 'MFR:cookingpoints';
+export const REDIS_WASHINGPOUINTS = 'MFR:washingpoints';
+export const REDIS_LONGESTEATER = 'MFR:longesteater';
