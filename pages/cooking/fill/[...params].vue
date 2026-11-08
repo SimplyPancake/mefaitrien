@@ -373,6 +373,13 @@ const calendarOptions = ref<CalendarOptions>({
 	events: (_fetchInfo, successCallback) => {
 		successCallback(getAvailableEventsForMonth.value);
 	},
+	// On touch devices FullCalendar only selects after a long press, so taps need to select explicitly
+	selectLongPressDelay: 250,
+	dateClick(info) {
+		if (canfillmonth.value) {
+			info.view.calendar.select(info.date);
+		}
+	},
 	select(info) {
 		selecteddates.value = [];
 		let startDate = new Date(info.start);
