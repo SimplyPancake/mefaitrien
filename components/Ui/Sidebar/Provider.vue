@@ -72,6 +72,9 @@
     openMobile.value = value;
   }
 
+  // Close the mobile menu after navigating
+  watch(() => useRoute().fullPath, () => setOpenMobile(false));
+
   // Helper to toggle the sidebar.
   function toggleSidebar() {
     return isMobile.value ? setOpenMobile(!openMobile.value) : setOpen(!open.value);
