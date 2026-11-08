@@ -3,6 +3,7 @@ import { AllowType, type SessionEvent } from "~/types";
 import { BaseEventHandler } from "~/server/utils/handlers/baseEventHandler";
 import { getCookingPointTotals } from "~/server/utils/cookingPoints";
 import { getWashingPointTotals } from "~/server/utils/washingPoints";
+import { getLongestEater } from "~/server/utils/longestEater";
 import type { HomeDashboardDto } from "~/types/dto";
 
 const handlerFunc = async (event: SessionEvent): Promise<HomeDashboardDto> => {
@@ -59,9 +60,10 @@ const handlerFunc = async (event: SessionEvent): Promise<HomeDashboardDto> => {
     throw createError({ statusCode: 404, statusMessage: "Gebruiker niet gevonden." });
   }
 
-  const [cookingPointTotals, washingPointTotals] = await Promise.all([
+  const [cookingPointTotals, washingPointTotals, longestEater] = await Promise.all([
     getCookingPointTotals([user]),
     getWashingPointTotals([user]),
+    getLongestEater(),
   ]);
   const todayKey = `${today.getFullYear()}-${today.getMonth() + 1}`;
   const todayAssignments =
@@ -86,6 +88,7 @@ const handlerFunc = async (event: SessionEvent): Promise<HomeDashboardDto> => {
     todayAssignments,
     cookingPoints: cookingPointTotals.get(user.id)!.totalPoints,
     washingPoints: washingPointTotals.get(user.id)!.totalPoints,
+    longestEater,
     cookingDaysThisWeek,
   };
 };

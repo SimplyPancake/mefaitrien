@@ -2,6 +2,7 @@ import prisma from "@@/lib/prisma";
 import { BaseEventHandler } from "~/server/utils/handlers/baseEventHandler";
 import type { SessionEvent } from "~/types";
 import { invalidateWashingPoints } from "~/server/utils/washingPoints";
+import { invalidateLongestEater } from "~/server/utils/longestEater";
 import { array, number, object } from "yup";
 
 const schema = object({
@@ -77,7 +78,7 @@ const handlerFunc = async (event: SessionEvent) => {
       },
     },
   });
-  await invalidateWashingPoints();
+  await Promise.all([invalidateWashingPoints(), invalidateLongestEater()]);
 
   return { success: true };
 };

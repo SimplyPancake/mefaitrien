@@ -5,11 +5,19 @@
 				<h1 class="text-xl font-semibold tracking-tight">Het grote kook-overzicht</h1>
 				<p class="mt-1 text-sm text-muted-foreground">Kookpunten &amp; groepen</p>
 			</div>
-			<div class="flex items-center gap-2 rounded-lg bg-muted/60 px-3 py-2">
-				<Icon name="lucide:trophy" class="size-4 text-amber-600" />
-				<span class="text-sm text-muted-foreground">Totaal</span>
-				<span class="font-semibold tabular-nums">{{ totalPoints }}</span>
-				<span class="text-xs text-muted-foreground">punten</span>
+			<div class="flex flex-wrap items-center gap-2">
+				<div v-if="data?.longestEater" class="flex items-center gap-2 rounded-lg bg-muted/60 px-3 py-2">
+					<Icon name="lucide:utensils" class="size-4 text-primary" />
+					<span class="text-sm text-muted-foreground">Langste mee-eter</span>
+					<span class="font-semibold">{{ data.longestEater.name }}</span>
+					<span class="text-xs text-muted-foreground">{{ data.longestEater.streak }}x op rij</span>
+				</div>
+				<div class="flex items-center gap-2 rounded-lg bg-muted/60 px-3 py-2">
+					<Icon name="lucide:trophy" class="size-4 text-amber-600" />
+					<span class="text-sm text-muted-foreground">Totaal</span>
+					<span class="font-semibold tabular-nums">{{ totalPoints }}</span>
+					<span class="text-xs text-muted-foreground">punten</span>
+				</div>
 			</div>
 		</header>
 

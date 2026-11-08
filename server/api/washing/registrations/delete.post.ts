@@ -4,6 +4,7 @@ import { AllowType } from "~/types";
 import type { SessionEvent } from "~/types";
 import { Role } from "~/generated/prisma/enums";
 import { invalidateWashingPoints } from "~/server/utils/washingPoints";
+import { invalidateLongestEater } from "~/server/utils/longestEater";
 import { number, object } from "yup";
 
 const schema = object({
@@ -24,7 +25,7 @@ const handlerFunc = async (event: SessionEvent) => {
     prisma.washingRegistrationEatUser.deleteMany({ where: { washingRegistrationId: registrationId } }),
     prisma.washingRegistration.delete({ where: { id: registrationId } }),
   ]);
-  await invalidateWashingPoints();
+  await Promise.all([invalidateWashingPoints(), invalidateLongestEater()]);
   return { success: true };
 };
 

@@ -40,6 +40,13 @@
 							<UiListTitle :title="`Je hebt ${formatQuantifier(dashboard?.washingPoints, 'afwaspunt', 'afwaspunten', 'geen')}`" />
 						</UiListContent>
 					</UiListItem>
+					<UiListItem v-if="dashboard?.longestEater" class="min-w-0 px-3 sm:px-6">
+						<Icon name="lucide:utensils" class="size-8 shrink-0 text-primary sm:size-10" />
+						<UiListContent>
+							<UiListTitle title="Langste mee-eter" />
+							<UiListSubtitle :subtitle="`${dashboard.longestEater.name} (${dashboard.longestEater.streak} keer achter elkaar)`" />
+						</UiListContent>
+					</UiListItem>
 					<!-- Schoonmaak -->
 					<UiListItem class="min-w-0 px-3 sm:px-6">
 						<Icon name="lucide:cooking-pot" class="size-8 shrink-0 text-primary" />

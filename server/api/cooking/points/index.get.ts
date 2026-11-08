@@ -2,6 +2,7 @@ import prisma from "@@/lib/prisma";
 import { AllowType } from "~/types";
 import { BaseEventHandler } from "~/server/utils/handlers/baseEventHandler";
 import type { CookingPointsOverviewDto } from "~/types/dto";
+import { getLongestEater } from "~/server/utils/longestEater";
 import { getCookingPointTotals } from "~/server/utils/cookingPoints";
 
 const handlerFunc = async (): Promise<CookingPointsOverviewDto> => {
@@ -25,7 +26,10 @@ const handlerFunc = async (): Promise<CookingPointsOverviewDto> => {
       orderBy: { name: "asc" },
     }),
   ]);
-  const pointTotals = await getCookingPointTotals(users);
+  const [pointTotals, longestEater] = await Promise.all([
+    getCookingPointTotals(users),
+    getLongestEater(),
+  ]);
 
   return {
     users: users.map((user) => ({
@@ -37,6 +41,7 @@ const handlerFunc = async (): Promise<CookingPointsOverviewDto> => {
       isActive: user.isActive,
     })),
     cookingGroups,
+    longestEater,
   };
 };
 

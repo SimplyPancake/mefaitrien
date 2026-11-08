@@ -49,8 +49,15 @@ export interface WashingPointsUserDto {
   isActive: boolean;
 }
 
+export interface LongestEaterDto {
+  id: number;
+  name: string;
+  streak: number;
+}
+
 export interface CookingPointsOverviewDto {
   users: CookingPointsUserDto[];
+  longestEater: LongestEaterDto | null;
   cookingGroups: Array<Pick<CookingGroup, "id" | "name">>;
 }
 
@@ -130,6 +137,7 @@ export interface HomeDashboardDto {
   todayAssignments: AssignedDayDto[];
   cookingPoints: number;
   washingPoints: number;
+  longestEater: LongestEaterDto | null;
   cookingDaysThisWeek: string[];
 }
 
