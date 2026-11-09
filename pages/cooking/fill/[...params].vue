@@ -399,7 +399,7 @@ async function submitMonthData() {
 			method: 'POST',
 			body: {
 				year: selectedyear.value,
-				month: selectedmonth.value,
+				month: selectedmonth.value + 1,
 				dates: dates.value
 					.filter(x => x.availability != "BLOCKED")
 					.map(x => ({ ...x, date: dayjs(x.date).format("YYYY-MM-DD") })),

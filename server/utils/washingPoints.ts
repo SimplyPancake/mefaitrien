@@ -79,6 +79,8 @@ const computeWashingPoints = async (): Promise<ComputedWashingPoints> => {
   // to a system of m users,
   // So, we remove from all n * (4/m)
   const activeUserCount = allActiveUsers.length;
+  // ponytail: no active users => no fair divisor, so the registration contributes nothing
+  if (activeUserCount === 0) return {};
   const activeUserModifierAverager = - 4 / activeUserCount
 
   allActiveUsers.forEach(activeUser => {

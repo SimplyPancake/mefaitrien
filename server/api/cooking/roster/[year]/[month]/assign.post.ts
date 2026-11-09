@@ -51,7 +51,7 @@ const handlerFunc = async (event: SessionEvent) => {
 	const blockedDays = new Set(monthRoster.blockedDates.map(({ day }) => day));
 	const assignmentKeys = new Set<string>();
 	for (const assignment of assignments) {
-		if (assignment.day > daysInMonth || blockedDays.has(assignment.day)) {
+		if (assignment.day > daysInMonth) {
 			throw createError({
 				statusCode: 400,
 				statusMessage: `Dag ${assignment.day} kan niet worden ingedeeld.`,
@@ -82,21 +82,7 @@ const handlerFunc = async (event: SessionEvent) => {
 		});
 		const usersById = new Map(users.map(user => [user.id, user]));
 
-		for (const assignment of assignments) {
-			const user = usersById.get(assignment.userId);
-			if (!user || user.cookingGroupId !== assignment.groupId) {
-				throw createError({
-					statusCode: 400,
-					statusMessage: "Een ingedeelde persoon hoort niet bij de opgegeven kookgroep.",
-				});
-			}
-		}
-
-		if (groupId === undefined) {
-			await transaction.assignedDay.deleteMany({
-				where: { monthRosterId: monthRoster.id },
-			});
-		} else {
+		if (groupId !== undefined) {
 			const group = await transaction.cookingGroup.findUnique({
 				where: { id: groupId },
 				select: { id: true },
@@ -104,24 +90,66 @@ const handlerFunc = async (event: SessionEvent) => {
 			if (!group) {
 				throw createError({ statusCode: 400, statusMessage: "Kookgroep niet gevonden." });
 			}
-
-			await transaction.assignedDay.deleteMany({
-				where: {
-					monthRosterId: monthRoster.id,
-					cookingGroupId: groupId,
-				},
-			});
 		}
 
-		if (assignments.length > 0) {
-			await transaction.assignedDay.createMany({
-				data: assignments.map(({ day, groupId: assignedGroupId, userId }) => ({
-					day,
-					userId,
-					cookingGroupId: assignedGroupId,
-					monthRosterId: monthRoster.id,
-				})),
+		// Sync instead of delete-all: washing registrations reference assigned days.
+		const existing = await transaction.assignedDay.findMany({
+			where: {
+				monthRosterId: monthRoster.id,
+				...(groupId !== undefined && { cookingGroupId: groupId }),
+			},
+			select: {
+				id: true,
+				day: true,
+				cookingGroupId: true,
+				userId: true,
+				washingRegistration: { select: { id: true } },
+			},
+		});
+		const existingByKey = new Map(existing.map(row => [`${row.cookingGroupId}:${row.day}`, row]));
+
+		// Unchanged days stay valid when the cook has since moved to another group,
+		// otherwise such a month could never be saved again.
+		for (const assignment of assignments) {
+			const user = usersById.get(assignment.userId);
+			const unchanged = existingByKey.get(`${assignment.groupId}:${assignment.day}`)?.userId === assignment.userId;
+			if (blockedDays.has(assignment.day) && !unchanged) {
+				throw createError({
+					statusCode: 400,
+					statusMessage: `Dag ${assignment.day} kan niet worden ingedeeld.`,
+				});
+			}
+			if (!unchanged && (!user || user.cookingGroupId !== assignment.groupId)) {
+				throw createError({
+					statusCode: 400,
+					statusMessage: "Een ingedeelde persoon hoort niet bij de opgegeven kookgroep.",
+				});
+			}
+		}
+
+		const toDelete = existing.filter(row => !assignmentKeys.has(`${row.cookingGroupId}:${row.day}`));
+		const locked = toDelete.find(row => row.washingRegistration);
+		if (locked) {
+			throw createError({
+				statusCode: 409,
+				statusMessage: `Dag ${locked.day} heeft al een afwasregistratie en kan niet worden verwijderd.`,
 			});
+		}
+		if (toDelete.length > 0) {
+			await transaction.assignedDay.deleteMany({ where: { id: { in: toDelete.map(({ id }) => id) } } });
+		}
+
+		const toCreate = [];
+		for (const { day, groupId: assignedGroupId, userId } of assignments) {
+			const current = existingByKey.get(`${assignedGroupId}:${day}`);
+			if (!current) {
+				toCreate.push({ day, userId, cookingGroupId: assignedGroupId, monthRosterId: monthRoster.id });
+			} else if (current.userId !== userId) {
+				await transaction.assignedDay.update({ where: { id: current.id }, data: { userId } });
+			}
+		}
+		if (toCreate.length > 0) {
+			await transaction.assignedDay.createMany({ data: toCreate });
 		}
 
 		await transaction.monthRoster.update({

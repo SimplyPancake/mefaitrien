@@ -3,6 +3,7 @@ import prisma from "@@/lib/prisma";
 import { BaseEventHandler } from "~/server/utils/handlers/baseEventHandler";
 import { H3Event } from "h3";
 import { array, date, InferType, number, object } from "yup";
+import { AllowType } from "~/types";
 
 const schema = object({
   dates: array(
@@ -70,7 +71,7 @@ export default defineEventHandler(async (event) => {
   return new BaseEventHandler(event, handlerFunc).handle({
     route: "/api/cooking/roster/create",
     method: "POST",
-    allowType: "AUTHENTICATED",
+    allowType: AllowType.ROLE,
     role: ["ADMIN", "COOKING"],
   });
 });

@@ -37,6 +37,18 @@ const handlerFunc = async (event: SessionEvent) => {
 
   const washerIds = [...new Set([washUserOneId, washUserTwoId])];
   const eaterIds = (eaters ?? []).map(({ userId }: { userId: number }) => userId);
+  // People already on this registration stay valid even if they went inactive or
+  // changed group since, otherwise old meals could not be corrected anymore.
+  const existing = await prisma.washingRegistration.findUnique({
+    where: { assignedDayId },
+    select: {
+      washUserOneId: true,
+      washUserTwoId: true,
+      washingRegistrationEatUsers: { select: { userId: true } },
+    },
+  });
+  const keptWashers = new Set(existing ? [existing.washUserOneId, existing.washUserTwoId] : []);
+  const keptEaters = new Set(existing?.washingRegistrationEatUsers.map(({ userId }) => userId));
   const participants = await prisma.user.findMany({
     where: {
       isActive: true,
@@ -49,8 +61,8 @@ const handlerFunc = async (event: SessionEvent) => {
   });
   const participantIds = new Set(participants.map(({ id }) => id));
   if (
-    washerIds.some((id) => !participantIds.has(id)) ||
-    eaterIds.some((id) => !participantIds.has(id))
+    washerIds.some((id) => !participantIds.has(id) && !keptWashers.has(id)) ||
+    eaterIds.some((id) => !participantIds.has(id) && !keptEaters.has(id))
   ) {
     throw createError({
       statusCode: 400,

@@ -9,6 +9,7 @@
     "generate": "prisma generate && nuxt generate",
     "prisma:studio": "prisma studio",
     "preview": "nuxt preview",
+    "test": "vitest run",
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
@@ -62,12 +63,14 @@
     "@ianvs/prettier-plugin-sort-imports": "^4.4.1",
     "@iconify-json/lucide": "^1.2.25",
     "@iconify-json/svg-spinners": "^1.2.2",
+    "@nuxt/test-utils": "^4.4.0",
     "@types/bcrypt": "^5.0.2",
     "@types/canvas-confetti": "^1.9.0",
     "@types/jsonwebtoken": "^9.0.8",
     "@types/node": "^22.12.0",
     "@vue/devtools-api": "^8.2.1",
     "@vueuse/core": "^13.3.0",
+    "happy-dom": "^21.0.4",
     "nuxt-file-storage": "^0.3.3",
     "prettier": "^3.4.2",
     "prettier-plugin-tailwindcss": "^0.6.11",
@@ -77,6 +80,7 @@
     "ts-node": "^10.9.2",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3",
-    "vite": "^8.3.4"
+    "vite": "^8.3.4",
+    "vitest": "^5.1.0"
   }
 }

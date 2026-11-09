@@ -27,7 +27,7 @@ const selectedDateArraySchema = array().of(selectedDateSchema).strict();
 
 const schema = object({
   year: number().required().min(0),
-  month: number().required().min(0).max(11),
+  month: number().integer().required().min(1).max(12),
   dates: selectedDateArraySchema,
 });
 
@@ -46,7 +46,7 @@ let handlerFunc = async (event: SessionEvent) => {
   const dates = data.dates ?? [];
   const filteredDates = dates.filter((x) => {
     const [year, month] = x.date.split("-").map(Number);
-    return year === data.year && month === data.month + 1;
+    return year === data.year && month === data.month;
   });
 
   if (dates.length > 0 && filteredDates.length === 0) {
@@ -55,12 +55,15 @@ let handlerFunc = async (event: SessionEvent) => {
       statusMessage: "No valid dates provided for the specified month and year",
     });
   }
+  if (new Set(filteredDates.map((date) => date.date)).size !== filteredDates.length) {
+    throw createError({ status: 400, statusMessage: "Een dag komt meerdere keren voor." });
+  }
 
   // Find the month roster
   const monthRoster = await prisma.monthRoster.findFirst({
     where: {
       year: data.year,
-      month: data.month + 1, // Adjust for 0-based month in JS
+      month: data.month,
       status: "CANFILLIN", // Only allow updates when month is in CANFILLIN status
     },
   });

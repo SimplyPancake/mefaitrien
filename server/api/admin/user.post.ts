@@ -38,9 +38,12 @@ let handlerFunc = async (event: SessionEvent) => {
         }
       }
 
-      const isReactivating = !user.isActive && isActive;
+      // Reactivating or moving to another group starts the user at the new group's average,
+      // like group/assign.post does (migrateUserCookingGroup).
+      const rebasePoints =
+        isActive && (!user.isActive || (user.cookingGroupId !== cookingGroupId && cookingGroupId !== null));
       let reactivatedUserBasePoints: number | undefined;
-      if (isReactivating) {
+      if (rebasePoints) {
         const peers = await transaction.user.findMany({
           where: {
             isActive: true,
