@@ -4,16 +4,13 @@ import type { LongestEaterDto } from "~/types/dto";
 
 type CachedLongestEater = { userId: number | null; streak: number };
 
-// Longest run of consecutive meals of their cooking group that a user ate along.
-// Eaters always belong to the registration's group, so each group has its own timeline.
+// Longest run of consecutive registered meals of their cooking group that a user ate along.
 const computeLongestEater = async (): Promise<CachedLongestEater> => {
   const registrations = await prisma.washingRegistration.findMany({
     select: {
       cookingGroupId: true,
-      washUserOneId: true,
-      washUserTwoId: true,
       assignedDay: {
-        select: { day: true, userId: true, monthRoster: { select: { year: true, month: true } } },
+        select: { day: true, monthRoster: { select: { year: true, month: true } } },
       },
       washingRegistrationEatUsers: { select: { userId: true, amountEat: true } },
     },
@@ -26,14 +23,12 @@ const computeLongestEater = async (): Promise<CachedLongestEater> => {
 
   const streaksByGroup = new Map<number, Map<number, number>>();
   let best: CachedLongestEater = { userId: null, streak: 0 };
-  registrations.forEach(({ cookingGroupId, washUserOneId, washUserTwoId, assignedDay, washingRegistrationEatUsers }) => {
+  registrations.forEach(({ cookingGroupId, washingRegistrationEatUsers }) => {
     const current = streaksByGroup.get(cookingGroupId) ?? new Map<number, number>();
     streaksByGroup.set(cookingGroupId, current);
 
     const eaters = new Set(washingRegistrationEatUsers.filter(e => e.amountEat > 0).map(e => e.userId));
-    // The cook and washers have a task that meal, so it neither extends nor breaks their streak
-    const busy = new Set([assignedDay.userId, washUserOneId, washUserTwoId]);
-    [...current.keys()].forEach(userId => eaters.has(userId) || busy.has(userId) || current.delete(userId));
+    [...current.keys()].forEach(userId => !eaters.has(userId) && current.delete(userId));
     eaters.forEach(userId => {
       const streak = (current.get(userId) ?? 0) + 1;
       current.set(userId, streak);

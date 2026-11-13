@@ -50,14 +50,20 @@ describe("longest eater", () => {
 		expect((await getLongestEater())!.streak).toBe(3);
 	});
 
-	it("cooking or washing neither extends nor breaks the streak", async () => {
+	it("breaks the streak on a meal not eaten, regardless of cooking or washing", async () => {
 		meals([
 			day(1, { eaters: [1] }),
 			day(2, { cook: 1 }),
 			day(3, { washers: [1, 2] }),
 			day(4, { eaters: [1] }),
 		]);
-		expect((await getLongestEater())!.streak).toBe(2);
+		expect((await getLongestEater())!.streak).toBe(1);
+	});
+
+	it("counts consecutive cooking meals across blocked weekend dates", async () => {
+		const weekdays = [2, 3, 4, 5, 6, 9, 10, 11, 12, 13];
+		meals(weekdays.map(d => day(d, { eaters: [1] })));
+		expect(await getLongestEater()).toMatchObject({ id: 1, streak: 10 });
 	});
 
 	it("sorts by date, not by fetch order, and across months/years", async () => {
@@ -98,7 +104,9 @@ describe("longest eater", () => {
 				washUserOneId: 90,
 				washUserTwoId: 91,
 				assignedDay: { day: 1, userId: 99, monthRoster: { year: 2026, month: 11 } },
-				washingRegistrationEatUsers: [{ userId: 1, amountEat: 0 }],
+				washingRegistrationEatUsers: [
+					{ userId: 1, amountEat: 0 },
+				],
 			},
 		]);
 		expect(await getLongestEater()).toBeNull();
