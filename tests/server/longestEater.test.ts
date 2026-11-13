@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { prismaMock } from "../helpers/prisma";
+import { redis } from "../helpers/nitro";
 import { getLongestEater } from "~/server/utils/longestEater";
 
 type Meal = {
@@ -42,9 +43,29 @@ describe("longest eater", () => {
 
 	it("is broken by a meal the user skipped", async () => {
 		meals([day(1, { eaters: [1] }), day(2, { eaters: [1] }), day(3, { eaters: [2] }), day(4, { eaters: [1] })]);
-		expect(await getLongestEater()).toEqual({ id: 1, name: "user1", streak: 2 });
+		expect(await getLongestEater()).toEqual({ id: 1, name: "user1", streak: 1 });
 	});
 
+	it("does not award a past record after its holder skips a meal", async () => {
+		meals([
+			day(1, { eaters: [1] }),
+			day(2, { eaters: [1, 2] }),
+			day(3, { eaters: [1, 2] }),
+			day(4, { eaters: [2] }),
+		]);
+		expect(await getLongestEater()).toEqual({ id: 2, name: "user2", streak: 3 });
+	});
+
+	it("returns null when the latest meal has no eaters", async () => {
+		meals([day(1, { eaters: [1] }), day(2)]);
+		expect(await getLongestEater()).toBeNull();
+	});
+
+	it("ignores an old cached all-time record", async () => {
+		redis.set("MFR:longesteater", JSON.stringify({ userId: 1, streak: 10 }));
+		meals([day(1, { eaters: [2] })]);
+		expect(await getLongestEater()).toEqual({ id: 2, name: "user2", streak: 1 });
+	});
 	it("eating while cooking still extends the streak", async () => {
 		meals([day(1, { eaters: [1] }), day(2, { cook: 1, eaters: [1] }), day(3, { washers: [1, 2], eaters: [1] })]);
 		expect((await getLongestEater())!.streak).toBe(3);

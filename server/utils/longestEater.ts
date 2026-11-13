@@ -4,7 +4,7 @@ import type { LongestEaterDto } from "~/types/dto";
 
 type CachedLongestEater = { userId: number | null; streak: number };
 
-// Longest run of consecutive registered meals of their cooking group that a user ate along.
+// Longest current run of consecutive registered meals eaten in a cooking group.
 const computeLongestEater = async (): Promise<CachedLongestEater> => {
   const registrations = await prisma.washingRegistration.findMany({
     select: {
@@ -22,19 +22,23 @@ const computeLongestEater = async (): Promise<CachedLongestEater> => {
   );
 
   const streaksByGroup = new Map<number, Map<number, number>>();
-  let best: CachedLongestEater = { userId: null, streak: 0 };
   registrations.forEach(({ cookingGroupId, washingRegistrationEatUsers }) => {
     const current = streaksByGroup.get(cookingGroupId) ?? new Map<number, number>();
     streaksByGroup.set(cookingGroupId, current);
 
     const eaters = new Set(washingRegistrationEatUsers.filter(e => e.amountEat > 0).map(e => e.userId));
     [...current.keys()].forEach(userId => !eaters.has(userId) && current.delete(userId));
+
     eaters.forEach(userId => {
       const streak = (current.get(userId) ?? 0) + 1;
       current.set(userId, streak);
-      if (streak > best.streak) best = { userId, streak };
     });
   });
+
+  let best: CachedLongestEater = { userId: null, streak: 0 };
+  streaksByGroup.forEach(current => current.forEach((streak, userId) => {
+    if (streak > best.streak) best = { userId, streak };
+  }));
   return best;
 };
 
