@@ -4,6 +4,7 @@ export const roleTranslations: Record<Role, string> = {
   ADMIN: "Beheerder",
   USER: "Gebruiker",
   COOKING: "Kookbeheer",
+  FEUT: "Feut",
 };
 
 export const availabilityTranslations: Record<AvailabilityType, string> = {
