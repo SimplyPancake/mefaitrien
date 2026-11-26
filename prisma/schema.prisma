@@ -150,6 +150,7 @@ enum Role {
   USER
   COOKING
   ADMIN
+  FEUT
 }
 
 // Maybe not use AVAILABLE since no data means available

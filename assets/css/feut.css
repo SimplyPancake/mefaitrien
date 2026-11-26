@@ -1,0 +1,285 @@
+/*
+  Feut theme — for members with the FEUT role.
+  Loaded globally, but every rule is scoped to `html[data-feut]`, which app.vue only sets
+  while the logged-in user has the FEUT role. Unlayered, so it wins over the tokens in
+  assets/css/tailwind.css (`:root` / `.dark` live in `@layer base`) in both colour modes.
+*/
+
+html[data-feut] {
+  color-scheme: light;
+
+  /* Custom scheme */
+  --primary-orange: #ff4fa3;
+  --primary-light-orange: #ff8fc4;
+  --orange-accent-on-bg: #ffe4f1;
+  --secondary-dark-blue: #ff8fc4;
+  --secondary-light-blue: #ffc2de;
+  --darker-blue: #63204a;
+  --white: #fff7fb;
+  --lesser-white: #ffe4f1;
+
+  /* General */
+  --background: #ffe4f1;
+  --foreground: #63204a;
+  --card: #fff7fb;
+  --card-foreground: #63204a;
+  --popover: #fff7fb;
+  --popover-foreground: #63204a;
+
+  /* Availability calendar */
+  --col-avail: #c9ffe3;
+  --col-unavail: #ffd1d1;
+  --col-positive: #cfe8ff;
+  --col-negative: #fff3b0;
+  --col-blocked: #f4e2ec;
+
+  /* Primary / secondary */
+  --primary: #d81b7a;
+  --primary-foreground: #ffffff;
+  --secondary: #7fd8ff;
+  --secondary-foreground: #3d1b4f;
+
+  /* Muted / accent */
+  --muted: #ffd9ea;
+  --muted-foreground: #8a2f5e;
+  --accent: #fff7c2;
+  --accent-foreground: #7a2a55;
+
+  /* Destructive */
+  --destructive: #e8363c;
+  --destructive-foreground: #ffffff;
+
+  /* Borders / inputs / rings */
+  --border: #ff9ecb;
+  --input: #ffb3d5;
+  --ring: #ff4fa3;
+  --radius: 1.75rem;
+
+  /* Sidebar */
+  --sidebar-background: #ff8fc4;
+  --sidebar-foreground: #4a1230;
+  --sidebar-primary: #d81b7a;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #ffd9ea;
+  --sidebar-accent-foreground: #63204a;
+  --sidebar-border: #ff4fa3;
+  --sidebar-ring: #ff4fa3;
+  --sidebar-input: #ffc2de;
+
+  /* Comic Sans everywhere, for everyone's sins */
+  font-family: "Comic Sans MS", "Comic Sans", "Chalkboard SE", "Comic Neue",
+    "Comic Relief", cursive;
+}
+
+html[data-feut] body,
+html[data-feut] button,
+html[data-feut] input,
+html[data-feut] select,
+html[data-feut] textarea,
+html[data-feut] .font-sans,
+html[data-feut] .font-mono {
+  font-family: "Comic Sans MS", "Comic Sans", "Chalkboard SE", "Comic Neue",
+    "Comic Relief", cursive;
+}
+
+/* Dotted, bubblegum-pink polka dots (on body: mfr.css paints body too, which would hide dots on html) */
+html[data-feut] body {
+  background-color: #ffe4f1;
+  background-image: radial-gradient(#ffb3d5 3px, transparent 3px);
+  background-size: 26px 26px;
+  background-attachment: fixed;
+}
+
+/* Giant "Je bent een feut" watermark behind everything: above the dots, below the app
+   (the app's <main> is positioned, so it paints after this z-index:0 pseudo element) */
+html[data-feut] body::before {
+  content: "Je bent een feut";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  display: grid;
+  place-items: center;
+  rotate: -12deg;
+  white-space: nowrap;
+  pointer-events: none;
+  font-size: clamp(3rem, 11vw, 11rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: rgb(216 27 122 / 12%);
+  text-shadow: 4px 4px 0 rgb(255 255 255 / 45%);
+  animation: feut-drift 16s ease-in-out infinite;
+}
+
+@keyframes feut-drift {
+  0% {
+    translate: -4vw 3vh;
+    rotate: -14deg;
+    scale: 1;
+  }
+  20% {
+    translate: 6vw -7vh;
+    rotate: -4deg;
+    scale: 1.12;
+  }
+  40% {
+    translate: 9vw 6vh;
+    rotate: -24deg;
+    scale: 0.92;
+  }
+  60% {
+    translate: -8vw 1vh;
+    rotate: -8deg;
+    scale: 1.06;
+  }
+  80% {
+    translate: 2vw -4vh;
+    rotate: -19deg;
+    scale: 0.98;
+  }
+  100% {
+    translate: -4vw 3vh;
+    rotate: -14deg;
+    scale: 1;
+  }
+}
+
+/* A pony trotting across the bottom of the screen */
+html[data-feut] body::after {
+  content: "";
+  position: fixed;
+  bottom: -8px;
+  left: 0;
+  width: 150px;
+  height: 120px;
+  z-index: 4;
+  pointer-events: none;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 190"><path d="M56 92 C30 84 18 112 34 132 C34 112 44 104 60 108 Z" fill="%23b06bff"/><path d="M60 100 C42 100 36 122 48 134 C46 118 54 110 64 112 Z" fill="%237fe3ff" opacity=".85"/><rect x="74" y="128" width="15" height="44" rx="7.5" fill="%23ff8fc4"/><rect x="98" y="134" width="15" height="38" rx="7.5" fill="%23ffb3d5"/><rect x="130" y="134" width="15" height="38" rx="7.5" fill="%23ff8fc4"/><rect x="152" y="128" width="15" height="44" rx="7.5" fill="%23ffb3d5"/><circle cx="81.5" cy="170" r="7.5" fill="%23ff4fa3"/><circle cx="105.5" cy="170" r="7.5" fill="%23ff4fa3"/><circle cx="137.5" cy="170" r="7.5" fill="%23ff4fa3"/><circle cx="159.5" cy="170" r="7.5" fill="%23ff4fa3"/><ellipse cx="118" cy="112" rx="62" ry="34" fill="%23ff9ecb"/><path d="M158 96 C168 78 176 66 184 62 L206 84 C194 94 180 104 172 118 Z" fill="%23ff9ecb"/><path d="M196 42 L190 20 L210 36 Z" fill="%23ff9ecb"/><circle cx="204" cy="66" r="27" fill="%23ff9ecb"/><ellipse cx="226" cy="74" rx="16" ry="12" fill="%23ffb3d5"/><path d="M196 38 C178 30 166 44 172 58 C162 62 164 78 178 78 C172 66 184 62 188 72 C194 60 200 52 210 52 Z" fill="%23b06bff"/><path d="M190 44 C180 40 174 48 178 56 C184 52 190 50 196 52 Z" fill="%237fe3ff"/><circle cx="213" cy="62" r="7.5" fill="%23fff7fb"/><circle cx="215" cy="63" r="4" fill="%234a1230"/><circle cx="213.6" cy="60.6" r="1.4" fill="%23fff7fb"/><circle cx="234" cy="74" r="1.8" fill="%23d81b7a"/><path d="M120 104 c-5 -7 -16 -2 -14 6 c1.5 6 9 10 14 14 c5 -4 12.5 -8 14 -14 c2 -8 -9 -13 -14 -6 z" fill="%23ff4fa3"/></svg>') center / contain no-repeat;
+  animation: feut-trot 24s linear infinite;
+}
+
+/* A rainbow in the top corner */
+html[data-feut]::before {
+  content: "";
+  position: fixed;
+  top: -30px;
+  right: -40px;
+  width: 360px;
+  height: 200px;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.55;
+  rotate: 8deg;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 160" fill="none" stroke-width="13" stroke-linecap="round"><path d="M20 150 A130 130 0 0 1 280 150" stroke="%23ff4d6d"/><path d="M35 150 A115 115 0 0 1 265 150" stroke="%23ff9f1c"/><path d="M50 150 A100 100 0 0 1 250 150" stroke="%23ffe066"/><path d="M65 150 A85 85 0 0 1 235 150" stroke="%2352d68a"/><path d="M80 150 A70 70 0 0 1 220 150" stroke="%234cc9f0"/><path d="M95 150 A55 55 0 0 1 205 150" stroke="%23b06bff"/></svg>') center / contain no-repeat;
+}
+
+/* Two fluffy clouds drifting along the top */
+html[data-feut]::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.8;
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 110"><g fill="%23fff7fb"><ellipse cx="58" cy="62" rx="34" ry="22"/><ellipse cx="98" cy="44" rx="36" ry="28"/><ellipse cx="142" cy="62" rx="32" ry="22"/><rect x="24" y="58" width="152" height="28" rx="14"/></g></svg>'), url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 110"><g fill="%23fff7fb"><ellipse cx="58" cy="62" rx="34" ry="22"/><ellipse cx="98" cy="44" rx="36" ry="28"/><ellipse cx="142" cy="62" rx="32" ry="22"/><rect x="24" y="58" width="152" height="28" rx="14"/></g></svg>');
+  background-repeat: no-repeat, no-repeat;
+  background-position: 6vw 16vh, 72vw 40vh;
+  background-size: 190px 105px, 130px 72px;
+  animation: feut-clouds 44s ease-in-out infinite;
+}
+
+@keyframes feut-clouds {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 9vw -2vh;
+  }
+}
+
+@keyframes feut-trot {
+  from {
+    translate: -12vw 0;
+    rotate: 0deg;
+  }
+  25% {
+    rotate: -2deg;
+  }
+  50% {
+    rotate: 2deg;
+  }
+  75% {
+    rotate: -2deg;
+  }
+  to {
+    translate: 105vw 0;
+    rotate: 0deg;
+  }
+}
+
+/* Chunky, wobbly headings with wavy party underlines */
+html[data-feut] h1,
+html[data-feut] h2,
+html[data-feut] h3 {
+  color: #d81b7a;
+  text-shadow: 2px 2px 0 #ffffff, 4px 4px 0 #ffd9ea;
+  letter-spacing: 0.02em;
+  text-decoration: underline wavy #ff4fa3;
+  text-decoration-thickness: 3px;
+  text-underline-offset: 6px;
+  text-decoration-skip-ink: none;
+}
+
+/* Sticker-ish cards: fat pink shadow instead of a hairline */
+html[data-feut] [class*="bg-card"] {
+  box-shadow: 6px 6px 0 0 #ffb3d5;
+}
+
+/* Pill-shaped, bouncy buttons */
+html[data-feut] button {
+  border-radius: 9999px;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+html[data-feut] button:hover {
+  transform: rotate(-2deg) scale(1.04);
+  box-shadow: 0 4px 0 0 #d81b7a;
+}
+
+html[data-feut] button:active {
+  transform: translateY(2px) scale(0.97);
+  box-shadow: none;
+}
+
+/* Bubblegum selection and scrollbars */
+html[data-feut] ::selection {
+  background: #ff4fa3;
+  color: #ffffff;
+}
+
+html[data-feut] {
+  scrollbar-color: #ff4fa3 #ffc2de;
+}
+
+/* Cards get a sticker-like pink outline instead of a grey hairline */
+html[data-feut] [class*="border-border"] {
+  border-color: #ff9ecb;
+}
+
+/* Respect people who asked their OS to calm things down */
+@media (prefers-reduced-motion: reduce) {
+  html[data-feut] button {
+    transition: none;
+  }
+
+  html[data-feut] button:hover,
+  html[data-feut] button:active {
+    transform: none;
+  }
+
+  html[data-feut] body::before,
+  html[data-feut] body::after,
+  html[data-feut]::after {
+    animation: none;
+  }
+}

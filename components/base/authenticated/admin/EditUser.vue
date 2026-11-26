@@ -109,6 +109,7 @@ const cookingGroupname = ref(props.user.cookingGroup?.name ?? '');
 const roleOptions: { value: RoleType; label: string }[] = [
 	{ value: Role.ADMIN, label: 'Admin' },
 	{ value: Role.COOKING, label: 'Kookbeheer' },
+	{ value: Role.FEUT, label: 'Feut' },
 	{ value: Role.USER, label: 'Gebruiker' },
 ];
 

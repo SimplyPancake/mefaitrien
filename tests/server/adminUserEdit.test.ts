@@ -113,4 +113,16 @@ describe("editing a housemate (admin/user)", () => {
 		prismaMock.user.count.mockResolvedValue(1);
 		await expect(edit({ isActive: false, roles: ["ADMIN"] })).resolves.toBeDefined();
 	});
+
+	it("accepts the FEUT role", async () => {
+		given({ isActive: true, cookingGroupId: 1 });
+		await edit({ roles: ["FEUT"] });
+		expect(updateData().roles).toEqual({ deleteMany: {}, create: [{ role: "FEUT" }] });
+	});
+
+	it("rejects a role that is not in the enum", async () => {
+		given({ isActive: true, cookingGroupId: 1 });
+		await expect(edit({ roles: ["SOUND"] })).rejects.toMatchObject({ statusCode: 400 });
+		expect(prismaMock.user.update).not.toHaveBeenCalled();
+	});
 });
